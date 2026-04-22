@@ -53,7 +53,7 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
 
         if _shouldExportToUSDZ {
             if let mesh = _mesh {
-                let filename = ScanPreviewViewController._prefixedFilename("mesh.ply", prefix: namePrefix)
+                let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
                 let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
                 try? FileManager.default.removeItem(atPath: tempPLYPath)
                 mesh.writeToPLY(atPath: tempPLYPath)
@@ -82,7 +82,7 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
         let plyURL: URL
 
         if let mesh = _mesh {
-            let filename = ScanPreviewViewController._prefixedFilename("mesh.ply", prefix: namePrefix)
+            let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
             let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
             try? FileManager.default.removeItem(atPath: tempPLYPath)
             mesh.writeToPLY(atPath: tempPLYPath)
@@ -137,6 +137,12 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
 
     private static func _prefixedFilename(_ filename: String, prefix: String) -> String {
         return prefix.isEmpty ? filename : "\(prefix)-\(filename)"
+    }
+
+    private static func _defaultMeshFilename() -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd--HH-mm-ss"
+        return "Mesh-\(formatter.string(from: Date())).ply"
     }
 
     /// Writes the scan's compressed PLY to a temp path, renaming it with the given prefix.
