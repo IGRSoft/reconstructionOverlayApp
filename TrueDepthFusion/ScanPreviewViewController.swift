@@ -24,32 +24,37 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
     @IBAction private func _export(_ sender: AnyObject) {
         guard scan != nil else { return }
 
-        let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
+        _promptForName { [weak self] namePrefix in
+            guard let self = self else { return }
 
-        sheet.addAction(UIAlertAction(title: "Send to Jetson", style: .default) { [weak self] _ in
-            self?._sendToJetson()
-        })
+            let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
-        sheet.addAction(UIAlertAction(title: "Share / Export", style: .default) { [weak self] _ in
-            self?._share(sender: sender)
-        })
+            sheet.addAction(UIAlertAction(title: "Send to Jetson", style: .default) { [weak self] _ in
+                self?._sendToJetson(namePrefix: namePrefix)
+            })
 
-        sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+            sheet.addAction(UIAlertAction(title: "Share / Export", style: .default) { [weak self] _ in
+                self?._share(sender: sender, namePrefix: namePrefix)
+            })
 
-        if let popover = sheet.popoverPresentationController {
-            popover.sourceView = sender as? UIView ?? self.view
+            sheet.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+
+            if let popover = sheet.popoverPresentationController {
+                popover.sourceView = sender as? UIView ?? self.view
+            }
+
+            self.present(sheet, animated: true)
         }
-
-        present(sheet, animated: true)
     }
 
-    private func _share(sender: AnyObject) {
+    private func _share(sender: AnyObject, namePrefix: String) {
         guard let scan = scan else { return }
         let shareURL: URL?
 
         if _shouldExportToUSDZ {
             if let mesh = _mesh {
-                let tempPLYPath = NSTemporaryDirectory().appending("/mesh.ply")
+                let filename = ScanPreviewViewController._prefixedFilename("mesh.ply", prefix: namePrefix)
+                let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
                 try? FileManager.default.removeItem(atPath: tempPLYPath)
                 mesh.writeToPLY(atPath: tempPLYPath)
                 shareURL = URL(fileURLWithPath: tempPLYPath)
@@ -59,7 +64,7 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
         } else if let meshURL = _meshURL {
             shareURL = meshURL
         } else {
-            shareURL = scan.writeCompressedPLY()
+            shareURL = ScanPreviewViewController._compressedPLY(for: scan, namePrefix: namePrefix)
         }
 
         if let shareURL = shareURL {
@@ -71,18 +76,28 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
         }
     }
 
-    private func _sendToJetson() {
+    private func _sendToJetson(namePrefix: String) {
         guard let scan = scan else { return }
 
         let plyURL: URL
 
         if let mesh = _mesh {
-            let tempPLYPath = NSTemporaryDirectory().appending("/mesh.ply")
+            let filename = ScanPreviewViewController._prefixedFilename("mesh.ply", prefix: namePrefix)
+            let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
             try? FileManager.default.removeItem(atPath: tempPLYPath)
             mesh.writeToPLY(atPath: tempPLYPath)
             plyURL = URL(fileURLWithPath: tempPLYPath)
         } else if let plyPath = scan.plyPath {
-            plyURL = URL(fileURLWithPath: plyPath)
+            if namePrefix.isEmpty {
+                plyURL = URL(fileURLWithPath: plyPath)
+            } else {
+                let originalName = URL(fileURLWithPath: plyPath).lastPathComponent
+                let prefixedName = ScanPreviewViewController._prefixedFilename(originalName, prefix: namePrefix)
+                let renamedPath = NSTemporaryDirectory().appending("/\(prefixedName)")
+                try? FileManager.default.removeItem(atPath: renamedPath)
+                try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
+                plyURL = URL(fileURLWithPath: renamedPath)
+            }
         } else {
             JetsonUploader.showResult(.failure(NSError(domain: "JetsonUploader", code: 0,
                 userInfo: [NSLocalizedDescriptionKey: "No PLY data available to send."])), from: self)
@@ -93,6 +108,46 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
             guard let self = self else { return }
             JetsonUploader.showResult(result, from: self)
         }
+    }
+
+    // MARK: - Name prompt helpers
+
+    private func _promptForName(completion: @escaping (String) -> Void) {
+        let alert = UIAlertController(title: "Export", message: "What is your name?", preferredStyle: .alert)
+        alert.addTextField { field in
+            field.placeholder = "Leave blank for default filename"
+            field.autocorrectionType = .no
+            field.autocapitalizationType = .none
+        }
+        alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
+            let raw = alert.textFields?.first?.text ?? ""
+            completion(ScanPreviewViewController._sanitizeNamePrefix(raw))
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    /// Strips characters that are unsafe in filenames. Spaces become underscores;
+    /// anything that is not alphanumeric, a hyphen, or an underscore is removed.
+    private static func _sanitizeNamePrefix(_ input: String) -> String {
+        let withUnderscores = input.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        return String(withUnderscores.unicodeScalars.filter { allowed.contains($0) })
+    }
+
+    private static func _prefixedFilename(_ filename: String, prefix: String) -> String {
+        return prefix.isEmpty ? filename : "\(prefix)-\(filename)"
+    }
+
+    /// Writes the scan's compressed PLY to a temp path, renaming it with the given prefix.
+    private static func _compressedPLY(for scan: Scan, namePrefix: String) -> URL? {
+        let url = scan.writeCompressedPLY()
+        guard !namePrefix.isEmpty else { return url }
+        let prefixedName = _prefixedFilename(url.lastPathComponent, prefix: namePrefix)
+        let renamedURL = url.deletingLastPathComponent().appendingPathComponent(prefixedName)
+        try? FileManager.default.removeItem(at: renamedURL)
+        try? FileManager.default.copyItem(at: url, to: renamedURL)
+        return renamedURL
     }
     
     // MARK: - QLPreviewControllerDataSource

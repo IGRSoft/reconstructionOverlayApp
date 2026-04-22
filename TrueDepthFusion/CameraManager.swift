@@ -28,7 +28,14 @@ class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate {
     }
     
     weak var delegate: CameraManagerDelegate?
-    var isFocusLocked: Bool = false
+    var isFocusLocked: Bool = false {
+        didSet {
+            _focus(with: isFocusLocked ? .locked : .continuousAutoFocus,
+                   exposureMode: isFocusLocked ? .locked : .continuousAutoExposure,
+                   at: CGPoint(x: 0.5, y: 0.5),
+                   monitorSubjectAreaChange: !isFocusLocked)
+        }
+    }
     
     func configureCaptureSession(maxColorResolution: Int = 1280, maxDepthResolution: Int = 640, maxFramerate: Int = 30) {
         // Check video authorization status, video access is required

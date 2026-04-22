@@ -724,37 +724,42 @@ static const float kCenterDepthExpansionRatio = 1.4;
     {
         for (size_t x = 0; x < depthWidth; ++x)
         {
-            size_t rgbX = (size_t)(x * depthToColorRatio.x);
-            
-            size_t rgbY;
-            if (flipsInputHorizontally) {
-                rgbY = (size_t)((depthHeight - 1 - y) * depthToColorRatio.y);
-            } else {
-                rgbY = (size_t)(y * depthToColorRatio.y);
-            }
-            
-            
-            size_t rgbIndex = (rgbY * rgbBytesPerRow + rgbX * rgbBytesPerPixel);
-            
             float depth;
+            float frgbX = x * depthToColorRatio.x;
+            float frgbY;
             if (flipsInputHorizontally) {
                 depth = depthBufferValues[(depthHeight - 1 - y) * depthWidth + x];
+                frgbY = (depthHeight - 1 - y) * depthToColorRatio.y;
             } else {
                 depth = depthBufferValues[y * depthWidth + x];
+                frgbY = y * depthToColorRatio.y;
             }
-            
+
             if (normalizedClipRegion.size.width > 0 && normalizedClipRegion.size.height > 0) {
                 if (!CGRectContainsPoint(frameClipRegion, CGPointMake(x, y))) {
                     depth = NAN;
                 }
             }
-            
-            uint8_t b = colorBufferValues[rgbIndex + 0];
-            uint8_t g = colorBufferValues[rgbIndex + 1];
-            uint8_t r = colorBufferValues[rgbIndex + 2];
+
+            // Bilinear interpolation for color sampling
+            size_t x0 = (size_t)frgbX;
+            size_t y0 = (size_t)frgbY;
+            size_t x1 = std::min(x0 + 1, colorWidth - 1);
+            size_t y1 = std::min(y0 + 1, colorHeight - 1);
+            float sx = frgbX - x0;
+            float sy = frgbY - y0;
+
+            const uint8_t *p00 = colorBufferValues + y0 * rgbBytesPerRow + x0 * rgbBytesPerPixel;
+            const uint8_t *p10 = colorBufferValues + y0 * rgbBytesPerRow + x1 * rgbBytesPerPixel;
+            const uint8_t *p01 = colorBufferValues + y1 * rgbBytesPerRow + x0 * rgbBytesPerPixel;
+            const uint8_t *p11 = colorBufferValues + y1 * rgbBytesPerRow + x1 * rgbBytesPerPixel;
+
+            float b = p00[0] * (1-sx) * (1-sy) + p10[0] * sx * (1-sy) + p01[0] * (1-sx) * sy + p11[0] * sx * sy;
+            float g = p00[1] * (1-sx) * (1-sy) + p10[1] * sx * (1-sy) + p01[1] * (1-sx) * sy + p11[1] * sx * sy;
+            float r = p00[2] * (1-sx) * (1-sy) + p10[2] * sx * (1-sy) + p01[2] * (1-sx) * sy + p11[2] * sx * sy;
             math::Vec3 normalizedRGB(fastApplyGammaCorrection(r * rgbNormalize),
-                                               fastApplyGammaCorrection(g * rgbNormalize),
-                                               fastApplyGammaCorrection(b * rgbNormalize));
+                                     fastApplyGammaCorrection(g * rgbNormalize),
+                                     fastApplyGammaCorrection(b * rgbNormalize));
             
             depthVectorOut[depthIndex] = isnan(depth) ? nanReplacement : depth;
             colorMatrixOut[depthIndex] = normalizedRGB;

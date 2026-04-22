@@ -134,15 +134,18 @@ class ScansViewController: UITableViewController {
     }()
     
     private func _export(_ scan: Scan) {
-        if scan.plyPath != nil {
-            let compressedScanURL = scan.writeCompressedPLY()
-            let controller = UIActivityViewController(activityItems: [compressedScanURL], applicationActivities: nil)
-            if  let popoverController = controller.popoverPresentationController,
-                let scanIndex = _scans.firstIndex(of: scan)
+        guard scan.plyPath != nil else { return }
+        _promptForName { [weak self] namePrefix in
+            guard let self = self else { return }
+            let baseURL = scan.writeCompressedPLY()
+            let exportURL = ScansViewController._prefixedURL(baseURL, prefix: namePrefix)
+            let controller = UIActivityViewController(activityItems: [exportURL], applicationActivities: nil)
+            if let popoverController = controller.popoverPresentationController,
+               let scanIndex = self._scans.firstIndex(of: scan)
             {
-                popoverController.sourceView = tableView.cellForRow(at: IndexPath(row: scanIndex, section: 0))?.contentView
+                popoverController.sourceView = self.tableView.cellForRow(at: IndexPath(row: scanIndex, section: 0))?.contentView
             }
-            present(controller, animated: true)
+            self.present(controller, animated: true)
         }
     }
     
@@ -152,11 +155,60 @@ class ScansViewController: UITableViewController {
 
     private func _sendToJetson(_ scan: Scan) {
         guard let plyPath = scan.plyPath else { return }
-        let plyURL = URL(fileURLWithPath: plyPath)
-        JetsonUploader.upload(plyFileURL: plyURL) { [weak self] result in
+        _promptForName { [weak self] namePrefix in
             guard let self = self else { return }
-            JetsonUploader.showResult(result, from: self)
+            let plyURL: URL
+            if namePrefix.isEmpty {
+                plyURL = URL(fileURLWithPath: plyPath)
+            } else {
+                let originalName = URL(fileURLWithPath: plyPath).lastPathComponent
+                let prefixedName = ScansViewController._prefixedFilename(originalName, prefix: namePrefix)
+                let renamedPath = NSTemporaryDirectory().appending("/\(prefixedName)")
+                try? FileManager.default.removeItem(atPath: renamedPath)
+                try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
+                plyURL = URL(fileURLWithPath: renamedPath)
+            }
+            JetsonUploader.upload(plyFileURL: plyURL) { [weak self] result in
+                guard let self = self else { return }
+                JetsonUploader.showResult(result, from: self)
+            }
         }
+    }
+
+    // MARK: - Name prompt helpers
+
+    private func _promptForName(completion: @escaping (String) -> Void) {
+        let alert = UIAlertController(title: "Export", message: "What is your name?", preferredStyle: .alert)
+        alert.addTextField { field in
+            field.placeholder = "Leave blank for default filename"
+            field.autocorrectionType = .no
+            field.autocapitalizationType = .none
+        }
+        alert.addAction(UIAlertAction(title: "Continue", style: .default) { _ in
+            let raw = alert.textFields?.first?.text ?? ""
+            completion(ScansViewController._sanitizeNamePrefix(raw))
+        })
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+        present(alert, animated: true)
+    }
+
+    private static func _sanitizeNamePrefix(_ input: String) -> String {
+        let withUnderscores = input.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
+        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
+        return String(withUnderscores.unicodeScalars.filter { allowed.contains($0) })
+    }
+
+    private static func _prefixedFilename(_ filename: String, prefix: String) -> String {
+        return prefix.isEmpty ? filename : "\(prefix)-\(filename)"
+    }
+
+    private static func _prefixedURL(_ url: URL, prefix: String) -> URL {
+        guard !prefix.isEmpty else { return url }
+        let prefixedName = _prefixedFilename(url.lastPathComponent, prefix: prefix)
+        let renamedURL = url.deletingLastPathComponent().appendingPathComponent(prefixedName)
+        try? FileManager.default.removeItem(at: renamedURL)
+        try? FileManager.default.copyItem(at: url, to: renamedURL)
+        return renamedURL
     }
 
     private func _deleteScan(at indexPath: IndexPath) {
