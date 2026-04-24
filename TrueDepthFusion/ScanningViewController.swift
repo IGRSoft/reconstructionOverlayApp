@@ -65,11 +65,23 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
 
     // MARK: - Scan guidance
     private let _faceOvalLayer = CAShapeLayer()
+    private let _centerGuideLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Center your face\nin the oval"
+        label.textAlignment = .center
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
+        label.numberOfLines = 2
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.45)
+        label.layer.cornerRadius = 10
+        label.layer.masksToBounds = true
+        return label
+    }()
     private let _distanceLabel: UILabel = {
         let label = UILabel()
         label.textAlignment = .center
         label.textColor = .white
-        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        label.font = UIFont.systemFont(ofSize: 16, weight: .semibold)
         label.backgroundColor = UIColor.black.withAlphaComponent(0.45)
         label.layer.cornerRadius = 10
         label.layer.masksToBounds = true
@@ -110,7 +122,8 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         _faceOvalLayer.lineDashPattern = [8, 5]
         metalContainerView.layer.addSublayer(_faceOvalLayer)
 
-        // Distance label
+        // Center guide and distance labels
+        metalContainerView.addSubview(_centerGuideLabel)
         metalContainerView.addSubview(_distanceLabel)
 
         _cameraManager.delegate = self
@@ -203,12 +216,18 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         _faceOvalLayer.path = UIBezierPath(ovalIn: ovalRect).cgPath
         _faceOvalLayer.frame = bounds
 
-        // Distance label: centered horizontally, near top of oval
+        // Center guide label: centered in oval
         let labelW: CGFloat = 200
-        let labelH: CGFloat = 36
+        let centerGuideH: CGFloat = 52
+        _centerGuideLabel.frame = CGRect(x: (bounds.width - labelW) / 2,
+                                         y: ovalRect.midY - centerGuideH / 2,
+                                         width: labelW, height: centerGuideH)
+
+        // Distance label: just below center guide, no overlap
+        let distanceLabelH: CGFloat = 36
         _distanceLabel.frame = CGRect(x: (bounds.width - labelW) / 2,
-                                      y: ovalRect.minY + 12,
-                                      width: labelW, height: labelH)
+                                      y: ovalRect.midY + centerGuideH / 2 + 10,
+                                      width: labelW, height: distanceLabelH)
         CATransaction.commit()
     }
     
@@ -312,18 +331,19 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
     }
 
     private func _updateDistanceLabel(depth: Float) {
-        guard !_scanning else {
-            _distanceLabel.isHidden = true
-            return
-        }
+        guard !_scanning else { return }
+
         if depth.isNaN || depth <= 0 {
             _distanceLabel.text = "  No face detected  "
+            _distanceLabel.alpha = 1
             _distanceLabel.isHidden = false
         } else if depth < 0.25 {
             _distanceLabel.text = "  Move back  "
+            _distanceLabel.alpha = 1
             _distanceLabel.isHidden = false
         } else if depth > 0.60 {
             _distanceLabel.text = "  Move closer  "
+            _distanceLabel.alpha = 1
             _distanceLabel.isHidden = false
         } else {
             _distanceLabel.isHidden = true
@@ -433,9 +453,23 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         shutterButton.isSelected = _countdownSeconds > 0
         _cameraManager.isFocusLocked = _scanning
 
-        // Dim oval while scanning, full opacity when framing
+        // Dim oval and fade guidance labels when scanning starts
         _faceOvalLayer.opacity = _scanning ? 0.3 : 1.0
-        if _scanning { _distanceLabel.isHidden = true }
+        if _scanning {
+            UIView.animate(withDuration: 0.4) {
+                self._centerGuideLabel.alpha = 0
+                self._distanceLabel.alpha = 0
+            } completion: { _ in
+                self._centerGuideLabel.isHidden = true
+                self._distanceLabel.isHidden = true
+            }
+        } else {
+            _centerGuideLabel.isHidden = false
+            _distanceLabel.isHidden = false
+            UIView.animate(withDuration: 0.3) {
+                self._centerGuideLabel.alpha = 1
+            }
+        }
     }
     
     private func _startCountdown(_ completion: @escaping () -> Void) {

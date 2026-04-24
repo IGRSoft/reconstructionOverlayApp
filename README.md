@@ -66,7 +66,8 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 
 ### Scan Guidance UI
 - **Face oval guide** — A dashed oval overlay on the scanning screen shows where to position the subject's face before recording begins. The oval fades to 30% opacity while scanning to remain visible without being distracting.
-- **Distance indicator** — Before scanning begins, the center depth pixel cluster is sampled each frame from the raw TrueDepth depth map. If the subject is outside the optimal 25–60 cm range, a label reads "Move closer" or "Move back". The label hides automatically when the distance is correct and disappears entirely once scanning starts.
+- **Center guide label** — "Center your face / in the oval" is displayed in the middle of the oval before scanning. It fades out with a 0.4s animation when the scan starts and reappears when it stops.
+- **Distance indicator** — Before scanning begins, the center depth pixel cluster is sampled each frame from the raw TrueDepth depth map. If the subject is outside the optimal 25–60 cm range, a label reads "Move closer" or "Move back" just below the center guide. The label hides automatically when the distance is correct and disappears entirely once scanning starts.
 
 ### Scan Quality Improvements
 - **Exposure lock during scanning** — Auto-exposure is locked at the start of each scan. Previously, fluctuating exposure mid-scan caused color inconsistencies and surface speckling in the PLY output.
