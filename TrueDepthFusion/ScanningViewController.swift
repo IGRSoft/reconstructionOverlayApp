@@ -59,9 +59,23 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
     private let _metalDevice = MTLCreateSystemDefaultDevice()!
     private let _cameraManager = CameraManager()
     private let _motionManager = CMMotionManager()
-    
+
     private var _latestViewMatrix = matrix_identity_float4x4
     private var _scanningTimer: Timer?
+
+    // MARK: - Scan guidance
+    private let _faceOvalLayer = CAShapeLayer()
+    private let _distanceLabel: UILabel = {
+        let label = UILabel()
+        label.textAlignment = .center
+        label.textColor = .white
+        label.font = UIFont.systemFont(ofSize: 17, weight: .semibold)
+        label.backgroundColor = UIColor.black.withAlphaComponent(0.45)
+        label.layer.cornerRadius = 10
+        label.layer.masksToBounds = true
+        label.isHidden = true
+        return label
+    }()
     
     private let _meshTexturing = SCMeshTexturing()
     private var _frameIndex = 0
@@ -89,6 +103,16 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         metalContainerView.layer.addSublayer(_metalLayer)
         metalContainerView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(focusOnTap)))
         
+        // Face oval guide
+        _faceOvalLayer.fillColor = UIColor.clear.cgColor
+        _faceOvalLayer.strokeColor = UIColor.white.withAlphaComponent(0.7).cgColor
+        _faceOvalLayer.lineWidth = 2
+        _faceOvalLayer.lineDashPattern = [8, 5]
+        metalContainerView.layer.addSublayer(_faceOvalLayer)
+
+        // Distance label
+        metalContainerView.addSubview(_distanceLabel)
+
         _cameraManager.delegate = self
         _cameraManager.configureCaptureSession(maxColorResolution: 1920, maxDepthResolution: _useFullResolutionDepthFrames ? 640 : 320, maxFramerate: 30)
         _reconstructionManager.delegate = self
@@ -162,12 +186,29 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        
+
         CATransaction.begin()
         CATransaction.disableActions()
         _metalLayer.frame = metalContainerView.bounds
-        _metalLayer.drawableSize = CGSize( width: _metalLayer.frame.width  * _metalLayer.contentsScale,
+        _metalLayer.drawableSize = CGSize(width:  _metalLayer.frame.width  * _metalLayer.contentsScale,
                                           height: _metalLayer.frame.height * _metalLayer.contentsScale)
+
+        // Oval: centered, ~60% width, ~72% height
+        let bounds = metalContainerView.bounds
+        let ovalW = bounds.width * 0.60
+        let ovalH = bounds.height * 0.72
+        let ovalRect = CGRect(x: (bounds.width - ovalW) / 2,
+                              y: (bounds.height - ovalH) / 2,
+                              width: ovalW, height: ovalH)
+        _faceOvalLayer.path = UIBezierPath(ovalIn: ovalRect).cgPath
+        _faceOvalLayer.frame = bounds
+
+        // Distance label: centered horizontally, near top of oval
+        let labelW: CGFloat = 200
+        let labelH: CGFloat = 36
+        _distanceLabel.frame = CGRect(x: (bounds.width - labelW) / 2,
+                                      y: ovalRect.minY + 12,
+                                      width: labelW, height: labelH)
         CATransaction.commit()
     }
     
@@ -234,7 +275,58 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
             _reconstructionManager.accumulate(depthBuffer: depthBuffer,
                                               colorBuffer: colorBuffer,
                                               calibrationData: depthCalibrationData)
+        } else {
+            _updateDistanceGuidance(from: depthBuffer)
+        }
+    }
 
+    private func _updateDistanceGuidance(from depthBuffer: CVPixelBuffer) {
+        CVPixelBufferLockBaseAddress(depthBuffer, .readOnly)
+        defer { CVPixelBufferUnlockBaseAddress(depthBuffer, .readOnly) }
+
+        let width = CVPixelBufferGetWidth(depthBuffer)
+        let height = CVPixelBufferGetHeight(depthBuffer)
+        let bytesPerRow = CVPixelBufferGetBytesPerRow(depthBuffer)
+        guard let base = CVPixelBufferGetBaseAddress(depthBuffer) else { return }
+
+        // Sample a small center cluster and average to reduce noise
+        let cx = width / 2, cy = height / 2
+        var sum: Float = 0
+        var count = 0
+        for dy in -2...2 {
+            for dx in -2...2 {
+                let offset = (cy + dy) * bytesPerRow / 4 + (cx + dx)
+                let depth = base.assumingMemoryBound(to: Float32.self)[offset]
+                if depth.isFinite && depth > 0 {
+                    sum += depth
+                    count += 1
+                }
+            }
+        }
+
+        let centerDepth = count > 0 ? sum / Float(count) : Float.nan
+
+        DispatchQueue.main.async {
+            self._updateDistanceLabel(depth: centerDepth)
+        }
+    }
+
+    private func _updateDistanceLabel(depth: Float) {
+        guard !_scanning else {
+            _distanceLabel.isHidden = true
+            return
+        }
+        if depth.isNaN || depth <= 0 {
+            _distanceLabel.text = "  No face detected  "
+            _distanceLabel.isHidden = false
+        } else if depth < 0.25 {
+            _distanceLabel.text = "  Move back  "
+            _distanceLabel.isHidden = false
+        } else if depth > 0.60 {
+            _distanceLabel.text = "  Move closer  "
+            _distanceLabel.isHidden = false
+        } else {
+            _distanceLabel.isHidden = true
         }
     }
     
@@ -331,7 +423,7 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
     private func _updateUI() {
         // Make sure the view is loaded first
         _ = self.view
-        
+
         elapsedDurationLabel.isHidden = !_scanning
         scanDurationLabel.text = "\(_scanDurationSeconds) sec"
         elapsedDurationLabel.text = "\(_elapsedSeconds + 1)"
@@ -340,6 +432,10 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         shutterButton.setImage(UIImage(named: _scanning ? "CameraButtonRecording" : "CameraButton"), for: UIControl.State.normal)
         shutterButton.isSelected = _countdownSeconds > 0
         _cameraManager.isFocusLocked = _scanning
+
+        // Dim oval while scanning, full opacity when framing
+        _faceOvalLayer.opacity = _scanning ? 0.3 : 1.0
+        if _scanning { _distanceLabel.isHidden = true }
     }
     
     private func _startCountdown(_ completion: @escaping () -> Void) {
