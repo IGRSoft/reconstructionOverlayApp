@@ -67,8 +67,10 @@ float AverageDepthFromValues(float *depthValues,
         }
     }
     
+    if (depthCount == 0) { return -1; }
+
     float averageDepth = depthSum / depthCount;
-    
+
     return averageDepth;
 }
 
