@@ -29,6 +29,7 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 - **Idle timer fix** — After visiting the scanning view, `isIdleTimerDisabled` was incorrectly left as `true` when leaving the view, preventing the screen from ever auto-dimming or locking until the app was restarted.
 - **Metal shader error handling** — Metal GPU pipeline creation previously used force-try (`try!`), which would crash with a generic error if a shader failed to compile. Now uses `do-catch` with descriptive error messages for easier debugging.
 - **Removed QuickLook / AR preview on export** — Sharing a scan previously opened a QuickLook AR viewer instead of the standard iOS share sheet. Export now goes directly to `UIActivityViewController` (AirDrop, Files, etc.), and the USDZ/AR code path has been removed entirely.
+- **Delegate race condition fix** — The reconstruction engine called its delegate on the main thread without first retaining it, creating a brief window where a deallocated delegate could be messaged between stopping a scan and the view dismissing. The delegate is now captured as a local strong reference before the call.
 
 ## How to Use the App
 

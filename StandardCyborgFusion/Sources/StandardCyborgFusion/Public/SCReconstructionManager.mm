@@ -544,13 +544,13 @@ static const float kCenterDepthExpansionRatio = 1.4;
             printf("STATS: succeeded: %zd, lost tracking: %zd, consecutive lost tracking: %zd\n",
                    statistics.succeededCount, statistics.lostTrackingCount, statistics.consecutiveLostTrackingCount);
 #endif
-            
-            [_delegate reconstructionManager:self didProcessWithMetadata:metadata statistics:statistics];
-            
+            id<SCReconstructionManagerDelegate> delegate = _delegate;
+            [delegate reconstructionManager:self didProcessWithMetadata:metadata statistics:statistics];
+
             if (metadata.depthBuffer != NULL) {
                 CVPixelBufferRelease(metadata.depthBuffer);
             }
-            
+
             if (metadata.colorBuffer != NULL) {
                 CVPixelBufferRelease(metadata.colorBuffer);
             }
