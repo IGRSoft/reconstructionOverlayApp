@@ -21,6 +21,15 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 
 ## How to Use the App
 
+### Taking a Scan
+
+1. Open **OVision** on your iPhone.
+2. Point the front camera at the subject's face. Use the oval guide to frame and the distance label to position correctly (30–50 cm is ideal).
+3. Tap the record button to begin scanning. The camera locks its exposure at the start to prevent color drift.
+4. Slowly rotate your viewpoint around the face to capture coverage from multiple angles. The reconstruction updates in real time. The oval fades during scanning — focus on moving slowly and smoothly.
+5. If you see **"Move slower — tracking lost"**, slow down and hold steady until tracking recovers.
+6. Tap the stop button when done.
+
 ### Framing a Scan
 
 Before tapping record, a **dashed oval guide** is shown on screen indicating where to position the face. A **distance label** appears above the oval if the subject is too close or too far:
@@ -34,15 +43,6 @@ Before tapping record, a **dashed oval guide** is shown on screen indicating whe
 <!-- Image: distance label examples (Move closer / Move back) -->
 
 Once the face is centered in the oval and no distance warning is shown, tap the shutter button to begin.
-
-### Taking a Scan
-
-1. Open **OVision** on your iPhone.
-2. Point the front camera at the subject's face. Use the oval guide to frame and the distance label to position correctly (30–50 cm is ideal).
-3. Tap the record button to begin scanning. The camera locks its exposure at the start to prevent color drift.
-4. Slowly rotate your viewpoint around the face to capture coverage from multiple angles. The reconstruction updates in real time. The oval fades during scanning — focus on moving slowly and smoothly.
-5. If you see **"Move slower — tracking lost"**, slow down and hold steady until tracking recovers.
-6. Tap the stop button when done.
 
 ### Reviewing and Exporting
 
