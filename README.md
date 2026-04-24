@@ -59,6 +59,72 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 
 Tap the gear icon (top right of the Scans screen) to open Jetson settings. Enter the IP address and port of your Jetson Nano receiver.
 
+## App Overview
+
+The reconstruction pipeline runs entirely on-device in real time.
+
+```
+┌─────────────────────────────────────────────┐
+│              TrueDepth Camera               │
+│  Depth map (Float32, up to 640×360 @ 30fps) │
+│  Color frame (up to 1920×1080 @ 30fps)      │
+└───────────────────┬─────────────────────────┘
+                    │ synchronized frames
+                    ▼
+┌─────────────────────────────────────────────┐
+│           Metal GPU Depth Processing        │
+│  · Bilateral smoothing of raw depth         │
+│  · Per-pixel normal estimation (gradients)  │
+│  · Per-pixel weight (angle of incidence)    │
+└───────────────────┬─────────────────────────┘
+                    │ processed depth + normals
+                    ▼
+┌─────────────────────────────────────────────┐
+│             Surfel Estimation               │
+│  Each valid depth pixel → surfel:           │
+│  position (xyz), normal, color, weight,     │
+│  radius. Color sampled from RGB frame via   │
+│  bilinear interpolation.                    │
+└───────────────────┬─────────────────────────┘
+                    │ new surfel candidates
+                    ▼
+┌─────────────────────────────────────────────┐
+│           ICP Pose Estimation               │
+│  Iterative Closest Point aligns new frame   │
+│  to existing model to track camera motion.  │
+│  (18 iterations, 5% downsampled point set)  │
+└───────────────────┬─────────────────────────┘
+                    │ camera pose (4×4 matrix)
+                    ▼
+┌─────────────────────────────────────────────┐
+│              Surfel Fusion                  │
+│  GPU index map gives O(1) lookup of nearby  │
+│  existing surfels. New surfels are merged   │
+│  by weighted average (cos²θ weighting).     │
+│  Surfels too far from any existing surfel   │
+│  are added to the model as new geometry.    │
+└───────────────────┬─────────────────────────┘
+                    │ global surfel model
+                    ▼
+         ┌──────────────────────┐
+         │   PLY Point Cloud    │  ← exported to Jetson / Files
+         └──────────┬───────────┘
+                    │ tap Mesh (optional)
+                    ▼
+┌─────────────────────────────────────────────┐
+│       Poisson Surface Reconstruction        │
+│  Surfel normals define an indicator         │
+│  function solved on an adaptive octree.     │
+│  Marching cubes extracts the iso-surface    │
+│  as a triangle mesh with vertex colors.     │
+└───────────────────┬─────────────────────────┘
+                    │
+                    ▼
+         ┌──────────────────────┐
+         │   PLY Triangle Mesh  │  ← exported to Jetson / Files
+         └──────────────────────┘
+```
+
 ## Built on Standard Cyborg SDK
 
 This app is built on top of the [Standard Cyborg Cocoa SDK](https://github.com/StandardCyborg/StandardCyborgCocoa), an open-source real-time 3D scanning framework for iOS. The SDK was developed by the team at Standard Cyborg — a company that originally built 3D-printed prosthetics, then open-sourced their scanning framework before closing. We are grateful to the Standard Cyborg authors and contributors for making this available under the MIT license.
