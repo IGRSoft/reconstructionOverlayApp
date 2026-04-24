@@ -157,9 +157,9 @@ class ScanningViewController: UIViewController, CameraManagerDelegate, SCReconst
         _cameraManager.stopSession()
         _motionManager.stopDeviceMotionUpdates()
         
-        UIApplication.shared.isIdleTimerDisabled = true
+        UIApplication.shared.isIdleTimerDisabled = false
     }
-    
+
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
         

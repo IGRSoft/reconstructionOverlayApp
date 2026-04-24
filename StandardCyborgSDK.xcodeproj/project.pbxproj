@@ -535,7 +535,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 82NA5C4XZT;
 				INFOPLIST_FILE = TrueDepthFusion/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Overlay Vision";
+				INFOPLIST_KEY_CFBundleDisplayName = "OVision";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -558,7 +558,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 82NA5C4XZT;
 				INFOPLIST_FILE = TrueDepthFusion/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Overlay Vision";
+				INFOPLIST_KEY_CFBundleDisplayName = "OVision";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

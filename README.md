@@ -1,8 +1,8 @@
-# Overlay Reconstruction
+# OVision Reconstruction
 
 ## Purpose
 
-Overlay Reconstruction is an iOS app that generates 3D point cloud reconstructions of human faces using the iPhone's front-facing TrueDepth camera. The reconstructions are exported as PLY files for use with the **Overlay OvOne** robot, which uses them to drive precise spatial awareness and interaction with human faces. 
+OVision Reconstruction is an iOS app that generates 3D point cloud reconstructions of human faces using the iPhone's front-facing TrueDepth camera. The reconstructions are exported as PLY files for use with the **Overlay OvOne** robot, which uses them to drive precise spatial awareness and interaction with human faces. 
 
 Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 
@@ -26,6 +26,7 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 - **Crash on launch fix** — The original code used a force-try (`try!`) when reading the scans directory on launch. A corrupted or inaccessible Documents directory would crash the app immediately. This is now a graceful `do-catch` that logs the error and starts with an empty scan list.
 - **Surfel data race condition fix** — During live scanning, `buildPointCloud` was handing the UI thread a raw pointer into the surfel buffer without synchronization. If the reconstruction engine reallocated the buffer mid-read, the app could crash or render corrupted geometry. The read is now serialized on the model queue with a proper copy, eliminating the race.
 - **Poor tracking warning** — When the reconstruction engine loses tracking (e.g. the phone moves too fast), the app now shows a "Move slower — tracking lost" message on screen after 5 consecutive poor-tracking frames. Previously, tracking loss was silent and the scan would silently degrade in quality.
+- **Idle timer fix** — After visiting the scanning view, `isIdleTimerDisabled` was incorrectly left as `true` when leaving the view, preventing the screen from ever auto-dimming or locking until the app was restarted.
 
 ## How to Use the App
 
@@ -36,7 +37,7 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 
 ### Taking a Scan
 
-1. Open **Overlay Reconstruction** on your iPhone.
+1. Open **OVision Reconstruction** on your iPhone.
 2. Point the front camera at the subject's face and hold it roughly 30–50 cm away.
 3. Tap the record button to begin scanning. The camera will lock its exposure at the start of the scan to prevent color drift.
 4. Slowly rotate your viewpoint around the face to capture coverage from multiple angles. The reconstruction updates in real time.
