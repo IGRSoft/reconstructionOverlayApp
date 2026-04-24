@@ -60,35 +60,6 @@ Tap the gear icon (top right of the Scans screen) to open Jetson settings. Enter
 
 ---
 
-## Development History
-
-The following modifications were made on top of the Standard Cyborg SDK to improve reconstruction quality and add Overlay-specific workflows:
-
-### Scan Guidance UI
-- **Face oval guide** — A dashed oval overlay on the scanning screen shows where to position the subject's face before recording begins. The oval fades to 30% opacity while scanning to remain visible without being distracting.
-- **Center guide label** — "Center your face / in the oval" is displayed in the middle of the oval before scanning. It fades out with a 0.4s animation when the scan starts and reappears when it stops.
-- **Distance indicator** — Before scanning begins, the center depth pixel cluster is sampled each frame from the raw TrueDepth depth map. If the subject is outside the optimal 25–60 cm range, a label reads "Move closer" or "Move back" just below the center guide. The label hides automatically when the distance is correct and disappears entirely once scanning starts.
-
-### Scan Quality Improvements
-- **Exposure lock during scanning** — Auto-exposure is locked at the start of each scan. Previously, fluctuating exposure mid-scan caused color inconsistencies and surface speckling in the PLY output.
-- **Bilinear interpolation for depth-to-color mapping** — When projecting depth pixels onto the color image, the original code used nearest-neighbor (integer truncation). We replaced this with bilinear interpolation across the four neighboring color pixels, which reduces aliasing and produces smoother per-point colors.
-
-### Export Workflow
-- **Custom filename prompt before export** — Before exporting or sending a PLY file, the app prompts for a name. The name is sanitized (spaces → underscores, non-alphanumeric characters stripped) and prepended to the filename (e.g. `josh-Scan-2026-04-22--14-30-00.ply`). Leaving the field blank uses the default timestamp filename.
-- **Timestamp-based default filenames** — Exported files are named with the date and time of export (e.g. `Scan-2026-04-22--14-30-00.ply`, `Mesh-2026-04-22--14-30-00.ply`) so files don't overwrite each other.
-- **Jetson Nano HTTP export** — A "Send to Jetson" action uploads the PLY file directly to a configured Jetson Nano over HTTP (local network), enabling a wireless scan-to-robot pipeline without needing a Mac in the loop. The Jetson IP and port are configurable from a settings panel in the app.
-- **Removed QuickLook / AR preview on export** — Sharing a scan previously opened a QuickLook AR viewer instead of the standard iOS share sheet. Export now goes directly to `UIActivityViewController` (AirDrop, Files, etc.), and the USDZ/AR code path has been removed entirely.
-
-### Reliability Fixes
-- **Crash on launch fix** — The original code used a force-try (`try!`) when reading the scans directory on launch. A corrupted or inaccessible Documents directory would crash the app immediately. This is now a graceful `do-catch` that logs the error and starts with an empty scan list.
-- **Surfel data race condition fix** — During live scanning, `buildPointCloud` was handing the UI thread a raw pointer into the surfel buffer without synchronization. If the reconstruction engine reallocated the buffer mid-read, the app could crash or render corrupted geometry. The read is now serialized on the model queue with a proper copy, eliminating the race.
-- **Poor tracking warning** — When the reconstruction engine loses tracking (e.g. the phone moves too fast), the app now shows a "Move slower — tracking lost" message on screen after 5 consecutive poor-tracking frames. Previously, tracking loss was silent and the scan would silently degrade in quality.
-- **Idle timer fix** — After visiting the scanning view, `isIdleTimerDisabled` was incorrectly left as `true` when leaving the view, preventing the screen from ever auto-dimming or locking until the app was restarted.
-- **Metal shader error handling** — Metal GPU pipeline creation previously used force-try (`try!`), which would crash with a generic error if a shader failed to compile. Now uses `do-catch` with descriptive error messages for easier debugging.
-- **Delegate race condition fix** — The reconstruction engine called its delegate on the main thread without first retaining it, creating a brief window where a deallocated delegate could be messaged between stopping a scan and the view dismissing. The delegate is now captured as a local strong reference before the call.
-
----
-
 ## App Overview
 
 The reconstruction pipeline runs entirely on-device in real time.
@@ -154,6 +125,35 @@ The reconstruction pipeline runs entirely on-device in real time.
          │   PLY Triangle Mesh  │  ← exported to Jetson / Files
          └──────────────────────┘
 ```
+
+---
+
+## Development History
+
+The following modifications were made on top of the Standard Cyborg SDK to improve reconstruction quality and add Overlay-specific workflows:
+
+### Scan Guidance UI
+- **Face oval guide** — A dashed oval overlay on the scanning screen shows where to position the subject's face before recording begins. The oval fades to 30% opacity while scanning to remain visible without being distracting.
+- **Center guide label** — "Center your face / in the oval" is displayed in the middle of the oval before scanning. It fades out with a 0.4s animation when the scan starts and reappears when it stops.
+- **Distance indicator** — Before scanning begins, the center depth pixel cluster is sampled each frame from the raw TrueDepth depth map. If the subject is outside the optimal 25–60 cm range, a label reads "Move closer" or "Move back" just below the center guide. The label hides automatically when the distance is correct and disappears entirely once scanning starts.
+
+### Scan Quality Improvements
+- **Exposure lock during scanning** — Auto-exposure is locked at the start of each scan. Previously, fluctuating exposure mid-scan caused color inconsistencies and surface speckling in the PLY output.
+- **Bilinear interpolation for depth-to-color mapping** — When projecting depth pixels onto the color image, the original code used nearest-neighbor (integer truncation). We replaced this with bilinear interpolation across the four neighboring color pixels, which reduces aliasing and produces smoother per-point colors.
+
+### Export Workflow
+- **Custom filename prompt before export** — Before exporting or sending a PLY file, the app prompts for a name. The name is sanitized (spaces → underscores, non-alphanumeric characters stripped) and prepended to the filename (e.g. `josh-Scan-2026-04-22--14-30-00.ply`). Leaving the field blank uses the default timestamp filename.
+- **Timestamp-based default filenames** — Exported files are named with the date and time of export (e.g. `Scan-2026-04-22--14-30-00.ply`, `Mesh-2026-04-22--14-30-00.ply`) so files don't overwrite each other.
+- **Jetson Nano HTTP export** — A "Send to Jetson" action uploads the PLY file directly to a configured Jetson Nano over HTTP (local network), enabling a wireless scan-to-robot pipeline without needing a Mac in the loop. The Jetson IP and port are configurable from a settings panel in the app.
+- **Removed QuickLook / AR preview on export** — Sharing a scan previously opened a QuickLook AR viewer instead of the standard iOS share sheet. Export now goes directly to `UIActivityViewController` (AirDrop, Files, etc.), and the USDZ/AR code path has been removed entirely.
+
+### Reliability Fixes
+- **Crash on launch fix** — The original code used a force-try (`try!`) when reading the scans directory on launch. A corrupted or inaccessible Documents directory would crash the app immediately. This is now a graceful `do-catch` that logs the error and starts with an empty scan list.
+- **Surfel data race condition fix** — During live scanning, `buildPointCloud` was handing the UI thread a raw pointer into the surfel buffer without synchronization. If the reconstruction engine reallocated the buffer mid-read, the app could crash or render corrupted geometry. The read is now serialized on the model queue with a proper copy, eliminating the race.
+- **Poor tracking warning** — When the reconstruction engine loses tracking (e.g. the phone moves too fast), the app now shows a "Move slower — tracking lost" message on screen after 5 consecutive poor-tracking frames. Previously, tracking loss was silent and the scan would silently degrade in quality.
+- **Idle timer fix** — After visiting the scanning view, `isIdleTimerDisabled` was incorrectly left as `true` when leaving the view, preventing the screen from ever auto-dimming or locking until the app was restarted.
+- **Metal shader error handling** — Metal GPU pipeline creation previously used force-try (`try!`), which would crash with a generic error if a shader failed to compile. Now uses `do-catch` with descriptive error messages for easier debugging.
+- **Delegate race condition fix** — The reconstruction engine called its delegate on the main thread without first retaining it, creating a brief window where a deallocated delegate could be messaged between stopping a scan and the view dismissing. The delegate is now captured as a local strong reference before the call.
 
 ---
 
