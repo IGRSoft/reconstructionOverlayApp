@@ -229,27 +229,25 @@ class DepthColoringFilter {
     }
     
     private class func _buildColorPipelineState(withDevice device: MTLDevice, library: MTLLibrary) -> MTLComputePipelineState {
-        let function = library.makeFunction(name: "DrawColorTexture")!
-        
-        let pipelineDescriptor = MTLComputePipelineDescriptor()
-        pipelineDescriptor.computeFunction = function
-        pipelineDescriptor.label = "DepthColoringFilter._depthColorPipelineState"
-        
-        let pipelineState = try! device.makeComputePipelineState(function: function)
-        
-        return pipelineState
+        guard let function = library.makeFunction(name: "DrawColorTexture") else {
+            fatalError("Metal shader function 'DrawColorTexture' not found in library")
+        }
+        do {
+            return try device.makeComputePipelineState(function: function)
+        } catch {
+            fatalError("Failed to create color pipeline state: \(error)")
+        }
     }
-    
+
     private class func _buildDepthColorPipelineState(withDevice device: MTLDevice, library: MTLLibrary) -> MTLComputePipelineState {
-        let function = library.makeFunction(name: "DepthColoringFilter")!
-        
-        let pipelineDescriptor = MTLComputePipelineDescriptor()
-        pipelineDescriptor.computeFunction = function
-        pipelineDescriptor.label = "DepthColoringFilter._depthColorPipelineState"
-        
-        let pipelineState = try! device.makeComputePipelineState(function: function)
-        
-        return pipelineState
+        guard let function = library.makeFunction(name: "DepthColoringFilter") else {
+            fatalError("Metal shader function 'DepthColoringFilter' not found in library")
+        }
+        do {
+            return try device.makeComputePipelineState(function: function)
+        } catch {
+            fatalError("Failed to create depth color pipeline state: \(error)")
+        }
     }
     
     private let _blurShaderCopyAllocator: MPSCopyAllocator = { (kernel: MPSKernel, buffer: MTLCommandBuffer, texture: MTLTexture) -> MTLTexture in

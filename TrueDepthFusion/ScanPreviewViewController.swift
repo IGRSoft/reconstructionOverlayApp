@@ -6,20 +6,18 @@
 
 import Foundation
 import ModelIO
-import QuickLook
 import StandardCyborgFusion
 import SceneKit
 import UIKit
 
-class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource {
-    
+class ScanPreviewViewController: UIViewController {
+
     // MARK: - IB Outlets and Actions
-    
+
     @IBOutlet private weak var sceneView: SCNView!
     @IBOutlet private weak var meshButton: UIButton!
     @IBOutlet private weak var meshingProgressContainer: UIView!
     @IBOutlet private weak var meshingProgressView: UIProgressView!
-    private var _quickLookUSDZURL: URL?
     
     @IBAction private func _export(_ sender: AnyObject) {
         guard scan != nil else { return }
@@ -51,28 +49,22 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
         guard let scan = scan else { return }
         let shareURL: URL?
 
-        if _shouldExportToUSDZ {
-            if let mesh = _mesh {
-                let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
-                let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
-                try? FileManager.default.removeItem(atPath: tempPLYPath)
-                mesh.writeToPLY(atPath: tempPLYPath)
-                shareURL = URL(fileURLWithPath: tempPLYPath)
-            } else {
-                shareURL = scan.writeUSDZ()
-            }
-        } else if let meshURL = _meshURL {
-            shareURL = meshURL
+        if let mesh = _mesh {
+            let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
+            let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
+            try? FileManager.default.removeItem(atPath: tempPLYPath)
+            mesh.writeToPLY(atPath: tempPLYPath)
+            shareURL = URL(fileURLWithPath: tempPLYPath)
         } else {
             shareURL = ScanPreviewViewController._compressedPLY(for: scan, namePrefix: namePrefix)
         }
 
         if let shareURL = shareURL {
-            _quickLookUSDZURL = shareURL
-            let controller = QLPreviewController()
-            controller.dataSource = self
-            controller.modalPresentationStyle = .overFullScreen
-            self.present(controller, animated: true, completion: nil)
+            let controller = UIActivityViewController(activityItems: [shareURL], applicationActivities: nil)
+            if let popover = controller.popoverPresentationController {
+                popover.sourceView = sender as? UIView ?? self.view
+            }
+            self.present(controller, animated: true)
         }
     }
 
@@ -154,16 +146,6 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
         try? FileManager.default.removeItem(at: renamedURL)
         try? FileManager.default.copyItem(at: url, to: renamedURL)
         return renamedURL
-    }
-    
-    // MARK: - QLPreviewControllerDataSource
-    
-    func numberOfPreviewItems(in controller: QLPreviewController) -> Int {
-        return 1
-    }
-    
-    func previewController(_ controller: QLPreviewController, previewItemAt index: Int) -> QLPreviewItem {
-        return _quickLookUSDZURL! as QLPreviewItem
     }
     
     @IBAction private func _delete(_ sender: Any) {
@@ -260,9 +242,7 @@ class ScanPreviewViewController: UIViewController, QLPreviewControllerDataSource
     // MARK: - Private
     
     private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
-    private let _shouldExportToUSDZ = true
     private var _shouldCancelMeshing = false
-    private var _meshURL: URL?
     private var _mesh: SCMesh?
     private var _initialPointOfView = SCNMatrix4Identity
     private var _pointCloudNode: SCNNode? {

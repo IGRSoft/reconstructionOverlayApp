@@ -27,6 +27,8 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 - **Surfel data race condition fix** — During live scanning, `buildPointCloud` was handing the UI thread a raw pointer into the surfel buffer without synchronization. If the reconstruction engine reallocated the buffer mid-read, the app could crash or render corrupted geometry. The read is now serialized on the model queue with a proper copy, eliminating the race.
 - **Poor tracking warning** — When the reconstruction engine loses tracking (e.g. the phone moves too fast), the app now shows a "Move slower — tracking lost" message on screen after 5 consecutive poor-tracking frames. Previously, tracking loss was silent and the scan would silently degrade in quality.
 - **Idle timer fix** — After visiting the scanning view, `isIdleTimerDisabled` was incorrectly left as `true` when leaving the view, preventing the screen from ever auto-dimming or locking until the app was restarted.
+- **Metal shader error handling** — Metal GPU pipeline creation previously used force-try (`try!`), which would crash with a generic error if a shader failed to compile. Now uses `do-catch` with descriptive error messages for easier debugging.
+- **Removed QuickLook / AR preview on export** — Sharing a scan previously opened a QuickLook AR viewer instead of the standard iOS share sheet. Export now goes directly to `UIActivityViewController` (AirDrop, Files, etc.), and the USDZ/AR code path has been removed entirely.
 
 ## How to Use the App
 
