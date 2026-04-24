@@ -15,7 +15,7 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 
 - iPhone X or later (any iPhone with a front-facing TrueDepth camera)
 - iOS 15+
-- For Jetson export: Jetson Nano running the receiver service, connected to the same Wi-Fi network as the iPhone
+- For Jetson export: Jetson Nano running the [jetson_receiver](https://github.com/josh-overlay/jetson_receiver) service, connected to the same Wi-Fi network as the iPhone
 
 ---
 
@@ -57,6 +57,8 @@ Once the face is centered in the oval and no distance warning is shown, tap the 
 ### Configuring the Jetson Connection
 
 Tap the gear icon (top right of the Scans screen) to open Jetson settings. Enter the IP address and port of your Jetson Nano receiver.
+
+The Jetson must be running the [jetson_receiver](https://github.com/josh-overlay/jetson_receiver) service before sending a file. See that repo for setup instructions.
 
 ---
 
