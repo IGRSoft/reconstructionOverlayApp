@@ -38,7 +38,7 @@ Before tapping record, a **dashed oval guide** is shown on screen indicating whe
 - **"Move back"** — subject is less than ~25 cm from the camera
 - No label — distance is good, ready to scan
 
-![Face reconstruction of model](images/IMG_0186.PNG.png)
+![Face reconstruction of model](images/IMG_0186.PNG)
 
 <!-- Image: distance label examples (Move closer / Move back) -->
 
