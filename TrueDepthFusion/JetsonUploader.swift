@@ -89,7 +89,7 @@ class JetsonUploader {
 
         alert.addAction(UIAlertAction(title: "Save", style: .default) { _ in
             JetsonUploader.jetsonIP = alert.textFields?[0].text ?? ""
-            JetsonUploader.jetsonPort = alert.textFields?[1].text?.isEmpty == false ? alert.textFields![1].text! : "8080"
+            JetsonUploader.jetsonPort = alert.textFields?[1].text?.isEmpty == false ? alert.textFields?[1].text ?? "8080" : "8080"
         })
 
         alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))

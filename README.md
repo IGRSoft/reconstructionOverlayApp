@@ -157,6 +157,10 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 - **Metal shader error handling** — Metal GPU pipeline creation previously used force-try (`try!`), which would crash with a generic error if a shader failed to compile. Now uses `do-catch` with descriptive error messages for easier debugging.
 - **Delegate race condition fix** — The reconstruction engine called its delegate on the main thread without first retaining it, creating a brief window where a deallocated delegate could be messaged between stopping a scan and the view dismissing. The delegate is now captured as a local strong reference before the call.
 - **Division by zero in depth sampling** — `AverageDepthFromValues` divided by the valid pixel count without checking if it was zero. If the center region contained no valid depth pixels (all NaN or negative), this produced a NaN result that could propagate into the distance guidance UI. Now returns `-1` when no valid pixels are found.
+- **JetsonUploader settings crash fix** — The port field in the Jetson settings alert used a force-unwrap on `textFields![1]`, which would crash if the array was unexpectedly short. Replaced with safe optional chaining.
+- **Jetson settings accessible from scan preview** — The gear icon for Jetson settings was only reachable from the Scans list. It now also appears in the scan preview screen, inline with the share button, so settings can be adjusted without leaving the preview.
+- **Mesh button available immediately after scanning** — The Mesh button was hidden on the scan preview screen until the scan had been saved to disk (i.e. after tapping Done). Since meshing only requires the in-memory point cloud, the button now appears as soon as a scan is completed.
+- **Mesh button styling** — The Mesh button in the scan preview was plain floating text with no visual affordance. It now has a system blue border and rounded corners to read clearly as a tappable control.
 
 ---
 

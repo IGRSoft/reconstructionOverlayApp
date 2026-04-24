@@ -194,13 +194,15 @@ class ScanPreviewViewController: UIViewController {
                 DispatchQueue.main.async {
                     self.meshingProgressContainer.isHidden = true
                     self._shouldCancelMeshing = false
-                    
+
                     if let mesh = scMesh {
                         let node = mesh.buildMeshNode()
                         node.transform = self._pointCloudNode?.transform ?? SCNMatrix4Identity
                         self._pointCloudNode = node
                         self._mesh = mesh
                     }
+
+                    self.view.bringSubviewToFront(self._gearButton)
                 }
             }
         )
@@ -214,11 +216,36 @@ class ScanPreviewViewController: UIViewController {
     
     override func viewDidLoad() {
         _initialPointOfView = sceneView.pointOfView!.transform
+
+        _gearButton.setImage(UIImage(systemName: "gear"), for: .normal)
+        _gearButton.translatesAutoresizingMaskIntoConstraints = false
+        _gearButton.addTarget(self, action: #selector(_showJetsonSettings), for: .touchUpInside)
+        view.addSubview(_gearButton)
+
+        // Share button is pinned to safeArea.top and safeArea.trailing-20 with height 27.
+        // Gear sits just to the left of share, center-aligned with it.
+        let safeArea = view.safeAreaLayoutGuide
+        NSLayoutConstraint.activate([
+            _gearButton.centerYAnchor.constraint(equalTo: safeArea.topAnchor, constant: 13.5),
+            _gearButton.trailingAnchor.constraint(equalTo: safeArea.trailingAnchor, constant: -49),
+            _gearButton.widthAnchor.constraint(equalToConstant: 27),
+            _gearButton.heightAnchor.constraint(equalToConstant: 27),
+        ])
+
+        // Style mesh button to look like a tappable button (matches system blue of share icon)
+        meshButton.layer.borderColor = UIColor.systemBlue.cgColor
+        meshButton.layer.borderWidth = 1
+        meshButton.layer.cornerRadius = 8
+        meshButton.contentEdgeInsets = UIEdgeInsets(top: 4, left: 8, bottom: 4, right: 8)
+    }
+
+    @objc private func _showJetsonSettings() {
+        JetsonUploader.showSettings(from: self)
     }
     
     override func viewWillAppear(_ animated: Bool) {
         sceneView.pointOfView!.transform = _initialPointOfView
-        meshButton.isHidden = scan?.plyPath == nil
+        meshButton.isHidden = scan == nil
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -242,6 +269,7 @@ class ScanPreviewViewController: UIViewController {
     // MARK: - Private
     
     private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
+    private let _gearButton = UIButton(type: .system)
     private var _shouldCancelMeshing = false
     private var _mesh: SCMesh?
     private var _initialPointOfView = SCNMatrix4Identity
