@@ -103,7 +103,7 @@ class JetsonUploader {
         let alert: UIAlertController
         switch result {
         case .success:
-            alert = UIAlertController(title: "Sent", message: "PLY file uploaded to Jetson successfully.", preferredStyle: .alert)
+            alert = UIAlertController(title: "Sent", message: "Reconstruction PLY file uploaded to Overlay robot successfully.", preferredStyle: .alert)
         case .failure(let error):
             alert = UIAlertController(title: "Upload Failed", message: error.localizedDescription, preferredStyle: .alert)
         }

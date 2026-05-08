@@ -27,7 +27,7 @@ class ScanPreviewViewController: UIViewController {
 
             let sheet = UIAlertController(title: nil, message: nil, preferredStyle: .actionSheet)
 
-            sheet.addAction(UIAlertAction(title: "Send to Jetson", style: .default) { [weak self] _ in
+            sheet.addAction(UIAlertAction(title: "Send to Overlay Robot", style: .default) { [weak self] _ in
                 self?._sendToJetson(namePrefix: namePrefix)
             })
 

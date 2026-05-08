@@ -90,7 +90,7 @@ class ScansViewController: UITableViewController {
             completion(true)
         }
 
-        let jetson = UIContextualAction(style: .normal, title: "Jetson") { action, view, completion in
+        let jetson = UIContextualAction(style: .normal, title: "Send to Robot") { action, view, completion in
             let scan = self._scans[indexPath.row]
             self._sendToJetson(scan)
             completion(true)
@@ -138,8 +138,10 @@ class ScansViewController: UITableViewController {
         _promptForName { [weak self] namePrefix in
             guard let self = self else { return }
             let baseURL = scan.writeCompressedPLY()
-            let exportURL = ScansViewController._prefixedURL(baseURL, prefix: namePrefix)
-            let controller = UIActivityViewController(activityItems: [exportURL], applicationActivities: nil)
+            let renamedURL = baseURL.deletingLastPathComponent().appendingPathComponent(ScansViewController._outputFilename(name: namePrefix))
+            try? FileManager.default.removeItem(at: renamedURL)
+            try? FileManager.default.copyItem(at: baseURL, to: renamedURL)
+            let controller = UIActivityViewController(activityItems: [renamedURL], applicationActivities: nil)
             if let popoverController = controller.popoverPresentationController,
                let scanIndex = self._scans.firstIndex(of: scan)
             {
@@ -157,18 +159,10 @@ class ScansViewController: UITableViewController {
         guard let plyPath = scan.plyPath else { return }
         _promptForName { [weak self] namePrefix in
             guard let self = self else { return }
-            let plyURL: URL
-            if namePrefix.isEmpty {
-                plyURL = URL(fileURLWithPath: plyPath)
-            } else {
-                let originalName = URL(fileURLWithPath: plyPath).lastPathComponent
-                let prefixedName = ScansViewController._prefixedFilename(originalName, prefix: namePrefix)
-                let renamedPath = NSTemporaryDirectory().appending("/\(prefixedName)")
-                try? FileManager.default.removeItem(atPath: renamedPath)
-                try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
-                plyURL = URL(fileURLWithPath: renamedPath)
-            }
-            JetsonUploader.upload(plyFileURL: plyURL) { [weak self] result in
+            let renamedPath = NSTemporaryDirectory().appending("/\(ScansViewController._outputFilename(name: namePrefix))")
+            try? FileManager.default.removeItem(atPath: renamedPath)
+            try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
+            JetsonUploader.upload(plyFileURL: URL(fileURLWithPath: renamedPath)) { [weak self] result in
                 guard let self = self else { return }
                 JetsonUploader.showResult(result, from: self)
             }
@@ -198,17 +192,13 @@ class ScansViewController: UITableViewController {
         return String(withUnderscores.unicodeScalars.filter { allowed.contains($0) })
     }
 
-    private static func _prefixedFilename(_ filename: String, prefix: String) -> String {
-        return prefix.isEmpty ? filename : "\(prefix)-\(filename)"
-    }
-
-    private static func _prefixedURL(_ url: URL, prefix: String) -> URL {
-        guard !prefix.isEmpty else { return url }
-        let prefixedName = _prefixedFilename(url.lastPathComponent, prefix: prefix)
-        let renamedURL = url.deletingLastPathComponent().appendingPathComponent(prefixedName)
-        try? FileManager.default.removeItem(at: renamedURL)
-        try? FileManager.default.copyItem(at: url, to: renamedURL)
-        return renamedURL
+    private static func _outputFilename(name: String) -> String {
+        if name.isEmpty {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd--HH-mm-ss"
+            return "model_\(formatter.string(from: Date())).ply"
+        }
+        return "model_\(name).ply"
     }
 
     private func _deleteScan(at indexPath: IndexPath) {
