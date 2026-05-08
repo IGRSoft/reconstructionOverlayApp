@@ -50,7 +50,7 @@ class ScanPreviewViewController: UIViewController {
         let shareURL: URL?
 
         if let mesh = _mesh {
-            let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
+            let filename = ScanPreviewViewController._outputFilename(name: namePrefix)
             let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
             try? FileManager.default.removeItem(atPath: tempPLYPath)
             mesh.writeToPLY(atPath: tempPLYPath)
@@ -74,22 +74,16 @@ class ScanPreviewViewController: UIViewController {
         let plyURL: URL
 
         if let mesh = _mesh {
-            let filename = ScanPreviewViewController._prefixedFilename(ScanPreviewViewController._defaultMeshFilename(), prefix: namePrefix)
+            let filename = ScanPreviewViewController._outputFilename(name: namePrefix)
             let tempPLYPath = NSTemporaryDirectory().appending("/\(filename)")
             try? FileManager.default.removeItem(atPath: tempPLYPath)
             mesh.writeToPLY(atPath: tempPLYPath)
             plyURL = URL(fileURLWithPath: tempPLYPath)
         } else if let plyPath = scan.plyPath {
-            if namePrefix.isEmpty {
-                plyURL = URL(fileURLWithPath: plyPath)
-            } else {
-                let originalName = URL(fileURLWithPath: plyPath).lastPathComponent
-                let prefixedName = ScanPreviewViewController._prefixedFilename(originalName, prefix: namePrefix)
-                let renamedPath = NSTemporaryDirectory().appending("/\(prefixedName)")
-                try? FileManager.default.removeItem(atPath: renamedPath)
-                try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
-                plyURL = URL(fileURLWithPath: renamedPath)
-            }
+            let renamedPath = NSTemporaryDirectory().appending("/\(ScanPreviewViewController._outputFilename(name: namePrefix))")
+            try? FileManager.default.removeItem(atPath: renamedPath)
+            try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
+            plyURL = URL(fileURLWithPath: renamedPath)
         } else {
             JetsonUploader.showResult(.failure(NSError(domain: "JetsonUploader", code: 0,
                 userInfo: [NSLocalizedDescriptionKey: "No PLY data available to send."])), from: self)
@@ -127,22 +121,19 @@ class ScanPreviewViewController: UIViewController {
         return String(withUnderscores.unicodeScalars.filter { allowed.contains($0) })
     }
 
-    private static func _prefixedFilename(_ filename: String, prefix: String) -> String {
-        return prefix.isEmpty ? filename : "\(prefix)-\(filename)"
+    private static func _outputFilename(name: String) -> String {
+        if name.isEmpty {
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd--HH-mm-ss"
+            return "model_\(formatter.string(from: Date())).ply"
+        }
+        return "model_\(name).ply"
     }
 
-    private static func _defaultMeshFilename() -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd--HH-mm-ss"
-        return "Mesh-\(formatter.string(from: Date())).ply"
-    }
-
-    /// Writes the scan's compressed PLY to a temp path, renaming it with the given prefix.
+    /// Writes the scan's compressed PLY to a temp path, renaming it.
     private static func _compressedPLY(for scan: Scan, namePrefix: String) -> URL? {
         let url = scan.writeCompressedPLY()
-        guard !namePrefix.isEmpty else { return url }
-        let prefixedName = _prefixedFilename(url.lastPathComponent, prefix: namePrefix)
-        let renamedURL = url.deletingLastPathComponent().appendingPathComponent(prefixedName)
+        let renamedURL = url.deletingLastPathComponent().appendingPathComponent(_outputFilename(name: namePrefix))
         try? FileManager.default.removeItem(at: renamedURL)
         try? FileManager.default.copyItem(at: url, to: renamedURL)
         return renamedURL
