@@ -11,6 +11,41 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 
 ---
 
+## Repository Layout
+
+```
+lisbon-v3/                          ← root is the StandardCyborgSDK Swift Package
+├── Package.swift                   ← package definition (name: "StandardCyborgSDK")
+├── Sources/                        ← SDK source (target: StandardCyborgFusion)
+├── Tests/                          ← SDK tests
+├── libigl/                         ← vendored libigl headers
+├── scsdk/                          ← nested pure-C++ core package
+├── CppDependencies/                ← 8 nested C++ dependency packages
+├── images/
+├── README_SC_PLY_FORMAT.md
+└── Examples/
+    └── TrueDepthFusion/
+        ├── TrueDepthFusion.xcodeproj   ← example app project
+        └── TrueDepthFusion/            ← example app sources
+```
+
+## Consuming `StandardCyborgSDK`
+
+Add this repo as a Swift Package dependency in your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/<owner>/<repo>", from: "1.0.0")
+],
+targets: [
+    .target(name: "MyApp", dependencies: [
+        .product(name: "StandardCyborgSDK", package: "<repo>")
+    ])
+]
+```
+
+---
+
 ## Requirements
 
 - iPhone X or later (any iPhone with a front-facing TrueDepth camera)
@@ -48,7 +83,7 @@ Once the face is centered in the oval and no distance warning is shown, tap the 
 
 7. The completed scan appears in the **Scans** list. Tap it to preview the point cloud.
 8. Optionally tap **Mesh** to run Poisson surface reconstruction and generate a triangle mesh from the point cloud.
-9. Tap the **Export** button (share icon). You will be prompted: **"What is your name?"** — enter your name or leave blank for the default timestamp filename.
+9. Tap the **Export** button (share icon). You will be prompted: **"What is your name?"** — enter a name to export as `model_<name>.ply`, or leave blank to use a timestamp default (e.g. `model_2026-05-08--14-30-00.ply`).
 10. Choose an export action:
     - **Send to Jetson** — uploads the PLY directly to the Jetson Nano over HTTP.
     - **Share / Export** — opens the iOS share sheet (AirDrop, Files, etc.).
@@ -144,8 +179,7 @@ The following modifications were made on top of the Standard Cyborg SDK to impro
 - **Bilinear interpolation for depth-to-color mapping** — When projecting depth pixels onto the color image, the original code used nearest-neighbor (integer truncation). We replaced this with bilinear interpolation across the four neighboring color pixels, which reduces aliasing and produces smoother per-point colors.
 
 ### Export Workflow
-- **Custom filename prompt before export** — Before exporting or sending a PLY file, the app prompts for a name. The name is sanitized (spaces → underscores, non-alphanumeric characters stripped) and prepended to the filename (e.g. `josh-Scan-2026-04-22--14-30-00.ply`). Leaving the field blank uses the default timestamp filename.
-- **Timestamp-based default filenames** — Exported files are named with the date and time of export (e.g. `Scan-2026-04-22--14-30-00.ply`, `Mesh-2026-04-22--14-30-00.ply`) so files don't overwrite each other.
+- **Custom filename prompt before export** — Before exporting or sending a PLY file, the app prompts for a model name. The name is sanitized (spaces → underscores, non-alphanumeric characters stripped) and the file is exported as `model_<name>.ply` (e.g. `model_josh.ply`). Leaving the field blank falls back to a timestamp default (e.g. `model_2026-04-22--14-30-00.ply`) so files don't overwrite each other.
 - **Jetson Nano HTTP export** — A "Send to Jetson" action uploads the PLY file directly to a configured Jetson Nano over HTTP (local network), enabling a wireless scan-to-robot pipeline without needing a Mac in the loop. The Jetson IP and port are configurable from a settings panel in the app.
 - **Removed QuickLook / AR preview on export** — Sharing a scan previously opened a QuickLook AR viewer instead of the standard iOS share sheet. Export now goes directly to `UIActivityViewController` (AirDrop, Files, etc.), and the USDZ/AR code path has been removed entirely.
 
@@ -181,9 +215,12 @@ This SDK enables real-time 3D scanning on iOS using the TrueDepth camera, plus a
 
 ## Installing
 
-Use Swift Package Manager to add these dependencies
-![StandardCyborgFusion](git@github.com:StandardCyborg/StandardCyborgCocoa.git)
-![StandardCyborgUI](git@github.com:StandardCyborg/StandardCyborgCocoa.git) (optional)
+To run the example app, open `Examples/TrueDepthFusion/TrueDepthFusion.xcodeproj` in Xcode. The project consumes the SDK as a local Swift Package at the repo root (`../..` relative to the xcodeproj).
+
+The SDK is consumed as a **local Swift Package** at the repo root. If you need to reference the upstream Standard Cyborg packages separately (e.g. in your own project), see `Package.swift` for the local-path declaration and the upstream sources below:
+
+- `StandardCyborgFusion`: https://github.com/StandardCyborg/StandardCyborgCocoa
+- `StandardCyborgUI` (optional): https://github.com/StandardCyborg/StandardCyborgCocoa
 
 The version of StandardCyborgFusion hosted via Cocoapods is now deprecated and unmaintained.
 
