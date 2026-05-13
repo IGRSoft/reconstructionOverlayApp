@@ -1,31 +1,44 @@
-# scsdk - A Highly Portable C++ Library for 3D Perception and More
+# scsdk — Portable C++ Core for 3D Perception
 
-In the directory `scsdk/`, are the components of the library:
+`scsdk` is a nested Swift Package that contains the pure-C++ core of the StandardCyborg SDK. It has no Apple-platform dependencies (no Metal, no UIKit) and is consumed by the parent `StandardCyborgFusion` target as an SPM dependency.
 
- * `math` - Integral containers and linear algebra for 3D Perception.
- * `sc3d` - Core classes for 3D geometry, imaging, selection, and annotation.
- * `scene_graph` - A portable representation for a complete 3D scene.
- * `algorithms` - A small suite of 3D Perception algorithms that operate
-      on scsdk data structures.
- * `io` - SERDES for the above data structures supporting a mix of
-      JSON, PLY, GLTF, and other file formats.
- * `util` - Various supporting utilities.
+For the overall package layout, see [../ARCHITECTURE.md](../ARCHITECTURE.md).
 
-`scsdk_test/` contains GTest-based tests for all of the above components. `test_fixture_data/` contains data used in the tests.
+## Components
 
-## Development
+Sources live under `Sources/standard_cyborg/`:
 
-### Building scsdk
+- `math` — integer containers and linear algebra primitives.
+- `sc3d` — core 3D geometry, imaging, selection, annotation.
+- `scene_graph` — portable representation of a complete 3D scene.
+- `algorithms` — 3D-perception algorithms operating on scsdk data structures.
+- `io` — SERDES across JSON, PLY, GLTF, and other formats.
+- `util` — supporting utilities.
 
-#### CMake
+## Consuming via SPM
 
-To do an out-of-source build, use the following on Mac or Linux:
-```
-mkdir build
-cd build
-cmake -DCMAKE_BUILD_TYPE=Debug ..
-make -j `nproc`
-./scsdk_test
+`scsdk` is already wired into the root [`Package.swift`](../Package.swift) as a path dependency:
+
+```swift
+.package(path: "./scsdk"),
 ```
 
-(On a Mac, you might need to `alias nproc='sysctl -n hw.logicalcpu'`).
+Building the parent SDK with `swift build` at the repo root automatically resolves and compiles `scsdk` along with its eight `CppDependencies/*` libraries. There is nothing to install or initialize.
+
+To consume `scsdk` from another package, depend on it via the same path or via the parent SDK rather than reaching into this directory directly — its dependency graph (`Eigen`, `happly`, `json`, `nanoflann`, `SparseICP`, `PoissonRecon`, `stb`, `tinygltf`) is non-trivial.
+
+## Tests
+
+The legacy GTest suite under `Tests/scsdk_test/` (with fixture data in `Tests/test_fixture_data/`) is preserved in source for reference but is **not** an active SPM test target — the `.testTarget` in [`Package.swift`](Package.swift) is currently commented out. Runtime coverage of `scsdk` happens via the parent target's tests at the repo root:
+
+```sh
+swift test
+```
+
+See [../CONTRIBUTING.md](../CONTRIBUTING.md#running-tests) for details.
+
+## See also
+
+- [../README.md](../README.md) — top-level project overview
+- [../ARCHITECTURE.md](../ARCHITECTURE.md) — package boundaries
+- [../CppDependencies/README.md](../CppDependencies/README.md) — vendored dependencies

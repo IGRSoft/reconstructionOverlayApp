@@ -11,6 +11,41 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 
 ---
 
+## Repository Layout
+
+```
+lisbon-v3/                          ← root is the StandardCyborgSDK Swift Package
+├── Package.swift                   ← package definition (name: "StandardCyborgSDK")
+├── Sources/                        ← SDK source (target: StandardCyborgFusion)
+├── Tests/                          ← SDK tests
+├── libigl/                         ← vendored libigl headers
+├── scsdk/                          ← nested pure-C++ core package
+├── CppDependencies/                ← 8 nested C++ dependency packages
+├── images/
+├── README_SC_PLY_FORMAT.md
+└── Examples/
+    └── TrueDepthFusion/
+        ├── TrueDepthFusion.xcodeproj   ← example app project
+        └── TrueDepthFusion/            ← example app sources
+```
+
+## Consuming `StandardCyborgSDK`
+
+Add this repo as a Swift Package dependency in your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/<owner>/<repo>", from: "1.0.0")
+],
+targets: [
+    .target(name: "MyApp", dependencies: [
+        .product(name: "StandardCyborgSDK", package: "<repo>")
+    ])
+]
+```
+
+---
+
 ## Requirements
 
 - iPhone X or later (any iPhone with a front-facing TrueDepth camera)
@@ -180,9 +215,12 @@ This SDK enables real-time 3D scanning on iOS using the TrueDepth camera, plus a
 
 ## Installing
 
-Use Swift Package Manager to add these dependencies
-![StandardCyborgFusion](git@github.com:StandardCyborg/StandardCyborgCocoa.git)
-![StandardCyborgUI](git@github.com:StandardCyborg/StandardCyborgCocoa.git) (optional)
+To run the example app, open `Examples/TrueDepthFusion/TrueDepthFusion.xcodeproj` in Xcode. The project consumes the SDK as a local Swift Package at the repo root (`../..` relative to the xcodeproj).
+
+The SDK is consumed as a **local Swift Package** at the repo root. If you need to reference the upstream Standard Cyborg packages separately (e.g. in your own project), see `Package.swift` for the local-path declaration and the upstream sources below:
+
+- `StandardCyborgFusion`: https://github.com/StandardCyborg/StandardCyborgCocoa
+- `StandardCyborgUI` (optional): https://github.com/StandardCyborg/StandardCyborgCocoa
 
 The version of StandardCyborgFusion hosted via Cocoapods is now deprecated and unmaintained.
 
