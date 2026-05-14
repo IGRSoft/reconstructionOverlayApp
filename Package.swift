@@ -16,25 +16,90 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.6.0"),
-        .package(path: "./scsdk"),
-        .package(path: "./CppDependencies/json"),
-        .package(path: "./CppDependencies/PoissonRecon"),
     ],
     targets: [
+        .target(
+            name: "Eigen",
+            path: "CppDependencies/Eigen",
+            exclude: ["Package.swift"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "happly",
+            path: "CppDependencies/happly",
+            exclude: ["Package.swift", "LICENSE", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "json",
+            path: "CppDependencies/json",
+            exclude: ["Package.swift", "LICENSE.MIT", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "nanoflann",
+            path: "CppDependencies/nanoflann",
+            exclude: ["Package.swift", "LICENSE", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "SparseICP",
+            path: "CppDependencies/SparseICP",
+            exclude: ["Package.swift", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "stb",
+            path: "CppDependencies/stb",
+            exclude: ["Package.swift", "LICENSE", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "tinygltf",
+            path: "CppDependencies/tinygltf",
+            exclude: ["Package.swift", "LICENSE", "README.md"],
+            publicHeadersPath: "include"
+        ),
+        .target(
+            name: "PoissonRecon",
+            path: "CppDependencies/PoissonRecon/Sources",
+            publicHeadersPath: "include",
+            cxxSettings: [
+                .define("STD_LIB_FLAG"),
+            ],
+            linkerSettings: [
+                .linkedFramework("Foundation"),
+            ]
+        ),
+        .target(
+            name: "standard_cyborg",
+            dependencies: [
+                "Eigen", "happly", "json", "nanoflann", "PoissonRecon", "SparseICP", "stb", "tinygltf"
+            ],
+            path: "scsdk/Sources/standard_cyborg",
+            publicHeadersPath: "include",
+            cxxSettings: [
+                .unsafeFlags(["-fobjc-arc", "-Os", "-fno-math-errno", "-ffast-math"]),
+                .define("FMT_HEADER_ONLY", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("HAVE_CONFIG_H", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("HAVE_PTHREAD", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("GUID_LIBUUID", .when(platforms: [.iOS, .macOS])),
+            ]
+        ),
         .target(
             name: "StandardCyborgFusion",
             dependencies: [
                 "json",
-                "scsdk",
+                "standard_cyborg",
                 "PoissonRecon",
                 "ZipArchive",
             ],
             path: "Sources",
-            // resources: [
-            //     .process("StandardCyborgFusion/Models/SCEarLandmarking.mlmodel"),
-            //     .process("StandardCyborgFusion/Models/SCEarTrackingModel.mlmodel"),
-            //     .process("StandardCyborgFusion/Models/SCFootTrackingModel.mlmodel"),
-            // ],
+            resources: [
+                .process("StandardCyborgFusion/Models/SCEarLandmarking.mlmodel"),
+                .process("StandardCyborgFusion/Models/SCEarTrackingModel.mlmodel"),
+                .process("StandardCyborgFusion/Models/SCFootTrackingModel.mlmodel"),
+            ],
             publicHeadersPath: "include",
             cxxSettings: [
                 // Always optimize, even for debug builds, in order to be usable while debugging the rest of an app
