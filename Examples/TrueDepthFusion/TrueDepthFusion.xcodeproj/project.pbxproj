@@ -52,6 +52,9 @@
 		76EE33DB212E131800D62C3D /* ScanningFinished.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D7212E131800D62C3D /* ScanningFinished.m4a */; };
 		76FFDF122150559300500A84 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 76FFDF112150559300500A84 /* Settings.bundle */; };
 		F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */; };
+		TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000001TTTT0001TT000000 /* SoundEffectTests.swift */; };
+		TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000002TTTT0002TT000000 /* ScanStoreTests.swift */; };
+		TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -132,6 +135,10 @@
 		A53A598921B0B2CE00CD4638 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		A53A598B21B0B2D600CD4638 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		A55BFF8A23062BCB0052DA08 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		TT000001TTTT0001TT000000 /* SoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectTests.swift; sourceTree = "<group>"; };
+		TT000002TTTT0002TT000000 /* ScanStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStoreTests.swift; sourceTree = "<group>"; };
+		TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRendererTests.swift; sourceTree = "<group>"; };
+		TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrueDepthFusionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -143,6 +150,13 @@
 				768967F42394306D007179B2 /* SceneKit.framework in Frameworks */,
 				76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */,
 				76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TT000010TTTT0010TT000010 /* Frameworks (Tests) */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -179,6 +193,7 @@
 			isa = PBXGroup;
 			children = (
 				768F64E92121570600C1B1DA /* TrueDepthFusion */,
+				TT000020TTTT0020TT000020 /* TrueDepthFusionTests */,
 				76539C9820F5B1FE009C332E /* Products */,
 				3ABB72D98D8717B89DD61411 /* Frameworks */,
 			);
@@ -188,6 +203,7 @@
 			isa = PBXGroup;
 			children = (
 				768F64E82121570600C1B1DA /* TrueDepthFusion.app */,
+				TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -266,6 +282,16 @@
 			path = SoundEffects;
 			sourceTree = "<group>";
 		};
+		TT000020TTTT0020TT000020 /* TrueDepthFusionTests */ = {
+			isa = PBXGroup;
+			children = (
+				TT000001TTTT0001TT000000 /* SoundEffectTests.swift */,
+				TT000002TTTT0002TT000000 /* ScanStoreTests.swift */,
+				TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */,
+			);
+			path = TrueDepthFusionTests;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -288,6 +314,23 @@
 			productReference = 768F64E82121570600C1B1DA /* TrueDepthFusion.app */;
 			productType = "com.apple.product-type.application";
 		};
+		TT000030TTTT0030TT000030 /* TrueDepthFusionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TT000050TTTT0050TT000050 /* Build configuration list for PBXNativeTarget "TrueDepthFusionTests" */;
+			buildPhases = (
+				TT000040TTTT0040TT000040 /* Sources */,
+				TT000010TTTT0010TT000010 /* Frameworks (Tests) */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TT000060TTTT0060TT000060 /* PBXTargetDependency */,
+			);
+			name = TrueDepthFusionTests;
+			productName = TrueDepthFusionTests;
+			productReference = TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -301,6 +344,10 @@
 					768F64E72121570600C1B1DA = {
 						CreatedOnToolsVersion = 9.4.1;
 						LastSwiftMigration = 1020;
+					};
+					TT000030TTTT0030TT000030 = {
+						CreatedOnToolsVersion = 1610;
+						TestTargetID = 768F64E72121570600C1B1DA;
 					};
 				};
 			};
@@ -322,6 +369,7 @@
 			projectRoot = "";
 			targets = (
 				768F64E72121570600C1B1DA /* TrueDepthFusion */,
+				TT000030TTTT0030TT000030 /* TrueDepthFusionTests */,
 			);
 		};
 /* End PBXProject section */
@@ -382,6 +430,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		TT000040TTTT0040TT000040 /* Sources (Tests) */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */,
+				TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */,
+				TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -389,7 +447,22 @@
 			isa = PBXTargetDependency;
 			productRef = 76296F2C2CFE13EC003EE037 /* ZipArchive */;
 		};
+		TT000060TTTT0060TT000060 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 768F64E72121570600C1B1DA /* TrueDepthFusion */;
+			targetProxy = TT000061TTTT0061TT000061 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXContainerItemProxy section */
+		TT000061TTTT0061TT000061 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76539C8E20F5B1FE009C332E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 768F64E72121570600C1B1DA;
+			remoteInfo = TrueDepthFusion;
+		};
+/* End PBXContainerItemProxy section */
 
 /* End PBXVariantGroup section */
 
@@ -587,6 +660,54 @@
 			};
 			name = Release;
 		};
+		TT000051TTTT0051TT000051 /* Debug (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 82NA5C4XZT;
+				INFOPLIST_FILE = TrueDepthFusionTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusionTests;
+				PRODUCT_NAME = TrueDepthFusionTests;
+				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrueDepthFusion.app/TrueDepthFusion";
+			};
+			name = Debug;
+		};
+		TT000052TTTT0052TT000052 /* Release (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 82NA5C4XZT;
+				INFOPLIST_FILE = TrueDepthFusionTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusionTests;
+				PRODUCT_NAME = TrueDepthFusionTests;
+				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrueDepthFusion.app/TrueDepthFusion";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -604,6 +725,15 @@
 			buildConfigurations = (
 				768F64FD2121570700C1B1DA /* Debug */,
 				768F64FE2121570700C1B1DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TT000050TTTT0050TT000050 /* Build configuration list for PBXNativeTarget "TrueDepthFusionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TT000051TTTT0051TT000051 /* Debug */,
+				TT000052TTTT0052TT000052 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
