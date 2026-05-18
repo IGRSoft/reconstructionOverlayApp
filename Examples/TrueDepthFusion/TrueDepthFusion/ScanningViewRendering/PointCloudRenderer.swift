@@ -58,7 +58,7 @@ final class SCPointCloudRenderer {
         }()
 
         _sharedUniformsBuffer = device.makeBuffer(
-            length: MemoryLayout<SharedUniforms>.size,
+            length: MemoryLayout<SharedUniforms>.stride,
             options: .cpuCacheModeWriteCombined
         )!
         _sharedUniformsBuffer.label = "SCPointCloudRenderer._sharedUniformsBuffer"
@@ -226,6 +226,6 @@ final class SCPointCloudRenderer {
             pointSize: pointSize
         )
 
-        memcpy(_sharedUniformsBuffer.contents(), &uniforms, MemoryLayout<SharedUniforms>.size)
+        memcpy(_sharedUniformsBuffer.contents(), &uniforms, MemoryLayout<SharedUniforms>.stride)
     }
 }
