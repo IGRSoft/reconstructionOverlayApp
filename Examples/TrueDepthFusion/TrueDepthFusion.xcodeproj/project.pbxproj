@@ -40,7 +40,6 @@
 		7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */; };
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
-		768F64F92121570700C1B1DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F72121570700C1B1DA /* LaunchScreen.storyboard */; };
 		768F650821215A6100C1B1DA /* ScanPreviewViewController.scn in Resources */ = {isa = PBXBuildFile; fileRef = 768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */; };
 
 		768F650E21215BD500C1B1DA /* Scan.mm in Sources */ = {isa = PBXBuildFile; fileRef = 768F650D21215BD500C1B1DA /* Scan.mm */; };
@@ -112,7 +111,6 @@
 		768967EE2394305D007179B2 /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
 		768F64E82121570600C1B1DA /* TrueDepthFusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrueDepthFusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		768F64F52121570700C1B1DA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		768F64F82121570700C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		768F64FA2121570700C1B1DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = ScanPreviewViewController.scn; sourceTree = "<group>"; };
 
@@ -246,7 +244,6 @@
 				7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */,
 	
 				76EE33D4212E10A800D62C3D /* SoundEffects */,
-				768F64F72121570700C1B1DA /* LaunchScreen.storyboard */,
 				768F64F52121570700C1B1DA /* Assets.xcassets */,
 				768F64FA2121570700C1B1DA /* Info.plist */,
 				76FFDF112150559300500A84 /* Settings.bundle */,
@@ -347,7 +344,6 @@
 				76EE33DB212E131800D62C3D /* ScanningFinished.m4a in Resources */,
 				768F650821215A6100C1B1DA /* ScanPreviewViewController.scn in Resources */,
 				76FFDF122150559300500A84 /* Settings.bundle in Resources */,
-				768F64F92121570700C1B1DA /* LaunchScreen.storyboard in Resources */,
 				768F64F62121570700C1B1DA /* Assets.xcassets in Resources */,
 				76558BA72135FF86005AECFE /* ScanningCanceled.m4a in Resources */,
 				76EE33DA212E131800D62C3D /* Countdown.m4a in Resources */,
@@ -405,15 +401,6 @@
 		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		768F64F72121570700C1B1DA /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				768F64F82121570700C1B1DA /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
