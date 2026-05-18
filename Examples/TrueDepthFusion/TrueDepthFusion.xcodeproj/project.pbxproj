@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		AA000001AAAA0001AA000001 /* module.modulemap in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA0001AA000000 /* module.modulemap */; };
 		AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002AAAA0002AA000001 /* SoundEffect.swift */; };
+		AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -62,6 +63,7 @@
 /* Begin PBXFileReference section */
 		AA000001AAAA0001AA000000 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		AA000002AAAA0002AA000001 /* SoundEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffect.swift; sourceTree = "<group>"; };
+		AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRenderer.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -85,7 +87,6 @@
 		768F64F52121570700C1B1DA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		768F64F82121570700C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		768F64FA2121570700C1B1DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		768F65032121591E00C1B1DA /* TrueDepthFusion-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrueDepthFusion-Bridging-Header.h"; sourceTree = "<group>"; };
 		768F65042121591F00C1B1DA /* ScanningViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanningViewController.swift; sourceTree = "<group>"; };
 		768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = ScanPreviewViewController.scn; sourceTree = "<group>"; };
 		768F650721215A6100C1B1DA /* ScanPreviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanPreviewViewController.swift; sourceTree = "<group>"; };
@@ -207,7 +208,7 @@
 				76999471215C9FF0007CF275 /* PaddedLabel.swift */,
 				7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */,
 				7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */,
-				768F65032121591E00C1B1DA /* TrueDepthFusion-Bridging-Header.h */,
+	
 				76EE33D4212E10A800D62C3D /* SoundEffects */,
 				768F64F22121570600C1B1DA /* Main.storyboard */,
 				768F64F72121570700C1B1DA /* LaunchScreen.storyboard */,
@@ -224,8 +225,7 @@
 				7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */,
 				76385561212F390500C7DA06 /* DepthColoringFilter.swift */,
 				76399679212E360D000E5D3D /* DepthColoringFilter.metal */,
-				7693C45D215886D4005A4772 /* SCPointCloudRenderer.h */,
-				7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */,
+				AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */,
 				7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */,
 			);
 			path = ScanningViewRendering;
@@ -336,7 +336,7 @@
 				AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */,
 				7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */,
 				76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */,
-				7693C45F215886D4005A4772 /* SCPointCloudRenderer.m in Sources */,
+				AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */,
 				76E2E7E3212BC452006BEAC6 /* ScansViewController.swift in Sources */,
 				768F650921215A6100C1B1DA /* ScanPreviewViewController.swift in Sources */,
 				7639967A212E360D000E5D3D /* DepthColoringFilter.metal in Sources */,
@@ -545,7 +545,6 @@
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
-				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -569,7 +568,6 @@
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
-				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
