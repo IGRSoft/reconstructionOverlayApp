@@ -37,7 +37,12 @@ struct ScanPreviewSceneView: UIViewRepresentable {
     func updateUIView(_ sceneView: SCNView, context: Context) {
         let coordinator = context.coordinator
 
-        // Reset camera to initial transform on each new scan
+        let contentChanged = coordinator.lastScan !== scan || coordinator.lastMesh !== mesh
+        guard contentChanged else { return }
+        coordinator.lastScan = scan
+        coordinator.lastMesh = mesh
+
+        // Reset camera only when the displayed content actually changes
         if let pov = sceneView.pointOfView {
             pov.transform = coordinator.initialPointOfView
         }
@@ -81,5 +86,7 @@ struct ScanPreviewSceneView: UIViewRepresentable {
         var pointCloudNode: SCNNode?
         var initialPointOfView: SCNMatrix4 = SCNMatrix4Identity
         var meshTransform: SCNMatrix4?
+        weak var lastScan: Scan?
+        var lastMesh: SCMesh?
     }
 }

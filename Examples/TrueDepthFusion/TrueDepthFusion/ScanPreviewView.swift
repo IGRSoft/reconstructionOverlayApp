@@ -72,7 +72,7 @@ struct ScanPreviewView: View {
 
                 Spacer()
 
-                VStack(alignment: .trailing, spacing: 8) {
+                VStack(alignment: .trailing, spacing: 16) {
                     Button {
                         pendingExportTarget = .share
                     } label: {

@@ -89,12 +89,12 @@ final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
     private var useFullResolution: Bool { UserDefaults.standard.bool(forKey: "full_resolution_depth_frames", defaultValue: false) }
 
     // nonisolated(unsafe) snapshots for camera delegate
-    nonisolated(unsafe) var _metalLayerRef: CAMetalLayer?
-    nonisolated(unsafe) var _reconstructionManagerRef: SCReconstructionManager!
-    nonisolated(unsafe) var _rendererRef: ScanningViewRenderer!
-    nonisolated(unsafe) var _scanningSnapshot: Bool = false
-    nonisolated(unsafe) var _useFullResSnapshot: Bool = false
-    nonisolated(unsafe) var _accumulatorRef: BPLYDepthDataAccumulator?
+    nonisolated(unsafe) private var _metalLayerRef: CAMetalLayer?
+    nonisolated(unsafe) private var _reconstructionManagerRef: SCReconstructionManager!
+    nonisolated(unsafe) private var _rendererRef: ScanningViewRenderer!
+    nonisolated(unsafe) private var _scanningSnapshot: Bool = false
+    nonisolated(unsafe) private var _useFullResSnapshot: Bool = false
+    nonisolated(unsafe) private var _accumulatorRef: BPLYDepthDataAccumulator?
 
     func configure() {
         cameraManager.delegate = self
@@ -124,7 +124,6 @@ final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
 
     func shutterTapped() {
         if scanning {
-            AudioAndHapticEngine.shared.scanningFinished()
             stopScanning(reason: .finished)
         } else if countdownSeconds > 0 {
             AudioAndHapticEngine.shared.scanningCanceled()

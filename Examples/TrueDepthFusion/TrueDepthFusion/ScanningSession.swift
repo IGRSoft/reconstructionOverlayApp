@@ -126,7 +126,6 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
 
     func shutterTapped() {
         if scanning {
-            AudioAndHapticEngine.shared.scanningFinished()
             stopScanning(reason: .finished)
         } else if countdownSeconds > 0 {
             AudioAndHapticEngine.shared.scanningCanceled()
