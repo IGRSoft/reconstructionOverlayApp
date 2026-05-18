@@ -3,6 +3,7 @@
 
 
 import ARKit
+import TrueDepthFusionObjC
 import UIKit
 
 @main

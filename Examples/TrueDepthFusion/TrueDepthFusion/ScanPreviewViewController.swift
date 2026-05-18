@@ -8,6 +8,7 @@ import Foundation
 import ModelIO
 import StandardCyborgFusion
 import SceneKit
+import TrueDepthFusionObjC
 import UIKit
 
 @MainActor

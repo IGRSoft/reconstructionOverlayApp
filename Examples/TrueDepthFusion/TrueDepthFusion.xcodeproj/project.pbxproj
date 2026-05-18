@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA000001AAAA0001AA000001 /* module.modulemap in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA0001AA000000 /* module.modulemap */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -58,6 +59,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA000001AAAA0001AA000000 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -173,9 +175,18 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		AA000001AAAA0002AA000000 /* ObjC */ = {
+			isa = PBXGroup;
+			children = (
+				AA000001AAAA0001AA000000 /* module.modulemap */,
+			);
+			path = ObjC;
+			sourceTree = "<group>";
+		};
 		768F64E92121570600C1B1DA /* TrueDepthFusion */ = {
 			isa = PBXGroup;
 			children = (
+				AA000001AAAA0002AA000000 /* ObjC */,
 				7693C45421587E30005A4772 /* ScanningViewRendering */,
 				768F650A21215B3C00C1B1DA /* AppDelegate.swift */,
 				76871D022193AB9D00C1ABA0 /* InitialViewController.swift */,
@@ -532,6 +543,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -555,6 +567,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};

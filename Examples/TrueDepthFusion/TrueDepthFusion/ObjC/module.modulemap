@@ -1,0 +1,6 @@
+module TrueDepthFusionObjC {
+    header "../Scan.h"
+    header "../BPLYDepthDataAccumulator.h"
+
+    export *
+}

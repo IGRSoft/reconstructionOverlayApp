@@ -7,6 +7,7 @@ import CoreMotion
 import MediaPlayer
 import SceneKit
 import StandardCyborgFusion
+import TrueDepthFusionObjC
 import UIKit
 
 @MainActor

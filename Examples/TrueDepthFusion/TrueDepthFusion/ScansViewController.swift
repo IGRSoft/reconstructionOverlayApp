@@ -5,6 +5,7 @@
 
 
 import Foundation
+import TrueDepthFusionObjC
 import UIKit
 
 @MainActor

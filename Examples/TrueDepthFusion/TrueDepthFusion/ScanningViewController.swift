@@ -1,5 +1,6 @@
 import MediaPlayer
 import StandardCyborgFusion
+import TrueDepthFusionObjC
 import UIKit
 
 @MainActor
