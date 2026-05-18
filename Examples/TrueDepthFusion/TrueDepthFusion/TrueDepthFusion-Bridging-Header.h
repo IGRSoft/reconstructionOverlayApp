@@ -3,7 +3,6 @@
 //
 
 #import "SCPointCloudRenderer.h"
-#import "SoundEffect.h"
 
 #import <SceneKit/ModelIO.h>
 

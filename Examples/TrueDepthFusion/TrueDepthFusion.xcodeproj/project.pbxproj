@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AA000001AAAA0001AA000001 /* module.modulemap in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA0001AA000000 /* module.modulemap */; };
+		AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002AAAA0002AA000001 /* SoundEffect.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -60,6 +61,7 @@
 
 /* Begin PBXFileReference section */
 		AA000001AAAA0001AA000000 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		AA000002AAAA0002AA000001 /* SoundEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffect.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -200,8 +202,7 @@
 				768F650D21215BD500C1B1DA /* Scan.mm */,
 				76C7C6B121759CC3000941E7 /* CameraManager.swift */,
 				76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */,
-				76EE33D1212E0D9000D62C3D /* SoundEffect.h */,
-				76EE33D2212E0D9000D62C3D /* SoundEffect.m */,
+				AA000002AAAA0002AA000001 /* SoundEffect.swift */,
 				7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */,
 				76999471215C9FF0007CF275 /* PaddedLabel.swift */,
 				7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */,
@@ -332,7 +333,7 @@
 				768F65052121591F00C1B1DA /* ScanningViewController.swift in Sources */,
 				76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */,
 				7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */,
-				76EE33D3212E0D9000D62C3D /* SoundEffect.m in Sources */,
+				AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */,
 				7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */,
 				76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */,
 				7693C45F215886D4005A4772 /* SCPointCloudRenderer.m in Sources */,
