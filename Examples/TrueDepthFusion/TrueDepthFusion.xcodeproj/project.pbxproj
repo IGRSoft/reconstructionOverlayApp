@@ -44,12 +44,9 @@
 
 		768F650E21215BD500C1B1DA /* Scan.mm in Sources */ = {isa = PBXBuildFile; fileRef = 768F650D21215BD500C1B1DA /* Scan.mm */; };
 		7693C45621587EAA005A4772 /* ScanningViewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */; };
-		7693C45F215886D4005A4772 /* SCPointCloudRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */; };
 		7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */; };
-		76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76999471215C9FF0007CF275 /* PaddedLabel.swift */; };
 		76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C7C6B121759CC3000941E7 /* CameraManager.swift */; };
 		76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */; };
-		76EE33D3212E0D9000D62C3D /* SoundEffect.m in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33D2212E0D9000D62C3D /* SoundEffect.m */; };
 		76EE33D9212E131800D62C3D /* ScanningBegan.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D5212E131700D62C3D /* ScanningBegan.m4a */; };
 		76EE33DA212E131800D62C3D /* Countdown.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D6212E131700D62C3D /* Countdown.m4a */; };
 		76EE33DB212E131800D62C3D /* ScanningFinished.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D7212E131800D62C3D /* ScanningFinished.m4a */; };
@@ -117,10 +114,7 @@
 		768F650C21215BD500C1B1DA /* Scan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scan.h; sourceTree = "<group>"; };
 		768F650D21215BD500C1B1DA /* Scan.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Scan.mm; sourceTree = "<group>"; };
 		7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningViewRenderer.swift; sourceTree = "<group>"; };
-		7693C45D215886D4005A4772 /* SCPointCloudRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCPointCloudRenderer.h; sourceTree = "<group>"; };
-		7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCPointCloudRenderer.m; sourceTree = "<group>"; };
 		7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SCPointCloudRenderer.metal; sourceTree = "<group>"; };
-		76999471215C9FF0007CF275 /* PaddedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedLabel.swift; sourceTree = "<group>"; };
 		76AF88D121CB3D98007C47E6 /* ModelIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ModelIO.framework; path = System/Library/Frameworks/ModelIO.framework; sourceTree = SDKROOT; };
 		76B0788322937904005CA179 /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 		76BBFD49229B3E990004F9EE /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
@@ -128,8 +122,6 @@
 		76C7C6B121759CC3000941E7 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CameraManager.swift; path = TrueDepthFusion/CameraManager.swift; sourceTree = SOURCE_ROOT; };
 		76E88D4521C040AE008793AB /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAndHapticEngine.swift; sourceTree = "<group>"; };
-		76EE33D1212E0D9000D62C3D /* SoundEffect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundEffect.h; sourceTree = "<group>"; };
-		76EE33D2212E0D9000D62C3D /* SoundEffect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SoundEffect.m; sourceTree = "<group>"; };
 		76EE33D5212E131700D62C3D /* ScanningBegan.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningBegan.m4a; sourceTree = "<group>"; };
 		76EE33D6212E131700D62C3D /* Countdown.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Countdown.m4a; sourceTree = "<group>"; };
 		76EE33D7212E131800D62C3D /* ScanningFinished.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningFinished.m4a; sourceTree = "<group>"; };
@@ -239,7 +231,6 @@
 				76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */,
 				AA000002AAAA0002AA000001 /* SoundEffect.swift */,
 				7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */,
-				76999471215C9FF0007CF275 /* PaddedLabel.swift */,
 				7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */,
 				7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */,
 	
@@ -368,7 +359,6 @@
 				AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */,
 				7639967A212E360D000E5D3D /* DepthColoringFilter.metal in Sources */,
 				7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */,
-				76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */,
 				76385562212F390500C7DA06 /* DepthColoringFilter.swift in Sources */,
 				F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */,
 				768F650E21215BD500C1B1DA /* Scan.mm in Sources */,
