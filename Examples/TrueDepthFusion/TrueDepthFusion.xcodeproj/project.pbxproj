@@ -22,6 +22,11 @@
 		AA000013AAAA0013AA000013 /* MeshingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000013AAAA0013AA000001 /* MeshingService.swift */; };
 		AA000014AAAA0014AA000014 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000014AAAA0014AA000001 /* ActivityView.swift */; };
 		AA000015AAAA0015AA000015 /* ScanPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */; };
+		AA000016AAAA0016AA000016 /* ScanningSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000016AAAA0016AA000001 /* ScanningSession.swift */; };
+		AA000017AAAA0017AA000017 /* ScanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000017AAAA0017AA000001 /* ScanningView.swift */; };
+		AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000018AAAA0018AA000001 /* MetalLayerView.swift */; };
+		AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */; };
+		AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020AAAA0020AA000001 /* ScanControls.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -37,7 +42,6 @@
 		768F64F42121570600C1B1DA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F22121570600C1B1DA /* Main.storyboard */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
 		768F64F92121570700C1B1DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F72121570700C1B1DA /* LaunchScreen.storyboard */; };
-		768F65052121591F00C1B1DA /* ScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768F65042121591F00C1B1DA /* ScanningViewController.swift */; };
 		768F650821215A6100C1B1DA /* ScanPreviewViewController.scn in Resources */ = {isa = PBXBuildFile; fileRef = 768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */; };
 
 		768F650E21215BD500C1B1DA /* Scan.mm in Sources */ = {isa = PBXBuildFile; fileRef = 768F650D21215BD500C1B1DA /* Scan.mm */; };
@@ -85,6 +89,11 @@
 		AA000013AAAA0013AA000001 /* MeshingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshingService.swift; sourceTree = "<group>"; };
 		AA000014AAAA0014AA000001 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewHostingController.swift; sourceTree = "<group>"; };
+		AA000016AAAA0016AA000001 /* ScanningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningSession.swift; sourceTree = "<group>"; };
+		AA000017AAAA0017AA000001 /* ScanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningView.swift; sourceTree = "<group>"; };
+		AA000018AAAA0018AA000001 /* MetalLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalLayerView.swift; sourceTree = "<group>"; };
+		AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
+		AA000020AAAA0020AA000001 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -107,7 +116,6 @@
 		768F64F52121570700C1B1DA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		768F64F82121570700C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		768F64FA2121570700C1B1DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		768F65042121591F00C1B1DA /* ScanningViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanningViewController.swift; sourceTree = "<group>"; };
 		768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = ScanPreviewViewController.scn; sourceTree = "<group>"; };
 
 		768F650C21215BD500C1B1DA /* Scan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scan.h; sourceTree = "<group>"; };
@@ -221,8 +229,12 @@
 				AA000013AAAA0013AA000001 /* MeshingService.swift */,
 				AA000014AAAA0014AA000001 /* ActivityView.swift */,
 				AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */,
+				AA000016AAAA0016AA000001 /* ScanningSession.swift */,
+				AA000017AAAA0017AA000001 /* ScanningView.swift */,
+				AA000018AAAA0018AA000001 /* MetalLayerView.swift */,
+				AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */,
+				AA000020AAAA0020AA000001 /* ScanControls.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
-				768F65042121591F00C1B1DA /* ScanningViewController.swift */,
 				76857187222CCB4000066B6E /* BPLYScanningViewController.swift */,
 				768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */,
 				768F650C21215BD500C1B1DA /* Scan.h */,
@@ -356,7 +368,6 @@
 			files = (
 				7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */,
 				7693C45621587EAA005A4772 /* ScanningViewRenderer.swift in Sources */,
-				768F65052121591F00C1B1DA /* ScanningViewController.swift in Sources */,
 				76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */,
 				7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */,
 				AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */,
@@ -381,6 +392,11 @@
 				AA000013AAAA0013AA000013 /* MeshingService.swift in Sources */,
 				AA000014AAAA0014AA000014 /* ActivityView.swift in Sources */,
 				AA000015AAAA0015AA000015 /* ScanPreviewHostingController.swift in Sources */,
+				AA000016AAAA0016AA000016 /* ScanningSession.swift in Sources */,
+				AA000017AAAA0017AA000017 /* ScanningView.swift in Sources */,
+				AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */,
+				AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */,
+				AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

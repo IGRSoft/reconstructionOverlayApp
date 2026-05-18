@@ -56,7 +56,7 @@ struct InitialView: View {
         .fullScreenCover(item: $fullScreen) { destination in
             switch destination {
             case .scanning:
-                ScanningViewRepresentable()
+                ScanningView()
                     .environmentObject(scanStore)
                     .ignoresSafeArea()
             case .bplyScanning:
@@ -80,20 +80,7 @@ extension UserDefaults {
     }
 }
 
-// MARK: - UIKit VC Representables (transient; removed in Phase 7-8)
-
-private struct ScanningViewRepresentable: UIViewControllerRepresentable {
-    @EnvironmentObject var scanStore: ScanStore
-
-    func makeUIViewController(context: Context) -> ScanningViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ScanningViewController") as! ScanningViewController
-        vc.scanStore = scanStore
-        return vc
-    }
-
-    func updateUIViewController(_ uiViewController: ScanningViewController, context: Context) {}
-}
+// MARK: - UIKit VC Representables (transient; removed in Phase 8)
 
 private struct BPLYScanningViewRepresentable: UIViewControllerRepresentable {
     @EnvironmentObject var scanStore: ScanStore
