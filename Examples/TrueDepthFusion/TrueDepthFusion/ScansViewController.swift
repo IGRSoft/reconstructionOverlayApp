@@ -36,7 +36,7 @@ final class ScansViewController: UITableViewController {
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        _scans = _appDelegate.scans
+        _scans = scanStore.scans
         
         _updateNoScansLabel()
         tableView.reloadData()
@@ -118,20 +118,20 @@ final class ScansViewController: UITableViewController {
         return formatter
     }()
     
-    private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
+    var scanStore: ScanStore!
     private let _noScansLabel = UILabel()
     private var _scans: [Scan] = []
     
     private lazy var _scanPreviewViewController: ScanPreviewViewController = {
         let scanVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ScanPreviewViewController") as! ScanPreviewViewController
+        scanVC.scanStore = scanStore
         scanVC.deletionHandler = { [unowned self, scanVC] in
-            self._appDelegate.remove(scanVC.scan!)
+            self.scanStore.remove(scanVC.scan!)
             self.dismiss(animated: true, completion: nil)
         }
         scanVC.doneHandler = { [unowned self] in
             self.dismiss(animated: true, completion: nil)
         }
-        
         return scanVC
     }()
     
@@ -206,7 +206,7 @@ final class ScansViewController: UITableViewController {
     private func _deleteScan(at indexPath: IndexPath) {
         let scan = _scans[indexPath.row]
         
-         _appDelegate.remove(scan)
+         scanStore.remove(scan)
         
         tableView.beginUpdates()
         tableView.deleteRows(at: [indexPath], with: .automatic)

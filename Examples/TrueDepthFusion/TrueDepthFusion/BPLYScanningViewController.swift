@@ -53,7 +53,7 @@ final class BPLYScanningViewController: UIViewController, @MainActor CameraManag
     
     // MARK: - Properties
     
-    private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
+    var scanStore: ScanStore!
     private let _metalLayer = CAMetalLayer()
     private let _metalDevice = MTLCreateSystemDefaultDevice()!
     private lazy var _commandQueue = _metalDevice.makeCommandQueue()!

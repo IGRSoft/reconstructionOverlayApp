@@ -261,7 +261,7 @@ final class ScanPreviewViewController: UIViewController {
     
     // MARK: - Private
     
-    private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
+    var scanStore: ScanStore!
     private let _gearButton = UIButton(type: .system)
     private var _shouldCancelMeshing = false
     private var _mesh: SCMesh?

@@ -46,7 +46,10 @@ import UIKit
 ///
 /// Reset to the default by removing the key or setting it to `false`.
 class InitialViewController: UIViewController {
-    
+
+    /// Injected by RootView representable; forwarded to scanning VCs via prepare(for:sender:)
+    var scanStore: ScanStore?
+
     @IBOutlet weak var introLabel: UILabel!
     
     override func viewDidLoad() {
@@ -62,7 +65,19 @@ class InitialViewController: UIViewController {
         let segueIdentifier = scanToBPLY ? "BPLYScanningViewController" : "ScanningViewController"
         performSegue(withIdentifier: segueIdentifier, sender: nil)
     }
-    
+
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        if let vc = segue.destination as? ScanningViewController {
+            vc.scanStore = scanStore
+        } else if let vc = segue.destination as? BPLYScanningViewController {
+            vc.scanStore = scanStore
+        } else if let nav = segue.destination as? UINavigationController,
+                  let vc = nav.viewControllers.first as? ScansViewController {
+            vc.scanStore = scanStore
+        } else if let vc = segue.destination as? ScansViewController {
+            vc.scanStore = scanStore
+        }
+    }
 }
 
 extension UserDefaults {

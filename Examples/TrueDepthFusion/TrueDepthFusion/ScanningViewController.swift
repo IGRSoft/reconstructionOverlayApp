@@ -47,7 +47,7 @@ final class ScanningViewController: UIViewController, @MainActor CameraManagerDe
     }
     
     @IBAction private func showLatestScan(_ sender: UIButton) {
-        guard let scan = _appDelegate.scans.first else { return }
+        guard let scan = scanStore.scans.first else { return }
         
         _scanPreviewViewController.scan = scan
         
@@ -56,7 +56,7 @@ final class ScanningViewController: UIViewController, @MainActor CameraManagerDe
     
     // MARK: - Properties
     
-    private let _appDelegate = UIApplication.shared.delegate! as! AppDelegate
+    var scanStore: ScanStore!
     private let _metalLayer = CAMetalLayer()
     private let _metalDevice = MTLCreateSystemDefaultDevice()!
     private let _cameraManager = CameraManager()
@@ -145,7 +145,7 @@ final class ScanningViewController: UIViewController, @MainActor CameraManagerDe
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        let latestScan = _appDelegate.scans.first
+        let latestScan = scanStore.scans.first
         showScansButton.setBackgroundImage(latestScan?.thumbnail, for: UIControl.State.normal)
         scanDurationContainerView.isHidden = _tapToStartStop
         
@@ -394,17 +394,18 @@ final class ScanningViewController: UIViewController, @MainActor CameraManagerDe
     private lazy var _scanPreviewViewController: ScanPreviewViewController = {
         let scanVC = UIStoryboard(name: "Main", bundle: nil).instantiateViewController(withIdentifier: "ScanPreviewViewController") as! ScanPreviewViewController
         
+        scanVC.scanStore = scanStore
         scanVC.deletionHandler = { [unowned self] in
             if scanVC.scan!.plyPath != nil {
-                self._appDelegate.remove(scanVC.scan!)
+                self.scanStore.remove(scanVC.scan!)
             }
             self.dismiss(animated: true, completion: nil)
         }
-        
+
         scanVC.doneHandler = { [unowned self, scanVC] in
             // Save the scan
             if scanVC.scan!.plyPath == nil {
-                self._appDelegate.add(scanVC.scan!)
+                self.scanStore.add(scanVC.scan!)
             }
             self.dismiss(animated: true, completion: nil)
         }
