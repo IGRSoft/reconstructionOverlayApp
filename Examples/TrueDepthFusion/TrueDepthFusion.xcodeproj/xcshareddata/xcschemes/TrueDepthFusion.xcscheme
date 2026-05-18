@@ -20,6 +20,20 @@
                ReferencedContainer = "container:TrueDepthFusion.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TT000030TTTT0030TT000030"
+               BuildableName = "TrueDepthFusionTests.xctest"
+               BlueprintName = "TrueDepthFusionTests"
+               ReferencedContainer = "container:TrueDepthFusion.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -37,6 +51,18 @@
          </BuildableReference>
       </MacroExpansion>
       <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES"
+            testExecutionOrdering = "random">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "TT000030TTTT0030TT000030"
+               BuildableName = "TrueDepthFusionTests.xctest"
+               BlueprintName = "TrueDepthFusionTests"
+               ReferencedContainer = "container:TrueDepthFusion.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction

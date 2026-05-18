@@ -4,8 +4,8 @@
 
 import AVFoundation
 import Foundation
-
 import StandardCyborgFusion
+import UIKit
 
 protocol CameraManagerDelegate: AnyObject {
     func cameraDidOutput(colorBuffer: CVPixelBuffer,

@@ -7,6 +7,27 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		AA000001AAAA0001AA000001 /* module.modulemap in Sources */ = {isa = PBXBuildFile; fileRef = AA000001AAAA0001AA000000 /* module.modulemap */; };
+		AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002AAAA0002AA000001 /* SoundEffect.swift */; };
+		AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */; };
+		AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */; };
+		AA000005AAAA0005AA000005 /* ScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000005AAAA0005AA000001 /* ScanStore.swift */; };
+		AA000006AAAA0006AA000006 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006AAAA0006AA000001 /* RootView.swift */; };
+		AA000007AAAA0007AA000007 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000007AAAA0007AA000001 /* InitialView.swift */; };
+		AA000008AAAA0008AA000008 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008AAAA0008AA000001 /* Route.swift */; };
+		AA000009AAAA0009AA000009 /* ScansListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000009AAAA0009AA000001 /* ScansListView.swift */; };
+		AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */; };
+		AA000011AAAA0011AA000011 /* ScanPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000011AAAA0011AA000001 /* ScanPreviewView.swift */; };
+		AA000012AAAA0012AA000012 /* ScanPreviewSceneView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000012AAAA0012AA000001 /* ScanPreviewSceneView.swift */; };
+		AA000013AAAA0013AA000013 /* MeshingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000013AAAA0013AA000001 /* MeshingService.swift */; };
+		AA000014AAAA0014AA000014 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000014AAAA0014AA000001 /* ActivityView.swift */; };
+		AA000015AAAA0015AA000015 /* ScanPreviewHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */; };
+		AA000016AAAA0016AA000016 /* ScanningSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000016AAAA0016AA000001 /* ScanningSession.swift */; };
+		AA000017AAAA0017AA000017 /* ScanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000017AAAA0017AA000001 /* ScanningView.swift */; };
+		AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000018AAAA0018AA000001 /* MetalLayerView.swift */; };
+		AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */; };
+		AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020AAAA0020AA000001 /* ScanControls.swift */; };
+		AA000022AAAA0022AA000022 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022AAAA0022AA000001 /* ExportSheet.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -16,31 +37,25 @@
 		76558BA72135FF86005AECFE /* ScanningCanceled.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76558BA62135FF6D005AECFE /* ScanningCanceled.m4a */; };
 		7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */; };
 		767001C3227B82580037210E /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A52430AE213F482D00A39A38 /* MetalKit.framework */; };
-		7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76857187222CCB4000066B6E /* BPLYScanningViewController.swift */; };
+		AA000021AAAA0021AA000021 /* BPLYScanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000021AAAA0021AA000001 /* BPLYScanningView.swift */; };
 		7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */; };
-		76871D032193AB9D00C1ABA0 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76871D022193AB9D00C1ABA0 /* InitialViewController.swift */; };
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
-		768F64F42121570600C1B1DA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F22121570600C1B1DA /* Main.storyboard */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
-		768F64F92121570700C1B1DA /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F72121570700C1B1DA /* LaunchScreen.storyboard */; };
-		768F65052121591F00C1B1DA /* ScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768F65042121591F00C1B1DA /* ScanningViewController.swift */; };
 		768F650821215A6100C1B1DA /* ScanPreviewViewController.scn in Resources */ = {isa = PBXBuildFile; fileRef = 768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */; };
-		768F650921215A6100C1B1DA /* ScanPreviewViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768F650721215A6100C1B1DA /* ScanPreviewViewController.swift */; };
-		768F650B21215B3C00C1B1DA /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 768F650A21215B3C00C1B1DA /* AppDelegate.swift */; };
+
 		768F650E21215BD500C1B1DA /* Scan.mm in Sources */ = {isa = PBXBuildFile; fileRef = 768F650D21215BD500C1B1DA /* Scan.mm */; };
 		7693C45621587EAA005A4772 /* ScanningViewRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */; };
-		7693C45F215886D4005A4772 /* SCPointCloudRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */; };
 		7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */; };
-		76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76999471215C9FF0007CF275 /* PaddedLabel.swift */; };
 		76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C7C6B121759CC3000941E7 /* CameraManager.swift */; };
-		76E2E7E3212BC452006BEAC6 /* ScansViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */; };
 		76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */; };
-		76EE33D3212E0D9000D62C3D /* SoundEffect.m in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33D2212E0D9000D62C3D /* SoundEffect.m */; };
 		76EE33D9212E131800D62C3D /* ScanningBegan.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D5212E131700D62C3D /* ScanningBegan.m4a */; };
 		76EE33DA212E131800D62C3D /* Countdown.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D6212E131700D62C3D /* Countdown.m4a */; };
 		76EE33DB212E131800D62C3D /* ScanningFinished.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D7212E131800D62C3D /* ScanningFinished.m4a */; };
 		76FFDF122150559300500A84 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 76FFDF112150559300500A84 /* Settings.bundle */; };
 		F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */; };
+		TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000001TTTT0001TT000000 /* SoundEffectTests.swift */; };
+		TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000002TTTT0002TT000000 /* ScanStoreTests.swift */; };
+		TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,6 +73,27 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		AA000001AAAA0001AA000000 /* module.modulemap */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.module-map"; path = module.modulemap; sourceTree = "<group>"; };
+		AA000002AAAA0002AA000001 /* SoundEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffect.swift; sourceTree = "<group>"; };
+		AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRenderer.swift; sourceTree = "<group>"; };
+		AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueDepthFusionApp.swift; sourceTree = "<group>"; };
+		AA000005AAAA0005AA000001 /* ScanStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStore.swift; sourceTree = "<group>"; };
+		AA000006AAAA0006AA000001 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AA000007AAAA0007AA000001 /* InitialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialView.swift; sourceTree = "<group>"; };
+		AA000008AAAA0008AA000001 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		AA000009AAAA0009AA000001 /* ScansListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScansListView.swift; sourceTree = "<group>"; };
+		AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JetsonSettingsView.swift; sourceTree = "<group>"; };
+		AA000011AAAA0011AA000001 /* ScanPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewView.swift; sourceTree = "<group>"; };
+		AA000012AAAA0012AA000001 /* ScanPreviewSceneView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewSceneView.swift; sourceTree = "<group>"; };
+		AA000013AAAA0013AA000001 /* MeshingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeshingService.swift; sourceTree = "<group>"; };
+		AA000014AAAA0014AA000001 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
+		AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewHostingController.swift; sourceTree = "<group>"; };
+		AA000016AAAA0016AA000001 /* ScanningSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningSession.swift; sourceTree = "<group>"; };
+		AA000017AAAA0017AA000001 /* ScanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningView.swift; sourceTree = "<group>"; };
+		AA000018AAAA0018AA000001 /* MetalLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalLayerView.swift; sourceTree = "<group>"; };
+		AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
+		AA000020AAAA0020AA000001 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
+		AA000022AAAA0022AA000001 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -71,38 +107,26 @@
 		76558BA12135FE2B005AECFE /* ScanningContinued.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ScanningContinued.wav; sourceTree = "<group>"; };
 		76558BA62135FF6D005AECFE /* ScanningCanceled.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningCanceled.m4a; sourceTree = "<group>"; };
 		7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIImageHelpers.swift; sourceTree = "<group>"; };
-		76857187222CCB4000066B6E /* BPLYScanningViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPLYScanningViewController.swift; sourceTree = "<group>"; };
+		AA000021AAAA0021AA000001 /* BPLYScanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPLYScanningView.swift; sourceTree = "<group>"; };
 		7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BPLYDepthDataAccumulator.h; sourceTree = "<group>"; };
 		7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BPLYDepthDataAccumulator.mm; sourceTree = "<group>"; };
-		76871D022193AB9D00C1ABA0 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		768967EE2394305D007179B2 /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
 		768F64E82121570600C1B1DA /* TrueDepthFusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrueDepthFusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		768F64F32121570600C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		768F64F52121570700C1B1DA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		768F64F82121570700C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		768F64FA2121570700C1B1DA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		768F65032121591E00C1B1DA /* TrueDepthFusion-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "TrueDepthFusion-Bridging-Header.h"; sourceTree = "<group>"; };
-		768F65042121591F00C1B1DA /* ScanningViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanningViewController.swift; sourceTree = "<group>"; };
 		768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */ = {isa = PBXFileReference; lastKnownFileType = file.bplist; path = ScanPreviewViewController.scn; sourceTree = "<group>"; };
-		768F650721215A6100C1B1DA /* ScanPreviewViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScanPreviewViewController.swift; sourceTree = "<group>"; };
-		768F650A21215B3C00C1B1DA /* AppDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+
 		768F650C21215BD500C1B1DA /* Scan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Scan.h; sourceTree = "<group>"; };
 		768F650D21215BD500C1B1DA /* Scan.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = Scan.mm; sourceTree = "<group>"; };
 		7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanningViewRenderer.swift; sourceTree = "<group>"; };
-		7693C45D215886D4005A4772 /* SCPointCloudRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SCPointCloudRenderer.h; sourceTree = "<group>"; };
-		7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SCPointCloudRenderer.m; sourceTree = "<group>"; };
 		7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = SCPointCloudRenderer.metal; sourceTree = "<group>"; };
-		76999471215C9FF0007CF275 /* PaddedLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaddedLabel.swift; sourceTree = "<group>"; };
 		76AF88D121CB3D98007C47E6 /* ModelIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ModelIO.framework; path = System/Library/Frameworks/ModelIO.framework; sourceTree = SDKROOT; };
 		76B0788322937904005CA179 /* Vision.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vision.framework; path = System/Library/Frameworks/Vision.framework; sourceTree = SDKROOT; };
 		76BBFD49229B3E990004F9EE /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
 		76BBFD51229B3F730004F9EE /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		76C7C6B121759CC3000941E7 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CameraManager.swift; path = TrueDepthFusion/CameraManager.swift; sourceTree = SOURCE_ROOT; };
-		76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScansViewController.swift; sourceTree = "<group>"; };
 		76E88D4521C040AE008793AB /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAndHapticEngine.swift; sourceTree = "<group>"; };
-		76EE33D1212E0D9000D62C3D /* SoundEffect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundEffect.h; sourceTree = "<group>"; };
-		76EE33D2212E0D9000D62C3D /* SoundEffect.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SoundEffect.m; sourceTree = "<group>"; };
 		76EE33D5212E131700D62C3D /* ScanningBegan.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningBegan.m4a; sourceTree = "<group>"; };
 		76EE33D6212E131700D62C3D /* Countdown.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = Countdown.m4a; sourceTree = "<group>"; };
 		76EE33D7212E131800D62C3D /* ScanningFinished.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningFinished.m4a; sourceTree = "<group>"; };
@@ -113,6 +137,10 @@
 		A53A598921B0B2CE00CD4638 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
 		A53A598B21B0B2D600CD4638 /* ImageIO.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ImageIO.framework; path = System/Library/Frameworks/ImageIO.framework; sourceTree = SDKROOT; };
 		A55BFF8A23062BCB0052DA08 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		TT000001TTTT0001TT000000 /* SoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectTests.swift; sourceTree = "<group>"; };
+		TT000002TTTT0002TT000000 /* ScanStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStoreTests.swift; sourceTree = "<group>"; };
+		TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRendererTests.swift; sourceTree = "<group>"; };
+		TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TrueDepthFusionTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,6 +152,13 @@
 				768967F42394306D007179B2 /* SceneKit.framework in Frameworks */,
 				76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */,
 				76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TT000010TTTT0010TT000010 /* Frameworks (Tests) */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -160,6 +195,7 @@
 			isa = PBXGroup;
 			children = (
 				768F64E92121570600C1B1DA /* TrueDepthFusion */,
+				TT000020TTTT0020TT000020 /* TrueDepthFusionTests */,
 				76539C9820F5B1FE009C332E /* Products */,
 				3ABB72D98D8717B89DD61411 /* Frameworks */,
 			);
@@ -169,36 +205,55 @@
 			isa = PBXGroup;
 			children = (
 				768F64E82121570600C1B1DA /* TrueDepthFusion.app */,
+				TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		AA000001AAAA0002AA000000 /* ObjC */ = {
+			isa = PBXGroup;
+			children = (
+				AA000001AAAA0001AA000000 /* module.modulemap */,
+			);
+			path = ObjC;
 			sourceTree = "<group>";
 		};
 		768F64E92121570600C1B1DA /* TrueDepthFusion */ = {
 			isa = PBXGroup;
 			children = (
+				AA000001AAAA0002AA000000 /* ObjC */,
 				7693C45421587E30005A4772 /* ScanningViewRendering */,
-				768F650A21215B3C00C1B1DA /* AppDelegate.swift */,
-				76871D022193AB9D00C1ABA0 /* InitialViewController.swift */,
+				AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */,
+				AA000005AAAA0005AA000001 /* ScanStore.swift */,
+				AA000006AAAA0006AA000001 /* RootView.swift */,
+				AA000007AAAA0007AA000001 /* InitialView.swift */,
+				AA000008AAAA0008AA000001 /* Route.swift */,
+				AA000009AAAA0009AA000001 /* ScansListView.swift */,
+				AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */,
+				AA000011AAAA0011AA000001 /* ScanPreviewView.swift */,
+				AA000012AAAA0012AA000001 /* ScanPreviewSceneView.swift */,
+				AA000013AAAA0013AA000001 /* MeshingService.swift */,
+				AA000014AAAA0014AA000001 /* ActivityView.swift */,
+				AA000015AAAA0015AA000001 /* ScanPreviewHostingController.swift */,
+				AA000016AAAA0016AA000001 /* ScanningSession.swift */,
+				AA000017AAAA0017AA000001 /* ScanningView.swift */,
+				AA000018AAAA0018AA000001 /* MetalLayerView.swift */,
+				AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */,
+				AA000020AAAA0020AA000001 /* ScanControls.swift */,
+				AA000022AAAA0022AA000001 /* ExportSheet.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
-				768F65042121591F00C1B1DA /* ScanningViewController.swift */,
-				76857187222CCB4000066B6E /* BPLYScanningViewController.swift */,
+				AA000021AAAA0021AA000001 /* BPLYScanningView.swift */,
 				768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */,
-				768F650721215A6100C1B1DA /* ScanPreviewViewController.swift */,
-				76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */,
 				768F650C21215BD500C1B1DA /* Scan.h */,
 				768F650D21215BD500C1B1DA /* Scan.mm */,
 				76C7C6B121759CC3000941E7 /* CameraManager.swift */,
 				76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */,
-				76EE33D1212E0D9000D62C3D /* SoundEffect.h */,
-				76EE33D2212E0D9000D62C3D /* SoundEffect.m */,
+				AA000002AAAA0002AA000001 /* SoundEffect.swift */,
 				7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */,
-				76999471215C9FF0007CF275 /* PaddedLabel.swift */,
 				7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */,
 				7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */,
-				768F65032121591E00C1B1DA /* TrueDepthFusion-Bridging-Header.h */,
+	
 				76EE33D4212E10A800D62C3D /* SoundEffects */,
-				768F64F22121570600C1B1DA /* Main.storyboard */,
-				768F64F72121570700C1B1DA /* LaunchScreen.storyboard */,
 				768F64F52121570700C1B1DA /* Assets.xcassets */,
 				768F64FA2121570700C1B1DA /* Info.plist */,
 				76FFDF112150559300500A84 /* Settings.bundle */,
@@ -212,8 +267,7 @@
 				7693C45521587EAA005A4772 /* ScanningViewRenderer.swift */,
 				76385561212F390500C7DA06 /* DepthColoringFilter.swift */,
 				76399679212E360D000E5D3D /* DepthColoringFilter.metal */,
-				7693C45D215886D4005A4772 /* SCPointCloudRenderer.h */,
-				7693C45E215886D4005A4772 /* SCPointCloudRenderer.m */,
+				AA000003AAAA0003AA000001 /* PointCloudRenderer.swift */,
 				7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */,
 			);
 			path = ScanningViewRendering;
@@ -229,6 +283,16 @@
 				76EE33D7212E131800D62C3D /* ScanningFinished.m4a */,
 			);
 			path = SoundEffects;
+			sourceTree = "<group>";
+		};
+		TT000020TTTT0020TT000020 /* TrueDepthFusionTests */ = {
+			isa = PBXGroup;
+			children = (
+				TT000001TTTT0001TT000000 /* SoundEffectTests.swift */,
+				TT000002TTTT0002TT000000 /* ScanStoreTests.swift */,
+				TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */,
+			);
+			path = TrueDepthFusionTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -253,6 +317,23 @@
 			productReference = 768F64E82121570600C1B1DA /* TrueDepthFusion.app */;
 			productType = "com.apple.product-type.application";
 		};
+		TT000030TTTT0030TT000030 /* TrueDepthFusionTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = TT000050TTTT0050TT000050 /* Build configuration list for PBXNativeTarget "TrueDepthFusionTests" */;
+			buildPhases = (
+				TT000040TTTT0040TT000040 /* Sources */,
+				TT000010TTTT0010TT000010 /* Frameworks (Tests) */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				TT000060TTTT0060TT000060 /* PBXTargetDependency */,
+			);
+			name = TrueDepthFusionTests;
+			productName = TrueDepthFusionTests;
+			productReference = TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -266,6 +347,10 @@
 					768F64E72121570600C1B1DA = {
 						CreatedOnToolsVersion = 9.4.1;
 						LastSwiftMigration = 1020;
+					};
+					TT000030TTTT0030TT000030 = {
+						CreatedOnToolsVersion = 1610;
+						TestTargetID = 768F64E72121570600C1B1DA;
 					};
 				};
 			};
@@ -287,6 +372,7 @@
 			projectRoot = "";
 			targets = (
 				768F64E72121570600C1B1DA /* TrueDepthFusion */,
+				TT000030TTTT0030TT000030 /* TrueDepthFusionTests */,
 			);
 		};
 /* End PBXProject section */
@@ -300,11 +386,9 @@
 				76EE33DB212E131800D62C3D /* ScanningFinished.m4a in Resources */,
 				768F650821215A6100C1B1DA /* ScanPreviewViewController.scn in Resources */,
 				76FFDF122150559300500A84 /* Settings.bundle in Resources */,
-				768F64F92121570700C1B1DA /* LaunchScreen.storyboard in Resources */,
 				768F64F62121570700C1B1DA /* Assets.xcassets in Resources */,
 				76558BA72135FF86005AECFE /* ScanningCanceled.m4a in Resources */,
 				76EE33DA212E131800D62C3D /* Countdown.m4a in Resources */,
-				768F64F42121570600C1B1DA /* Main.storyboard in Resources */,
 				76558BA52135FE2B005AECFE /* ScanningContinued.wav in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -316,25 +400,47 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */,
+				AA000021AAAA0021AA000021 /* BPLYScanningView.swift in Sources */,
 				7693C45621587EAA005A4772 /* ScanningViewRenderer.swift in Sources */,
-				768F65052121591F00C1B1DA /* ScanningViewController.swift in Sources */,
 				76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */,
 				7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */,
-				76EE33D3212E0D9000D62C3D /* SoundEffect.m in Sources */,
+				AA000002AAAA0002AA000002 /* SoundEffect.swift in Sources */,
 				7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */,
 				76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */,
-				7693C45F215886D4005A4772 /* SCPointCloudRenderer.m in Sources */,
-				76E2E7E3212BC452006BEAC6 /* ScansViewController.swift in Sources */,
-				768F650921215A6100C1B1DA /* ScanPreviewViewController.swift in Sources */,
+				AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */,
 				7639967A212E360D000E5D3D /* DepthColoringFilter.metal in Sources */,
 				7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */,
-				76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */,
 				76385562212F390500C7DA06 /* DepthColoringFilter.swift in Sources */,
-				76871D032193AB9D00C1ABA0 /* InitialViewController.swift in Sources */,
 				F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */,
 				768F650E21215BD500C1B1DA /* Scan.mm in Sources */,
-				768F650B21215B3C00C1B1DA /* AppDelegate.swift in Sources */,
+				AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */,
+				AA000005AAAA0005AA000005 /* ScanStore.swift in Sources */,
+				AA000006AAAA0006AA000006 /* RootView.swift in Sources */,
+				AA000007AAAA0007AA000007 /* InitialView.swift in Sources */,
+				AA000008AAAA0008AA000008 /* Route.swift in Sources */,
+				AA000009AAAA0009AA000009 /* ScansListView.swift in Sources */,
+				AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */,
+				AA000011AAAA0011AA000011 /* ScanPreviewView.swift in Sources */,
+				AA000012AAAA0012AA000012 /* ScanPreviewSceneView.swift in Sources */,
+				AA000013AAAA0013AA000013 /* MeshingService.swift in Sources */,
+				AA000014AAAA0014AA000014 /* ActivityView.swift in Sources */,
+				AA000015AAAA0015AA000015 /* ScanPreviewHostingController.swift in Sources */,
+				AA000016AAAA0016AA000016 /* ScanningSession.swift in Sources */,
+				AA000017AAAA0017AA000017 /* ScanningView.swift in Sources */,
+				AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */,
+				AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */,
+				AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */,
+				AA000022AAAA0022AA000022 /* ExportSheet.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		TT000040TTTT0040TT000040 /* Sources (Tests) */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */,
+				TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */,
+				TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -345,25 +451,23 @@
 			isa = PBXTargetDependency;
 			productRef = 76296F2C2CFE13EC003EE037 /* ZipArchive */;
 		};
+		TT000060TTTT0060TT000060 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 768F64E72121570600C1B1DA /* TrueDepthFusion */;
+			targetProxy = TT000061TTTT0061TT000061 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
-/* Begin PBXVariantGroup section */
-		768F64F22121570600C1B1DA /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				768F64F32121570600C1B1DA /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
+/* Begin PBXContainerItemProxy section */
+		TT000061TTTT0061TT000061 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 76539C8E20F5B1FE009C332E /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 768F64E72121570600C1B1DA;
+			remoteInfo = TrueDepthFusion;
 		};
-		768F64F72121570700C1B1DA /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				768F64F82121570700C1B1DA /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
+/* End PBXContainerItemProxy section */
+
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
@@ -532,7 +636,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
-				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -555,8 +659,56 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
 				SDKROOT = iphoneos;
-				SWIFT_OBJC_BRIDGING_HEADER = "TrueDepthFusion/TrueDepthFusion-Bridging-Header.h";
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		TT000051TTTT0051TT000051 /* Debug (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 82NA5C4XZT;
+				INFOPLIST_FILE = TrueDepthFusionTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusionTests;
+				PRODUCT_NAME = TrueDepthFusionTests;
+				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrueDepthFusion.app/TrueDepthFusion";
+			};
+			name = Debug;
+		};
+		TT000052TTTT0052TT000052 /* Release (Tests) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 82NA5C4XZT;
+				INFOPLIST_FILE = TrueDepthFusionTests/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusionTests;
+				PRODUCT_NAME = TrueDepthFusionTests;
+				SDKROOT = iphoneos;
+				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TrueDepthFusion.app/TrueDepthFusion";
 			};
 			name = Release;
 		};
@@ -577,6 +729,15 @@
 			buildConfigurations = (
 				768F64FD2121570700C1B1DA /* Debug */,
 				768F64FE2121570700C1B1DA /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		TT000050TTTT0050TT000050 /* Build configuration list for PBXNativeTarget "TrueDepthFusionTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				TT000051TTTT0051TT000051 /* Debug */,
+				TT000052TTTT0052TT000052 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
