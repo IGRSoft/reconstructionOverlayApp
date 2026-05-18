@@ -84,7 +84,7 @@ struct ScansListView: View {
             }
         }
         .sheet(item: $selectedScan) { selection in
-            ScanPreviewViewRepresentable(scan: selection.scan)
+            ScanPreviewView(scan: selection.scan)
                 .environmentObject(scanStore)
                 .ignoresSafeArea()
         }
@@ -240,38 +240,6 @@ private struct ExportNameView: View {
     }
 }
 
-// MARK: - ScanPreviewViewRepresentable (transient; removed in Phase 6)
-
-private struct ScanPreviewViewRepresentable: UIViewControllerRepresentable {
-    @EnvironmentObject var scanStore: ScanStore
-    let scan: Scan
-
-    func makeUIViewController(context: Context) -> ScanPreviewViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ScanPreviewViewController") as! ScanPreviewViewController
-        vc.scanStore = scanStore
-        vc.scan = scan
-        vc.doneHandler = { context.coordinator.dismiss() }
-        vc.deletionHandler = { [weak vc] in
-            guard let vc else { return }
-            scanStore.remove(vc.scan!)
-            context.coordinator.dismiss()
-        }
-        return vc
-    }
-
-    func updateUIViewController(_ uiViewController: ScanPreviewViewController, context: Context) {
-        uiViewController.scan = scan
-    }
-
-    func makeCoordinator() -> Coordinator { Coordinator() }
-
-    @MainActor
-    final class Coordinator {
-        var dismiss: () -> Void = {}
-    }
-}
-
 // MARK: - UIApplication helper
 
 private extension UIApplication {
@@ -280,15 +248,10 @@ private extension UIApplication {
             .compactMap { $0 as? UIWindowScene }
             .flatMap { $0.windows }
             .first(where: { $0.isKeyWindow })?.rootViewController
-        if let nav = root as? UINavigationController {
-            return topViewController(base: nav.visibleViewController)
-        }
-        if let tab = root as? UITabBarController {
-            return topViewController(base: tab.selectedViewController)
-        }
-        if let presented = root?.presentedViewController {
-            return topViewController(base: presented)
-        }
+        if let nav = root as? UINavigationController { return topViewController(base: nav.visibleViewController) }
+        if let tab = root as? UITabBarController { return topViewController(base: tab.selectedViewController) }
+        if let presented = root?.presentedViewController { return topViewController(base: presented) }
         return root
     }
 }
+
