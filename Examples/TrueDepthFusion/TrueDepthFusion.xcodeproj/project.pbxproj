@@ -13,6 +13,8 @@
 		AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */; };
 		AA000005AAAA0005AA000005 /* ScanStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000005AAAA0005AA000001 /* ScanStore.swift */; };
 		AA000006AAAA0006AA000006 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006AAAA0006AA000001 /* RootView.swift */; };
+		AA000007AAAA0007AA000007 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000007AAAA0007AA000001 /* InitialView.swift */; };
+		AA000008AAAA0008AA000008 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008AAAA0008AA000001 /* Route.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -24,7 +26,6 @@
 		767001C3227B82580037210E /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A52430AE213F482D00A39A38 /* MetalKit.framework */; };
 		7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76857187222CCB4000066B6E /* BPLYScanningViewController.swift */; };
 		7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */; };
-		76871D032193AB9D00C1ABA0 /* InitialViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76871D022193AB9D00C1ABA0 /* InitialViewController.swift */; };
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
 		768F64F42121570600C1B1DA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F22121570600C1B1DA /* Main.storyboard */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
@@ -70,6 +71,8 @@
 		AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrueDepthFusionApp.swift; sourceTree = "<group>"; };
 		AA000005AAAA0005AA000001 /* ScanStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStore.swift; sourceTree = "<group>"; };
 		AA000006AAAA0006AA000001 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AA000007AAAA0007AA000001 /* InitialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialView.swift; sourceTree = "<group>"; };
+		AA000008AAAA0008AA000001 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -86,7 +89,6 @@
 		76857187222CCB4000066B6E /* BPLYScanningViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPLYScanningViewController.swift; sourceTree = "<group>"; };
 		7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BPLYDepthDataAccumulator.h; sourceTree = "<group>"; };
 		7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BPLYDepthDataAccumulator.mm; sourceTree = "<group>"; };
-		76871D022193AB9D00C1ABA0 /* InitialViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialViewController.swift; sourceTree = "<group>"; };
 		768967EE2394305D007179B2 /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
 		768F64E82121570600C1B1DA /* TrueDepthFusion.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TrueDepthFusion.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		768F64F32121570600C1B1DA /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
@@ -200,7 +202,8 @@
 				AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */,
 				AA000005AAAA0005AA000001 /* ScanStore.swift */,
 				AA000006AAAA0006AA000001 /* RootView.swift */,
-				76871D022193AB9D00C1ABA0 /* InitialViewController.swift */,
+				AA000007AAAA0007AA000001 /* InitialView.swift */,
+				AA000008AAAA0008AA000001 /* Route.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
 				768F65042121591F00C1B1DA /* ScanningViewController.swift */,
 				76857187222CCB4000066B6E /* BPLYScanningViewController.swift */,
@@ -351,12 +354,13 @@
 				7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */,
 				76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */,
 				76385562212F390500C7DA06 /* DepthColoringFilter.swift in Sources */,
-				76871D032193AB9D00C1ABA0 /* InitialViewController.swift in Sources */,
 				F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */,
 				768F650E21215BD500C1B1DA /* Scan.mm in Sources */,
 				AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */,
 				AA000005AAAA0005AA000005 /* ScanStore.swift in Sources */,
 				AA000006AAAA0006AA000006 /* RootView.swift in Sources */,
+				AA000007AAAA0007AA000007 /* InitialView.swift in Sources */,
+				AA000008AAAA0008AA000008 /* Route.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
