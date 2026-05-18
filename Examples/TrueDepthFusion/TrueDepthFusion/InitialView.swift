@@ -49,9 +49,7 @@ struct InitialView: View {
             .navigationDestination(for: Route.self) { route in
                 switch route {
                 case .scansList:
-                    ScansListViewRepresentable()
-                        .environmentObject(scanStore)
-                        .ignoresSafeArea()
+                    ScansListView()
                 }
             }
         }
@@ -82,20 +80,7 @@ extension UserDefaults {
     }
 }
 
-// MARK: - UIKit VC Representables (transient; removed in Phase 5-8)
-
-private struct ScansListViewRepresentable: UIViewControllerRepresentable {
-    @EnvironmentObject var scanStore: ScanStore
-
-    func makeUIViewController(context: Context) -> ScansViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "ScansViewController") as! ScansViewController
-        vc.scanStore = scanStore
-        return vc
-    }
-
-    func updateUIViewController(_ uiViewController: ScansViewController, context: Context) {}
-}
+// MARK: - UIKit VC Representables (transient; removed in Phase 7-8)
 
 private struct ScanningViewRepresentable: UIViewControllerRepresentable {
     @EnvironmentObject var scanStore: ScanStore

@@ -15,6 +15,8 @@
 		AA000006AAAA0006AA000006 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006AAAA0006AA000001 /* RootView.swift */; };
 		AA000007AAAA0007AA000007 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000007AAAA0007AA000001 /* InitialView.swift */; };
 		AA000008AAAA0008AA000008 /* Route.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000008AAAA0008AA000001 /* Route.swift */; };
+		AA000009AAAA0009AA000009 /* ScansListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000009AAAA0009AA000001 /* ScansListView.swift */; };
+		AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -40,7 +42,6 @@
 		7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */ = {isa = PBXBuildFile; fileRef = 7693C460215886FC005A4772 /* SCPointCloudRenderer.metal */; };
 		76999472215C9FF0007CF275 /* PaddedLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76999471215C9FF0007CF275 /* PaddedLabel.swift */; };
 		76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C7C6B121759CC3000941E7 /* CameraManager.swift */; };
-		76E2E7E3212BC452006BEAC6 /* ScansViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */; };
 		76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */; };
 		76EE33D3212E0D9000D62C3D /* SoundEffect.m in Sources */ = {isa = PBXBuildFile; fileRef = 76EE33D2212E0D9000D62C3D /* SoundEffect.m */; };
 		76EE33D9212E131800D62C3D /* ScanningBegan.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76EE33D5212E131700D62C3D /* ScanningBegan.m4a */; };
@@ -73,6 +74,8 @@
 		AA000006AAAA0006AA000001 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		AA000007AAAA0007AA000001 /* InitialView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InitialView.swift; sourceTree = "<group>"; };
 		AA000008AAAA0008AA000001 /* Route.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Route.swift; sourceTree = "<group>"; };
+		AA000009AAAA0009AA000001 /* ScansListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScansListView.swift; sourceTree = "<group>"; };
+		AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JetsonSettingsView.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -111,7 +114,6 @@
 		76BBFD49229B3E990004F9EE /* CoreML.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreML.framework; path = System/Library/Frameworks/CoreML.framework; sourceTree = SDKROOT; };
 		76BBFD51229B3F730004F9EE /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		76C7C6B121759CC3000941E7 /* CameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CameraManager.swift; path = TrueDepthFusion/CameraManager.swift; sourceTree = SOURCE_ROOT; };
-		76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScansViewController.swift; sourceTree = "<group>"; };
 		76E88D4521C040AE008793AB /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		76EE33CC212DDD9300D62C3D /* AudioAndHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAndHapticEngine.swift; sourceTree = "<group>"; };
 		76EE33D1212E0D9000D62C3D /* SoundEffect.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SoundEffect.h; sourceTree = "<group>"; };
@@ -204,12 +206,13 @@
 				AA000006AAAA0006AA000001 /* RootView.swift */,
 				AA000007AAAA0007AA000001 /* InitialView.swift */,
 				AA000008AAAA0008AA000001 /* Route.swift */,
+				AA000009AAAA0009AA000001 /* ScansListView.swift */,
+				AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
 				768F65042121591F00C1B1DA /* ScanningViewController.swift */,
 				76857187222CCB4000066B6E /* BPLYScanningViewController.swift */,
 				768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */,
 				768F650721215A6100C1B1DA /* ScanPreviewViewController.swift */,
-				76E2E7E2212BC452006BEAC6 /* ScansViewController.swift */,
 				768F650C21215BD500C1B1DA /* Scan.h */,
 				768F650D21215BD500C1B1DA /* Scan.mm */,
 				76C7C6B121759CC3000941E7 /* CameraManager.swift */,
@@ -348,7 +351,6 @@
 				7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */,
 				76EE33CD212DDD9300D62C3D /* AudioAndHapticEngine.swift in Sources */,
 				AA000003AAAA0003AA000003 /* PointCloudRenderer.swift in Sources */,
-				76E2E7E3212BC452006BEAC6 /* ScansViewController.swift in Sources */,
 				768F650921215A6100C1B1DA /* ScanPreviewViewController.swift in Sources */,
 				7639967A212E360D000E5D3D /* DepthColoringFilter.metal in Sources */,
 				7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */,
@@ -361,6 +363,8 @@
 				AA000006AAAA0006AA000006 /* RootView.swift in Sources */,
 				AA000007AAAA0007AA000007 /* InitialView.swift in Sources */,
 				AA000008AAAA0008AA000008 /* Route.swift in Sources */,
+				AA000009AAAA0009AA000009 /* ScansListView.swift in Sources */,
+				AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
