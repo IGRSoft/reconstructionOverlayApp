@@ -133,8 +133,8 @@ private struct ScanRow: View {
 // MARK: - ScanSelection
 
 struct ScanSelection: Identifiable {
-    let id = UUID()
     let scan: Scan
+    var id: ObjectIdentifier { ObjectIdentifier(scan) }
 }
 
 // MARK: - ExportContext
