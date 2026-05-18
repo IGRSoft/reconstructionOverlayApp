@@ -10,7 +10,7 @@ struct FaceOvalOverlay: View {
     var body: some View {
         GeometryReader { proxy in
             let w = proxy.size.width * 0.60
-            let h = proxy.size.height * 0.72
+            let h = proxy.size.height * 0.60
             let x = (proxy.size.width - w) / 2
             let y = (proxy.size.height - h) / 2
 

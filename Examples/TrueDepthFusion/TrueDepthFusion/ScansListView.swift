@@ -54,14 +54,14 @@ struct ScansListView: View {
                             }
 
                             Button {
-                                exportContext = ExportContext(scan: scan, mode: .export)
+                                exportContext = ExportContext(scan: scan, target: .share)
                             } label: {
                                 Label("Export", systemImage: "square.and.arrow.up")
                             }
                             .tint(.blue)
 
                             Button {
-                                exportContext = ExportContext(scan: scan, mode: .jetson)
+                                exportContext = ExportContext(scan: scan, target: .jetson)
                             } label: {
                                 Label("Send to Robot", systemImage: "antenna.radiowaves.left.and.right")
                             }
@@ -92,7 +92,8 @@ struct ScansListView: View {
             JetsonSettingsView()
         }
         .sheet(item: $exportContext) { ctx in
-            ExportNameView(context: ctx, scanStore: scanStore)
+            ExportSheet(scan: ctx.scan, mesh: nil, target: ctx.target)
+                .environmentObject(scanStore)
         }
     }
 }
@@ -140,118 +141,7 @@ struct ScanSelection: Identifiable {
 // MARK: - ExportContext
 
 struct ExportContext: Identifiable {
-    enum Mode { case export, jetson }
     let id = UUID()
     let scan: Scan
-    let mode: Mode
+    let target: ExportTarget
 }
-
-// MARK: - ExportNameView (name-prompt sheet)
-
-private struct ExportNameView: View {
-    let context: ExportContext
-    let scanStore: ScanStore
-
-    @State private var name: String = ""
-    @Environment(\.dismiss) private var dismiss
-    @State private var isWorking = false
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("Leave blank for default filename", text: $name)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                }
-            }
-            .navigationTitle("Export")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Continue") {
-                        isWorking = true
-                        Task {
-                            await perform()
-                            isWorking = false
-                            dismiss()
-                        }
-                    }
-                    .disabled(isWorking)
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
-        }
-    }
-
-    private func perform() async {
-        let namePrefix = Self.sanitize(name)
-        switch context.mode {
-        case .export:
-            await exportPLY(scan: context.scan, namePrefix: namePrefix)
-        case .jetson:
-            await sendToJetson(scan: context.scan, namePrefix: namePrefix)
-        }
-    }
-
-    private func exportPLY(scan: Scan, namePrefix: String) async {
-        guard scan.plyPath != nil else { return }
-        let baseURL = scan.writeCompressedPLY()
-        let renamedURL = baseURL.deletingLastPathComponent()
-            .appendingPathComponent(Self.outputFilename(name: namePrefix))
-        try? FileManager.default.removeItem(at: renamedURL)
-        try? FileManager.default.copyItem(at: baseURL, to: renamedURL)
-        await MainActor.run {
-            let av = UIActivityViewController(activityItems: [renamedURL], applicationActivities: nil)
-            UIApplication.shared.topViewController()?.present(av, animated: true)
-        }
-    }
-
-    private func sendToJetson(scan: Scan, namePrefix: String) async {
-        guard let plyPath = scan.plyPath else { return }
-        let renamedPath = NSTemporaryDirectory() + Self.outputFilename(name: namePrefix)
-        try? FileManager.default.removeItem(atPath: renamedPath)
-        try? FileManager.default.copyItem(atPath: plyPath, toPath: renamedPath)
-        let url = URL(fileURLWithPath: renamedPath)
-        JetsonUploader.upload(plyFileURL: url) { result in
-            Task { @MainActor in
-                if let vc = UIApplication.shared.topViewController() {
-                    JetsonUploader.showResult(result, from: vc)
-                }
-            }
-        }
-    }
-
-    private static func sanitize(_ input: String) -> String {
-        let under = input.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
-        return String(under.unicodeScalars.filter { allowed.contains($0) })
-    }
-
-    private static func outputFilename(name: String) -> String {
-        if name.isEmpty {
-            let f = DateFormatter()
-            f.dateFormat = "yyyy-MM-dd--HH-mm-ss"
-            return "model_\(f.string(from: Date())).ply"
-        }
-        return "model_\(name).ply"
-    }
-}
-
-// MARK: - UIApplication helper
-
-private extension UIApplication {
-    func topViewController(base: UIViewController? = nil) -> UIViewController? {
-        let root = base ?? connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first(where: { $0.isKeyWindow })?.rootViewController
-        if let nav = root as? UINavigationController { return topViewController(base: nav.visibleViewController) }
-        if let tab = root as? UITabBarController { return topViewController(base: tab.selectedViewController) }
-        if let presented = root?.presentedViewController { return topViewController(base: presented) }
-        return root
-    }
-}
-

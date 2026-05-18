@@ -17,9 +17,7 @@ final class ScanPreviewViewController: UIViewController {
     // MARK: - Public API (same as old ScanPreviewViewController)
 
     var scanStore: ScanStore!
-    var deletionHandler: (() -> Void)?
-    var doneHandler: (() -> Void)?
-
+    
     var scan: Scan? {
         didSet { _rebuildHostingController() }
     }
@@ -37,9 +35,7 @@ final class ScanPreviewViewController: UIViewController {
 
         let inner = _InnerScanPreviewContainer(
             scan: scan,
-            scanStore: scanStore,
-            deletionHandler: { [weak self] in self?.deletionHandler?() },
-            doneHandler: { [weak self] in self?.doneHandler?() }
+            scanStore: scanStore
         )
         let hosting = UIHostingController(rootView: inner)
         addChild(hosting)
@@ -61,8 +57,6 @@ final class ScanPreviewViewController: UIViewController {
 private struct _InnerScanPreviewContainer: View {
     let scan: Scan
     let scanStore: ScanStore
-    let deletionHandler: () -> Void
-    let doneHandler: () -> Void
 
     var body: some View {
         ScanPreviewView(scan: scan)

@@ -22,8 +22,9 @@ struct ScanningView: View {
 
             // Face oval guide
             FaceOvalOverlay(isScanning: session.scanning)
-                .ignoresSafeArea()
                 .allowsHitTesting(false)
+                .frame(maxHeight: 600)
+                .padding(.vertical, 20)
 
             // Guidance labels
             guidanceLabels

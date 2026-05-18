@@ -99,7 +99,7 @@ final class JetsonUploader {
     }
 
     // MARK: - Result UI
-    static func showResult(_ result: Result<Void, Error>, from viewController: UIViewController) {
+    @MainActor static func showResult(_ result: Result<Void, Error>, from viewController: UIViewController) {
         let alert: UIAlertController
         switch result {
         case .success:

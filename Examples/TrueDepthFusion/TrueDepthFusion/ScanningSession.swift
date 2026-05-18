@@ -151,6 +151,16 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
 
     func dismissCompleted() {
         completedScan = nil
+        // Preview was presented because stopScanning(reason: .finished) fully
+        // stopped the AVCaptureSession. Restart it so the live preview resumes
+        // when the user returns to ScanningView (.onAppear does not re-fire
+        // after a .fullScreenCover dismiss).
+        cameraManager.paused = false
+        cameraManager.startSession { result in
+            if case .configurationFailed = result {
+                print("Camera reconfiguration failed after preview dismiss")
+            }
+        }
     }
 
     // MARK: - CameraManagerDelegate

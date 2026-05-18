@@ -16,8 +16,7 @@ struct ScanPreviewView: View {
     @StateObject private var meshingService = MeshingService()
 
     @State private var showJetsonSettings = false
-    @State private var showNamePrompt = false
-    @State private var pendingExportMode: ExportMode?
+    @State private var pendingExportTarget: ExportTarget?
     @State private var sceneViewRef: SCNView?
 
     var body: some View {
@@ -75,14 +74,22 @@ struct ScanPreviewView: View {
 
                 VStack(alignment: .trailing, spacing: 8) {
                     Button {
-                        showNamePrompt = true
-                        pendingExportMode = .share
+                        pendingExportTarget = .share
                     } label: {
-                        Image(systemName: "square.and.arrow.up")
-                            .font(.system(size: 20, weight: .regular))
+                        Label("Share", systemImage: "square.and.arrow.up")
+                            .font(.body)
+                            .labelStyle(.titleAndIcon)
                             .foregroundStyle(.blue)
-                            .frame(width: 27, height: 27)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color(.systemBackground).opacity(0.85))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 8)
+                                    .stroke(Color.blue, lineWidth: 1)
+                            )
+                            .cornerRadius(8)
                     }
+                    .accessibilityLabel("Share")
 
                     Button {
                         showJetsonSettings = true
@@ -102,13 +109,11 @@ struct ScanPreviewView: View {
                 Spacer()
                 HStack {
                     Spacer()
-                    VStack(spacing: 8) {
+                    VStack(spacing: 24) {
                         if !meshingService.isRunning {
                             Button {
                                 if meshingService.mesh != nil {
-                                    // Already meshed — export options
-                                    showNamePrompt = true
-                                    pendingExportMode = .share
+                                    pendingExportTarget = .share
                                 } else {
                                     meshingService.runMeshing(on: scan)
                                 }
@@ -123,8 +128,13 @@ struct ScanPreviewView: View {
                                     )
                             }
 
-                            Button("Done") { dismiss() }
-                                .padding(.bottom, 4)
+                            Button("Done") {
+                                if scan.plyPath == nil {
+                                    scanStore.add(scan)
+                                }
+                                dismiss()
+                            }
+                            .padding(.bottom, 4)
                         }
                     }
                     Spacer()
@@ -132,170 +142,12 @@ struct ScanPreviewView: View {
                 .padding(.bottom, 40)
             }
         }
-        // Name prompt sheet
-        .sheet(isPresented: $showNamePrompt) {
-            if let mode = pendingExportMode {
-                ExportNamePromptView(scan: scan, mesh: meshingService.mesh, mode: mode, sceneView: sceneViewRef)
-            }
+        .sheet(item: $pendingExportTarget) { target in
+            ExportSheet(scan: scan, mesh: meshingService.mesh, target: target)
+                .environmentObject(scanStore)
         }
         .sheet(isPresented: $showJetsonSettings) {
             JetsonSettingsView()
         }
-    }
-}
-
-// MARK: - ExportMode
-
-enum ExportMode {
-    case share
-    case jetson
-}
-
-// MARK: - ExportNamePromptView
-
-private struct ExportNamePromptView: View {
-    let scan: Scan
-    let mesh: SCMesh?
-    let mode: ExportMode
-    let sceneView: SCNView?
-
-    @State private var name: String = ""
-    @State private var isWorking = false
-    @State private var shareItems: [Any]?
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    TextField("Leave blank for default filename", text: $name)
-                        .autocorrectionDisabled()
-                        .textInputAutocapitalization(.never)
-                }
-            }
-            .navigationTitle("Export")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Continue") {
-                        isWorking = true
-                        Task {
-                            await perform()
-                            isWorking = false
-                        }
-                    }
-                    .disabled(isWorking)
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
-                }
-            }
-            .sheet(item: Binding(
-                get: { shareItems.map { SharePayload(items: $0) } },
-                set: { if $0 == nil { shareItems = nil } }
-            )) { payload in
-                ActivityView(activityItems: payload.items, applicationActivities: nil)
-                    .ignoresSafeArea()
-            }
-        }
-    }
-
-    private func perform() async {
-        let namePrefix = Self.sanitize(name)
-        switch mode {
-        case .share:
-            await performShare(namePrefix: namePrefix)
-        case .jetson:
-            await performJetson(namePrefix: namePrefix)
-        }
-    }
-
-    private func performShare(namePrefix: String) async {
-        let url: URL?
-        if let mesh = mesh {
-            let filename = Self.outputFilename(name: namePrefix)
-            let path = NSTemporaryDirectory() + filename
-            try? FileManager.default.removeItem(atPath: path)
-            mesh.writeToPLY(atPath: path)
-            url = URL(fileURLWithPath: path)
-        } else {
-            url = Self.compressedPLY(for: scan, namePrefix: namePrefix)
-        }
-        if let url {
-            await MainActor.run { shareItems = [url] }
-        }
-    }
-
-    private func performJetson(namePrefix: String) async {
-        let plyURL: URL
-        if let mesh = mesh {
-            let filename = Self.outputFilename(name: namePrefix)
-            let path = NSTemporaryDirectory() + filename
-            try? FileManager.default.removeItem(atPath: path)
-            mesh.writeToPLY(atPath: path)
-            plyURL = URL(fileURLWithPath: path)
-        } else if let plyPath = scan.plyPath {
-            let renamed = NSTemporaryDirectory() + Self.outputFilename(name: namePrefix)
-            try? FileManager.default.removeItem(atPath: renamed)
-            try? FileManager.default.copyItem(atPath: plyPath, toPath: renamed)
-            plyURL = URL(fileURLWithPath: renamed)
-        } else {
-            return
-        }
-
-        JetsonUploader.upload(plyFileURL: plyURL) { result in
-            Task { @MainActor in
-                if let vc = UIApplication.shared.topViewController() {
-                    JetsonUploader.showResult(result, from: vc)
-                }
-            }
-        }
-        dismiss()
-    }
-
-    private static func sanitize(_ input: String) -> String {
-        let under = input.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: " ", with: "_")
-        let allowed = CharacterSet.alphanumerics.union(CharacterSet(charactersIn: "-_"))
-        return String(under.unicodeScalars.filter { allowed.contains($0) })
-    }
-
-    private static func outputFilename(name: String) -> String {
-        if name.isEmpty {
-            let f = DateFormatter()
-            f.dateFormat = "yyyy-MM-dd--HH-mm-ss"
-            return "model_\(f.string(from: Date())).ply"
-        }
-        return "model_\(name).ply"
-    }
-
-    private static func compressedPLY(for scan: Scan, namePrefix: String) -> URL? {
-        let url = scan.writeCompressedPLY()
-        let renamed = url.deletingLastPathComponent()
-            .appendingPathComponent(outputFilename(name: namePrefix))
-        try? FileManager.default.removeItem(at: renamed)
-        try? FileManager.default.copyItem(at: url, to: renamed)
-        return renamed
-    }
-}
-
-// MARK: - SharePayload (Identifiable wrapper for sheet)
-
-private struct SharePayload: Identifiable {
-    let id = UUID()
-    let items: [Any]
-}
-
-// MARK: - UIApplication helper
-
-private extension UIApplication {
-    func topViewController(base: UIViewController? = nil) -> UIViewController? {
-        let root = base ?? connectedScenes
-            .compactMap { $0 as? UIWindowScene }
-            .flatMap { $0.windows }
-            .first(where: { $0.isKeyWindow })?.rootViewController
-        if let nav = root as? UINavigationController { return topViewController(base: nav.visibleViewController) }
-        if let tab = root as? UITabBarController { return topViewController(base: tab.selectedViewController) }
-        if let presented = root?.presentedViewController { return topViewController(base: presented) }
-        return root
     }
 }

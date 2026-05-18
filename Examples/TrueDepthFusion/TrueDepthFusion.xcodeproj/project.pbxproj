@@ -27,6 +27,7 @@
 		AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000018AAAA0018AA000001 /* MetalLayerView.swift */; };
 		AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */; };
 		AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000020AAAA0020AA000001 /* ScanControls.swift */; };
+		AA000022AAAA0022AA000022 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022AAAA0022AA000001 /* ExportSheet.swift */; };
 		76296F272CFE10AB003EE037 /* StandardCyborgSDK in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; };
 		76296F282CFE10AB003EE037 /* StandardCyborgSDK in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 76296F262CFE10AB003EE037 /* StandardCyborgSDK */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
@@ -92,6 +93,7 @@
 		AA000018AAAA0018AA000001 /* MetalLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MetalLayerView.swift; sourceTree = "<group>"; };
 		AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
 		AA000020AAAA0020AA000001 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
+		AA000022AAAA0022AA000001 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		07317DCD240F0090006EAB2B /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
 		07317DCF240F0096006EAB2B /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		07317DD1240F009C006EAB2B /* OpenCL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenCL.framework; path = System/Library/Frameworks/OpenCL.framework; sourceTree = SDKROOT; };
@@ -238,6 +240,7 @@
 				AA000018AAAA0018AA000001 /* MetalLayerView.swift */,
 				AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */,
 				AA000020AAAA0020AA000001 /* ScanControls.swift */,
+				AA000022AAAA0022AA000001 /* ExportSheet.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
 				AA000021AAAA0021AA000001 /* BPLYScanningView.swift */,
 				768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */,
@@ -427,6 +430,7 @@
 				AA000018AAAA0018AA000018 /* MetalLayerView.swift in Sources */,
 				AA000019AAAA0019AA000019 /* FaceOvalOverlay.swift in Sources */,
 				AA000020AAAA0020AA000020 /* ScanControls.swift in Sources */,
+				AA000022AAAA0022AA000022 /* ExportSheet.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
