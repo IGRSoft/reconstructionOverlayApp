@@ -11,8 +11,6 @@ struct ScanningView: View {
 
     @StateObject private var session = ScanningSession()
     @State private var showLatestScan: ScanSelection? = nil
-    @State private var showScanPreview: Scan? = nil
-    @State private var hostViewRef: _MetalHostView? = nil
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
@@ -53,13 +51,11 @@ struct ScanningView: View {
         .onDisappear {
             session.stopSession()
         }
-        // Present scan preview when a scan completes
-        .onChange(of: session.completedScan) { newScan in
-            showScanPreview = newScan
-        }
+        // Present scan preview when a scan completes — bind directly to
+        // session.completedScan as the single source of truth.
         .fullScreenCover(item: Binding(
-            get: { showScanPreview.map { ScanSelection(scan: $0) } },
-            set: { if $0 == nil { showScanPreview = nil; session.dismissCompleted() } }
+            get: { session.completedScan.map { ScanSelection(scan: $0) } },
+            set: { if $0 == nil { session.dismissCompleted() } }
         )) { selection in
             ScanPreviewView(scan: selection.scan)
                 .environmentObject(scanStore)
