@@ -142,7 +142,11 @@ let package = Package(
                 "StandardCyborgCaptureObjC",
             ],
             path: "Sources/StandardCyborgCapture",
-            resources: [.process("Resources")]
+            resources: [
+                .process("Resources"),
+                .process("Rendering/DepthColoringFilter.metal"),
+                .process("Rendering/SCPointCloudRenderer.metal"),
+            ]
         ),
         .testTarget(
             name: "StandardCyborgFusionTests",

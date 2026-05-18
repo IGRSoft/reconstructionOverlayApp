@@ -1,20 +1,59 @@
 //
 //  ScanningView.swift
 
-import Metal
-import SwiftUI
-import StandardCyborgCapture
+#if os(iOS)
 
-struct ScanningView: View {
+import Metal
+import StandardCyborgFusion
+import StandardCyborgCaptureObjC
+import SwiftUI
+
+/// Top-level SwiftUI scanning view.
+///
+/// Owns its own ``ScanningSession`` (`@StateObject`) and overlays the
+/// ``MetalLayerView`` + ``FaceOvalOverlay`` + ``ScanControls`` HUD. When the
+/// session produces a completed scan, the view internally presents a
+/// ``ScanPreviewView`` via `.fullScreenCover` and forwards the host-supplied
+/// `onExport` / `onShowSettings` closures into that preview.
+///
+/// Inject a ``ScanStore`` via `.environmentObject(...)` before presentation.
+public struct ScanningView: View {
     @EnvironmentObject private var scanStore: ScanStore
-    @Environment(\.dismiss) private var dismiss
 
     @StateObject private var session = ScanningSession()
     @State private var showLatestScan: ScanSelection? = nil
 
+    private let onDone: () -> Void
+    private let onShowLatestScan: () -> Void
+    private let onExport: (Scan, SCMesh?) -> Void
+    private let onShowSettings: () -> Void
+
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
-    var body: some View {
+    /// - Parameters:
+    ///   - onExport: Forwarded into ``ScanPreviewView`` when the user
+    ///     taps Share inside the post-capture preview.
+    ///   - onShowSettings: Forwarded into ``ScanPreviewView`` for the
+    ///     gear button in the preview's top-right.
+    ///   - onDone: Called when the user dismisses the scanning view
+    ///     (the consumer typically pops a sheet or navigation route).
+    ///   - onShowLatestScan: Called when the user taps the latest-scan
+    ///     thumbnail in the HUD. The consumer is responsible for
+    ///     presenting a ``ScanPreviewView`` for ``ScanStore``'s first
+    ///     scan.
+    public init(
+        onExport: @escaping (Scan, SCMesh?) -> Void,
+        onShowSettings: @escaping () -> Void,
+        onDone: @escaping () -> Void,
+        onShowLatestScan: @escaping () -> Void
+    ) {
+        self.onExport = onExport
+        self.onShowSettings = onShowSettings
+        self.onDone = onDone
+        self.onShowLatestScan = onShowLatestScan
+    }
+
+    public var body: some View {
         ZStack {
             // Metal rendering layer (full screen)
             MetalLayerView(session: session, device: metalDevice)
@@ -32,15 +71,12 @@ struct ScanningView: View {
             // HUD controls
             ScanControls(
                 session: session,
-                latestScanThumbnail: session.latestScanThumbnail,
-                onShowLatestScan: {
-                    if let scan = scanStore.scans.first {
-                        showLatestScan = ScanSelection(scan: scan)
-                    }
-                },
+                latestScanThumbnail: session.latestScanThumbnail.map { Image(uiImage: $0) },
+                tapToStartStop: UserDefaults.standard.bool(forKey: "tap_to_start_stop"),
+                onShowLatestScan: onShowLatestScan,
                 onDone: {
                     session.stopSession()
-                    dismiss()
+                    onDone()
                 }
             )
         }
@@ -58,13 +94,12 @@ struct ScanningView: View {
             get: { session.completedScan.map { ScanSelection(scan: $0) } },
             set: { if $0 == nil { session.dismissCompleted() } }
         )) { selection in
-            ScanPreviewView(scan: selection.scan)
-                .environmentObject(scanStore)
-        }
-        // Show latest existing scan from the list
-        .sheet(item: $showLatestScan) { selection in
-            ScanPreviewView(scan: selection.scan)
-                .environmentObject(scanStore)
+            ScanPreviewView(
+                scan: selection.scan,
+                onExport: onExport,
+                onShowSettings: onShowSettings
+            )
+            .environmentObject(scanStore)
         }
     }
 
@@ -105,3 +140,18 @@ struct ScanningView: View {
         .allowsHitTesting(false)
     }
 }
+
+// MARK: - ScanSelection
+
+/// Identifiable wrapper around `Scan` so SwiftUI's `.sheet(item:)` /
+/// `.fullScreenCover(item:)` modifiers can present a scan.
+public struct ScanSelection: Identifiable {
+    public let scan: Scan
+    public var id: ObjectIdentifier { ObjectIdentifier(scan) }
+
+    public init(scan: Scan) {
+        self.scan = scan
+    }
+}
+
+#endif

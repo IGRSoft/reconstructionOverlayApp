@@ -1,9 +1,12 @@
 //
 //  ScanPreviewSceneView.swift
 
+#if os(iOS)
+
 import SceneKit
+import StandardCyborgFusion
+import StandardCyborgCaptureObjC
 import SwiftUI
-import StandardCyborgCapture
 
 /// UIViewRepresentable wrapper around SCNView.
 /// Uses UIViewRepresentable (not SwiftUI's SceneView) to preserve
@@ -22,7 +25,8 @@ struct ScanPreviewSceneView: UIViewRepresentable {
         sceneView.autoenablesDefaultLighting = true
 
         // Load the bundled .scn file which carries the camera (pointOfView)
-        if let scene = SCNScene(named: "ScanPreviewViewController.scn") {
+        if let url = Bundle.module.url(forResource: "ScanPreviewViewController", withExtension: "scn"),
+           let scene = try? SCNScene(url: url, options: nil) {
             sceneView.scene = scene
         } else {
             sceneView.scene = SCNScene()
@@ -90,3 +94,5 @@ struct ScanPreviewSceneView: UIViewRepresentable {
         var lastMesh: SCMesh?
     }
 }
+
+#endif

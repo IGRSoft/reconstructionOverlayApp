@@ -1,30 +1,47 @@
 //
 //  BPLYScanningView.swift
 
+#if os(iOS)
+
 import AVFoundation
 import CoreMotion
 import Metal
 import StandardCyborgFusion
+import StandardCyborgCaptureObjC
 import SwiftUI
-import StandardCyborgCapture
 
-struct BPLYScanningView: View {
+/// SwiftUI scanning view for the BPLY (raw frame dump) developer mode.
+///
+/// Captures frames into a per-session BPLY accumulator and hands the
+/// resulting zip URL back to the host via ``onExport``. Internals
+/// (`BPLYScanningSession`, `BPLYScanControls`) are intentionally
+/// fileprivate — the host customizes only the export and dismissal hooks.
+public struct BPLYScanningView: View {
     @EnvironmentObject private var scanStore: ScanStore
-    @Environment(\.dismiss) private var dismiss
+
+    private let onExport: (URL) -> Void
+    private let onDone: () -> Void
 
     @StateObject private var session = BPLYScanningSession()
-    @State private var shareItems: [Any]?
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
-    var body: some View {
+    public init(
+        onExport: @escaping (URL) -> Void,
+        onDone: @escaping () -> Void
+    ) {
+        self.onExport = onExport
+        self.onDone = onDone
+    }
+
+    public var body: some View {
         ZStack {
             MetalLayerView(session: session, device: metalDevice)
                 .ignoresSafeArea()
 
             BPLYScanControls(session: session, onDone: {
                 session.stopSession()
-                dismiss()
+                onDone()
             })
         }
         .ignoresSafeArea()
@@ -36,29 +53,18 @@ struct BPLYScanningView: View {
             session.stopSession()
         }
         .onChange(of: session.exportURL) { url in
-            if let url { shareItems = [url] }
-        }
-        .sheet(item: Binding(
-            get: { shareItems.map { ShareableURL(url: $0[0] as! URL) } },
-            set: { if $0 == nil { shareItems = nil; session.dismissExport() } }
-        )) { s in
-            ActivityView(activityItems: [s.url], applicationActivities: nil)
-                .ignoresSafeArea()
+            if let url {
+                onExport(url)
+                session.dismissExport()
+            }
         }
     }
-}
-
-// MARK: - ShareableURL
-
-private struct ShareableURL: Identifiable {
-    let id = UUID()
-    let url: URL
 }
 
 // MARK: - BPLYScanningSession
 
 @MainActor
-final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
+private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
 
     @Published private(set) var scanning = false
     @Published private(set) var elapsedSeconds = 0
@@ -288,7 +294,7 @@ private struct BPLYScanControls: View {
                 HStack(alignment: .center) {
                     Spacer()
                     Button { session.shutterTapped() } label: {
-                        Image(session.scanning ? "CameraButtonRecording" : "CameraButton")
+                        Image(session.scanning ? "CameraButtonRecording" : "CameraButton", bundle: .module)
                             .resizable()
                             .frame(width: 72, height: 72)
                     }
@@ -302,3 +308,17 @@ private struct BPLYScanControls: View {
         }
     }
 }
+
+// MARK: - UserDefaults helper
+
+fileprivate extension UserDefaults {
+    func bool(forKey key: String, defaultValue: Bool) -> Bool {
+        if let defaultNumber = object(forKey: key) as? NSNumber {
+            return defaultNumber.boolValue
+        } else {
+            return defaultValue
+        }
+    }
+}
+
+#endif

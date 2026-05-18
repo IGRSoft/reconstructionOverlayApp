@@ -1,13 +1,19 @@
 //
 //  FaceOvalOverlay.swift
 
+#if os(iOS)
+
 import SwiftUI
 
 /// Dashed oval face-guide overlay matching ScanningViewController's CAShapeLayer.
-struct FaceOvalOverlay: View {
-    let isScanning: Bool
+public struct FaceOvalOverlay: View {
+    public let isScanning: Bool
 
-    var body: some View {
+    public init(isScanning: Bool) {
+        self.isScanning = isScanning
+    }
+
+    public var body: some View {
         GeometryReader { proxy in
             let w = proxy.size.width * 0.60
             let h = proxy.size.height * 0.60
@@ -23,3 +29,5 @@ struct FaceOvalOverlay: View {
         }
     }
 }
+
+#endif

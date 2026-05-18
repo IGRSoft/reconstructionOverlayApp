@@ -1,6 +1,8 @@
 //
 //  InitialView.swift
 
+import StandardCyborgCapture
+import StandardCyborgFusion
 import SwiftUI
 import UIKit  // needed for UIDevice.current.localizedModel
 
@@ -8,6 +10,11 @@ struct InitialView: View {
     @EnvironmentObject var scanStore: ScanStore
     @State private var fullScreen: FullScreenDestination?
     @State private var navigationPath = NavigationPath()
+
+    @State private var previewScan: ScanSelection?
+    @State private var exportContext: ExportContext?
+    @State private var showJetsonSettings = false
+    @State private var bplyShareItems: [Any]?
 
     private var isBPLYMode: Bool {
         UserDefaults.standard.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
@@ -56,16 +63,69 @@ struct InitialView: View {
         .fullScreenCover(item: $fullScreen) { destination in
             switch destination {
             case .scanning:
-                ScanningView()
-                    .environmentObject(scanStore)
-                    .ignoresSafeArea()
+                ScanningView(
+                    onExport: { scan, mesh in
+                        exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
+                    },
+                    onShowSettings: {
+                        showJetsonSettings = true
+                    },
+                    onDone: {
+                        fullScreen = nil
+                    },
+                    onShowLatestScan: {
+                        if let scan = scanStore.scans.first {
+                            previewScan = ScanSelection(scan: scan)
+                        }
+                    }
+                )
+                .environmentObject(scanStore)
+                .ignoresSafeArea()
             case .bplyScanning:
-                BPLYScanningView()
-                    .environmentObject(scanStore)
-                    .ignoresSafeArea()
+                BPLYScanningView(
+                    onExport: { url in
+                        bplyShareItems = [url]
+                    },
+                    onDone: {
+                        fullScreen = nil
+                    }
+                )
+                .environmentObject(scanStore)
+                .ignoresSafeArea()
             }
         }
+        .sheet(item: $previewScan) { selection in
+            ScanPreviewView(
+                scan: selection.scan,
+                onExport: { scan, mesh in
+                    exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
+                },
+                onShowSettings: {
+                    showJetsonSettings = true
+                }
+            )
+            .environmentObject(scanStore)
+        }
+        .sheet(item: $exportContext) { ctx in
+            ExportSheet(scan: ctx.scan, mesh: ctx.mesh, target: ctx.target)
+                .environmentObject(scanStore)
+        }
+        .sheet(isPresented: $showJetsonSettings) {
+            JetsonSettingsView()
+        }
+        .sheet(item: Binding(
+            get: { bplyShareItems.map { BPLYShare(items: $0) } },
+            set: { if $0 == nil { bplyShareItems = nil } }
+        )) { payload in
+            ActivityView(activityItems: payload.items, applicationActivities: nil)
+                .ignoresSafeArea()
+        }
     }
+}
+
+private struct BPLYShare: Identifiable {
+    let id = UUID()
+    let items: [Any]
 }
 
 // MARK: - UserDefaults Helper
@@ -79,4 +139,3 @@ extension UserDefaults {
         }
     }
 }
-

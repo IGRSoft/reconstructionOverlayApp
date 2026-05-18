@@ -1,25 +1,43 @@
 //
 //  ScanPreviewView.swift
 
+#if os(iOS)
+
 import ModelIO
 import SceneKit
 import StandardCyborgFusion
+import StandardCyborgCaptureObjC
 import SwiftUI
-import StandardCyborgCapture
 
-struct ScanPreviewView: View {
+/// SwiftUI preview of a captured ``Scan``: renders the point cloud (and the
+/// reconstructed mesh once meshing finishes) and exposes Share/Settings
+/// hooks via closures.
+///
+/// The host app is responsible for presenting its own export/share UI from
+/// the ``onExport`` callback and its own settings UI from ``onShowSettings``.
+public struct ScanPreviewView: View {
     @EnvironmentObject private var scanStore: ScanStore
     @Environment(\.dismiss) private var dismiss
 
-    let scan: Scan
+    public let scan: Scan
+    private let onExport: (Scan, SCMesh?) -> Void
+    private let onShowSettings: (() -> Void)?
 
     @StateObject private var meshingService = MeshingService()
 
-    @State private var showJetsonSettings = false
-    @State private var pendingExportTarget: ExportTarget?
     @State private var sceneViewRef: SCNView?
 
-    var body: some View {
+    public init(
+        scan: Scan,
+        onExport: @escaping (Scan, SCMesh?) -> Void,
+        onShowSettings: (() -> Void)? = nil
+    ) {
+        self.scan = scan
+        self.onExport = onExport
+        self.onShowSettings = onShowSettings
+    }
+
+    public var body: some View {
         ZStack(alignment: .top) {
             ScanPreviewSceneView(
                 scan: scan,
@@ -74,7 +92,7 @@ struct ScanPreviewView: View {
 
                 VStack(alignment: .trailing, spacing: 16) {
                     Button {
-                        pendingExportTarget = .share
+                        onExport(scan, meshingService.mesh)
                     } label: {
                         Label("Share", systemImage: "square.and.arrow.up")
                             .font(.body)
@@ -91,13 +109,15 @@ struct ScanPreviewView: View {
                     }
                     .accessibilityLabel("Share")
 
-                    Button {
-                        showJetsonSettings = true
-                    } label: {
-                        Image(systemName: "gear")
-                            .font(.system(size: 20, weight: .regular))
-                            .foregroundStyle(.blue)
-                            .frame(width: 27, height: 27)
+                    if let onShowSettings {
+                        Button {
+                            onShowSettings()
+                        } label: {
+                            Image(systemName: "gear")
+                                .font(.system(size: 20, weight: .regular))
+                                .foregroundStyle(.blue)
+                                .frame(width: 27, height: 27)
+                        }
                     }
                 }
                 .padding(.trailing, 20)
@@ -113,7 +133,7 @@ struct ScanPreviewView: View {
                         if !meshingService.isRunning {
                             Button {
                                 if meshingService.mesh != nil {
-                                    pendingExportTarget = .share
+                                    onExport(scan, meshingService.mesh)
                                 } else {
                                     meshingService.runMeshing(on: scan)
                                 }
@@ -142,12 +162,7 @@ struct ScanPreviewView: View {
                 .padding(.bottom, 40)
             }
         }
-        .sheet(item: $pendingExportTarget) { target in
-            ExportSheet(scan: scan, mesh: meshingService.mesh, target: target)
-                .environmentObject(scanStore)
-        }
-        .sheet(isPresented: $showJetsonSettings) {
-            JetsonSettingsView()
-        }
     }
 }
+
+#endif

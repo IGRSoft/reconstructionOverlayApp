@@ -2,22 +2,28 @@
 //  MetalLayerView.swift
 //
 //  UIViewRepresentable that hosts a CAMetalLayer and exposes it to a
-//  MetalLayerClient (ScanningSession or _BPLYMetalProxy).
-//  Tap gesture is forwarded via focusOnTap(at:).
+//  MetalLayerClient (e.g. ``ScanningSession``).
+//  Tap gesture is forwarded via `focusOnTap(at:)`.
+
+#if os(iOS)
 
 import Metal
-import StandardCyborgCapture
 import SwiftUI
 import UIKit
 
-// MARK: - MetalLayerView
+/// SwiftUI wrapper that owns a `CAMetalLayer` and hands it back to the
+/// supplied ``MetalLayerClient`` (e.g. ``ScanningSession``).
+public struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
+    public let session: Client
+    public let device: MTLDevice
 
-struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
-    let session: Client
-    let device: MTLDevice
+    public init(session: Client, device: MTLDevice) {
+        self.session = session
+        self.device = device
+    }
 
-    func makeUIView(context: Context) -> _MetalHostView {
-        let view = _MetalHostView()
+    public func makeUIView(context: Context) -> MetalHostView {
+        let view = MetalHostView()
         view.backgroundColor = .black
 
         let metalLayer = CAMetalLayer()
@@ -40,17 +46,17 @@ struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: _MetalHostView, context: Context) {}
+    public func updateUIView(_ uiView: MetalHostView, context: Context) {}
 
-    func makeCoordinator() -> Coordinator { Coordinator(session: session) }
+    public func makeCoordinator() -> Coordinator { Coordinator(session: session) }
 
     // MARK: - Coordinator
 
-    final class Coordinator: NSObject {
-        let session: Client
+    public final class Coordinator: NSObject {
+        public let session: Client
         var metalLayer: CAMetalLayer?
 
-        init(session: Client) { self.session = session }
+        public init(session: Client) { self.session = session }
 
         @MainActor @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             let location = gesture.location(in: gesture.view)
@@ -61,7 +67,9 @@ struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
 
 // MARK: - Host UIView
 
-final class _MetalHostView: UIView {
+/// Internal host `UIView` for `CAMetalLayer`. Public consumers do not
+/// reference this type directly.
+final class MetalHostView: UIView {
     var metalLayer: CAMetalLayer?
 
     override func layoutSubviews() {
@@ -77,3 +85,5 @@ final class _MetalHostView: UIView {
         CATransaction.commit()
     }
 }
+
+#endif

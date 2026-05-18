@@ -1,8 +1,9 @@
 //
 //  ScansListView.swift
 
-import SwiftUI
 import StandardCyborgCapture
+import StandardCyborgFusion
+import SwiftUI
 import UIKit
 
 struct ScansListView: View {
@@ -54,14 +55,14 @@ struct ScansListView: View {
                             }
 
                             Button {
-                                exportContext = ExportContext(scan: scan, target: .share)
+                                exportContext = ExportContext(scan: scan, mesh: nil, target: .share)
                             } label: {
                                 Label("Export", systemImage: "square.and.arrow.up")
                             }
                             .tint(.blue)
 
                             Button {
-                                exportContext = ExportContext(scan: scan, target: .jetson)
+                                exportContext = ExportContext(scan: scan, mesh: nil, target: .jetson)
                             } label: {
                                 Label("Send to Robot", systemImage: "antenna.radiowaves.left.and.right")
                             }
@@ -84,15 +85,23 @@ struct ScansListView: View {
             }
         }
         .sheet(item: $selectedScan) { selection in
-            ScanPreviewView(scan: selection.scan)
-                .environmentObject(scanStore)
-                .ignoresSafeArea()
+            ScanPreviewView(
+                scan: selection.scan,
+                onExport: { scan, mesh in
+                    exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
+                },
+                onShowSettings: {
+                    showJetsonSettings = true
+                }
+            )
+            .environmentObject(scanStore)
+            .ignoresSafeArea()
         }
         .sheet(isPresented: $showJetsonSettings) {
             JetsonSettingsView()
         }
         .sheet(item: $exportContext) { ctx in
-            ExportSheet(scan: ctx.scan, mesh: nil, target: ctx.target)
+            ExportSheet(scan: ctx.scan, mesh: ctx.mesh, target: ctx.target)
                 .environmentObject(scanStore)
         }
     }
@@ -131,17 +140,11 @@ private struct ScanRow: View {
     }
 }
 
-// MARK: - ScanSelection
-
-struct ScanSelection: Identifiable {
-    let scan: Scan
-    var id: ObjectIdentifier { ObjectIdentifier(scan) }
-}
-
 // MARK: - ExportContext
 
 struct ExportContext: Identifiable {
     let id = UUID()
     let scan: Scan
+    let mesh: SCMesh?
     let target: ExportTarget
 }
