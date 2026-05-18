@@ -14,7 +14,7 @@ import TrueDepthFusionObjC
 import UIKit
 
 @MainActor
-final class ScanningSession: NSObject, ObservableObject, CameraManagerDelegate, SCReconstructionManagerDelegate {
+final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, CameraManagerDelegate, SCReconstructionManagerDelegate {
 
     // MARK: - Published state (drives SwiftUI)
 

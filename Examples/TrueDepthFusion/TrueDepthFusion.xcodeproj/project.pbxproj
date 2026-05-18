@@ -36,7 +36,7 @@
 		76558BA72135FF86005AECFE /* ScanningCanceled.m4a in Resources */ = {isa = PBXBuildFile; fileRef = 76558BA62135FF6D005AECFE /* ScanningCanceled.m4a */; };
 		7667811221CD77F8005BFAA2 /* UIImageHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */; };
 		767001C3227B82580037210E /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A52430AE213F482D00A39A38 /* MetalKit.framework */; };
-		7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76857187222CCB4000066B6E /* BPLYScanningViewController.swift */; };
+		AA000021AAAA0021AA000021 /* BPLYScanningView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000021AAAA0021AA000001 /* BPLYScanningView.swift */; };
 		7685718E222CCB8500066B6E /* BPLYDepthDataAccumulator.mm in Sources */ = {isa = PBXBuildFile; fileRef = 7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */; };
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
 		768F64F42121570600C1B1DA /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F22121570600C1B1DA /* Main.storyboard */; };
@@ -107,7 +107,7 @@
 		76558BA12135FE2B005AECFE /* ScanningContinued.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ScanningContinued.wav; sourceTree = "<group>"; };
 		76558BA62135FF6D005AECFE /* ScanningCanceled.m4a */ = {isa = PBXFileReference; lastKnownFileType = file; path = ScanningCanceled.m4a; sourceTree = "<group>"; };
 		7667810E21CD77F7005BFAA2 /* UIImageHelpers.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UIImageHelpers.swift; sourceTree = "<group>"; };
-		76857187222CCB4000066B6E /* BPLYScanningViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPLYScanningViewController.swift; sourceTree = "<group>"; };
+		AA000021AAAA0021AA000001 /* BPLYScanningView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BPLYScanningView.swift; sourceTree = "<group>"; };
 		7685718C222CCB8500066B6E /* BPLYDepthDataAccumulator.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BPLYDepthDataAccumulator.h; sourceTree = "<group>"; };
 		7685718D222CCB8500066B6E /* BPLYDepthDataAccumulator.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = BPLYDepthDataAccumulator.mm; sourceTree = "<group>"; };
 		768967EE2394305D007179B2 /* SceneKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SceneKit.framework; path = System/Library/Frameworks/SceneKit.framework; sourceTree = SDKROOT; };
@@ -235,7 +235,7 @@
 				AA000019AAAA0019AA000001 /* FaceOvalOverlay.swift */,
 				AA000020AAAA0020AA000001 /* ScanControls.swift */,
 				A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */,
-				76857187222CCB4000066B6E /* BPLYScanningViewController.swift */,
+				AA000021AAAA0021AA000001 /* BPLYScanningView.swift */,
 				768F650621215A6000C1B1DA /* ScanPreviewViewController.scn */,
 				768F650C21215BD500C1B1DA /* Scan.h */,
 				768F650D21215BD500C1B1DA /* Scan.mm */,
@@ -366,7 +366,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				7685718B222CCB4000066B6E /* BPLYScanningViewController.swift in Sources */,
+				AA000021AAAA0021AA000021 /* BPLYScanningView.swift in Sources */,
 				7693C45621587EAA005A4772 /* ScanningViewRenderer.swift in Sources */,
 				76C7C6B221759CC3000941E7 /* CameraManager.swift in Sources */,
 				7693C461215886FC005A4772 /* SCPointCloudRenderer.metal in Sources */,

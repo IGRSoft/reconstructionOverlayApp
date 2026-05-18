@@ -2,7 +2,7 @@
 //  InitialView.swift
 
 import SwiftUI
-import UIKit
+import UIKit  // needed for UIDevice.current.localizedModel
 
 struct InitialView: View {
     @EnvironmentObject var scanStore: ScanStore
@@ -60,7 +60,7 @@ struct InitialView: View {
                     .environmentObject(scanStore)
                     .ignoresSafeArea()
             case .bplyScanning:
-                BPLYScanningViewRepresentable()
+                BPLYScanningView()
                     .environmentObject(scanStore)
                     .ignoresSafeArea()
             }
@@ -80,17 +80,3 @@ extension UserDefaults {
     }
 }
 
-// MARK: - UIKit VC Representables (transient; removed in Phase 8)
-
-private struct BPLYScanningViewRepresentable: UIViewControllerRepresentable {
-    @EnvironmentObject var scanStore: ScanStore
-
-    func makeUIViewController(context: Context) -> BPLYScanningViewController {
-        let storyboard = UIStoryboard(name: "Main", bundle: nil)
-        let vc = storyboard.instantiateViewController(withIdentifier: "BPLYScanningViewController") as! BPLYScanningViewController
-        vc.scanStore = scanStore
-        return vc
-    }
-
-    func updateUIViewController(_ uiViewController: BPLYScanningViewController, context: Context) {}
-}

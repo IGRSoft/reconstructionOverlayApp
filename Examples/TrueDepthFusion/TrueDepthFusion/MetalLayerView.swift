@@ -1,15 +1,26 @@
 //
 //  MetalLayerView.swift
 //
-//  UIViewRepresentable that hosts a CAMetalLayer and exposes it to ScanningSession.
-//  Tap gesture is forwarded to ScanningSession.focusOnTap(at:).
+//  UIViewRepresentable that hosts a CAMetalLayer and exposes it to a
+//  MetalLayerClient (ScanningSession or _BPLYMetalProxy).
+//  Tap gesture is forwarded via focusOnTap(at:).
 
 import Metal
 import SwiftUI
 import UIKit
 
-struct MetalLayerView: UIViewRepresentable {
-    let session: ScanningSession
+// MARK: - Protocol
+
+@MainActor
+protocol MetalLayerClient: AnyObject {
+    var metalLayer: CAMetalLayer? { get set }
+    func focusOnTap(at point: CGPoint)
+}
+
+// MARK: - MetalLayerView
+
+struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
+    let session: Client
     let device: MTLDevice
 
     func makeUIView(context: Context) -> _MetalHostView {
@@ -28,7 +39,6 @@ struct MetalLayerView: UIViewRepresentable {
         let tap = UITapGestureRecognizer(target: context.coordinator, action: #selector(Coordinator.handleTap(_:)))
         view.addGestureRecognizer(tap)
 
-        // Expose to session on next runloop tick after layout
         context.coordinator.metalLayer = metalLayer
         DispatchQueue.main.async {
             session.metalLayer = metalLayer
@@ -44,10 +54,10 @@ struct MetalLayerView: UIViewRepresentable {
     // MARK: - Coordinator
 
     final class Coordinator: NSObject {
-        let session: ScanningSession
+        let session: Client
         var metalLayer: CAMetalLayer?
 
-        init(session: ScanningSession) { self.session = session }
+        init(session: Client) { self.session = session }
 
         @MainActor @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             let location = gesture.location(in: gesture.view)
