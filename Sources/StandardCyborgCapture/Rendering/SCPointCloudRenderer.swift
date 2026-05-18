@@ -1,6 +1,8 @@
 //
-//  PointCloudRenderer.swift
-//  Swift port of SCPointCloudRenderer.m
+//  SCPointCloudRenderer.swift
+//  (formerly PointCloudRenderer.swift — Swift port of SCPointCloudRenderer.m)
+
+#if os(iOS)
 
 import AVFoundation
 import Metal
@@ -16,7 +18,12 @@ private struct SharedUniforms {
     var pointSize: Float
 }
 
-final class SCPointCloudRenderer {
+/// Renders an `SCPointCloud` into a Metal texture using matcap shading.
+///
+/// Construct one renderer per `MTLDevice`. Call `encodeCommands(onto:...)` once
+/// per frame from the camera or reconstruction queue. The matcap texture is
+/// loaded from `Bundle.module` so the package supplies its own shading asset.
+public final class SCPointCloudRenderer: @unchecked Sendable {
 
     private let _device: MTLDevice
     private let _pipelineState: MTLRenderPipelineState
@@ -25,14 +32,14 @@ final class SCPointCloudRenderer {
     private let _matcapTexture: MTLTexture
     private var _depthTexture: MTLTexture?
 
-    init(device: MTLDevice, library: MTLLibrary) {
+    public init(device: MTLDevice, library: MTLLibrary) {
         _device = device
 
         let textureLoader = MTKTextureLoader(device: device)
         _matcapTexture = (try? textureLoader.newTexture(
             name: "matcap",
             scaleFactor: 1.0,
-            bundle: nil,
+            bundle: .module,
             options: [.SRGB: false as NSNumber]
         )) ?? device.makeTexture(descriptor: MTLTextureDescriptor())!
 
@@ -64,14 +71,13 @@ final class SCPointCloudRenderer {
         _sharedUniformsBuffer.label = "SCPointCloudRenderer._sharedUniformsBuffer"
     }
 
-    // NS_SWIFT_NAME preserved: encodeCommands(onto:pointCloud:depthCameraCalibrationData:viewMatrix:outputTexture:depthFrameSize:flipsInputHorizontally:)
-    func encodeCommands(onto commandBuffer: MTLCommandBuffer,
-                        pointCloud: SCPointCloud,
-                        depthCameraCalibrationData: AVCameraCalibrationData,
-                        viewMatrix: matrix_float4x4,
-                        outputTexture: MTLTexture,
-                        depthFrameSize: CGSize,
-                        flipsInputHorizontally: Bool)
+    public func encodeCommands(onto commandBuffer: MTLCommandBuffer,
+                               pointCloud: SCPointCloud,
+                               depthCameraCalibrationData: AVCameraCalibrationData,
+                               viewMatrix: matrix_float4x4,
+                               outputTexture: MTLTexture,
+                               depthFrameSize: CGSize,
+                               flipsInputHorizontally: Bool)
     {
         guard pointCloud.pointCount > 0 else { return }
 
@@ -229,3 +235,5 @@ final class SCPointCloudRenderer {
         memcpy(_sharedUniformsBuffer.contents(), &uniforms, MemoryLayout<SharedUniforms>.stride)
     }
 }
+
+#endif

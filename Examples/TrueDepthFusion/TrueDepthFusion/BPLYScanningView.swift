@@ -78,7 +78,13 @@ final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
     private let metalDevice = MTLCreateSystemDefaultDevice()!
     private lazy var commandQueue = metalDevice.makeCommandQueue()!
     private lazy var reconstructionManager = SCReconstructionManager(device: metalDevice, commandQueue: commandQueue, maxThreadCount: 2)
-    private lazy var scanningViewRenderer = ScanningViewRenderer(device: metalDevice, commandQueue: commandQueue)
+    private lazy var scanningViewRenderer: ScanningViewRenderer = {
+        do {
+            return try ScanningViewRenderer(device: metalDevice, commandQueue: commandQueue)
+        } catch {
+            fatalError("Failed to create ScanningViewRenderer: \(error)")
+        }
+    }()
     private let cameraManager = CameraManager()
     private let motionManager = CMMotionManager()
     private var scanningTimer: Timer?

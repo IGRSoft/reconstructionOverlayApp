@@ -54,7 +54,13 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
         mgr.includesColorBuffersInMetadata = true
         return mgr
     }()
-    private lazy var scanningViewRenderer = ScanningViewRenderer(device: metalDevice, commandQueue: visualizationCommandQueue)
+    private lazy var scanningViewRenderer: ScanningViewRenderer = {
+        do {
+            return try ScanningViewRenderer(device: metalDevice, commandQueue: visualizationCommandQueue)
+        } catch {
+            fatalError("Failed to create ScanningViewRenderer: \(error)")
+        }
+    }()
 
     private var tapToStartStop: Bool { UserDefaults.standard.bool(forKey: "tap_to_start_stop") }
     private var useFullResolutionDepthFrames: Bool { UserDefaults.standard.bool(forKey: "full_resolution_depth_frames", defaultValue: false) }

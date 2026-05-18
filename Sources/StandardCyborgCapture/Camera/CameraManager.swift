@@ -1,13 +1,33 @@
 //
 //  CameraManager.swift
 
+#if os(iOS)
 
 import AVFoundation
 import Foundation
-import StandardCyborgFusion
 import UIKit
 
-protocol CameraManagerDelegate: AnyObject {
+/// Outcome of an AVFoundation capture-session setup attempt initiated by
+/// ``CameraManager/startSession(_:)``.
+///
+/// Returned via the completion block of `startSession`. The caller decides how
+/// to respond — for example, by presenting a Settings alert for `.notAuthorized`.
+public enum SessionSetupResult: Sendable {
+    /// Camera access was granted and the session is fully configured.
+    case success
+    /// The user has denied camera access or the app lacks `NSCameraUsageDescription`.
+    case notAuthorized
+    /// Session configuration failed (e.g. no TrueDepth camera, unsupported format).
+    case configurationFailed
+}
+
+/// Delegate that receives synchronized color + depth frames from
+/// ``CameraManager``.
+///
+/// Callbacks are invoked from a background `_dataOutputQueue` and are
+/// `nonisolated` — implementors that are `@MainActor`-bound must hop to
+/// MainActor explicitly (see `ScanningSession` for the canonical pattern).
+public protocol CameraManagerDelegate: AnyObject {
     func cameraDidOutput(colorBuffer: CVPixelBuffer,
                          colorTime: CMTime,
                          depthBuffer: CVPixelBuffer,
@@ -15,32 +35,20 @@ protocol CameraManagerDelegate: AnyObject {
                          depthCalibrationData: AVCameraCalibrationData)
 }
 
-final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @unchecked Sendable {
-    
-    /// The result of a capture session setup attempt.
-    ///
-    /// Use this value to decide how to respond after ``startSession(_:)`` calls back:
-    ///
-    /// | Case | Meaning | Recommended caller action |
-    /// |------|---------|--------------------------|
-    /// | ``success`` | Session is configured and running | Wire up the UI |
-    /// | ``notAuthorized`` | User denied camera access | Present a Settings alert |
-    /// | ``configurationFailed`` | Hardware or format error | Log and present a generic error |
-    enum SessionSetupResult: Sendable {
-        /// Camera access was granted and the session is fully configured.
-        case success
-        /// The user has denied camera access or the app lacks `NSCameraUsageDescription`.
-        case notAuthorized
-        /// Session configuration failed (e.g. no TrueDepth camera, unsupported format).
-        case configurationFailed
-    }
-    
+/// Owns the TrueDepth `AVCaptureSession` and emits synchronized color/depth
+/// frames to its delegate.
+///
+/// Construct one per scanning view and call ``configureCaptureSession(maxColorResolution:maxDepthResolution:maxFramerate:)``
+/// once before ``startSession(_:)``. All AVFoundation work runs on a private
+/// serial session queue; delegate callbacks fire on the data-output queue.
+public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @unchecked Sendable {
+
     deinit {
         _captureSession.removeObserver(self, forKeyPath: "running", context: &_sessionRunningContext)
     }
-    
-    weak var delegate: CameraManagerDelegate?
-    var isFocusLocked: Bool = false {
+
+    public weak var delegate: CameraManagerDelegate?
+    public var isFocusLocked: Bool = false {
         didSet {
             _focus(with: isFocusLocked ? .locked : .continuousAutoFocus,
                    exposureMode: isFocusLocked ? .locked : .continuousAutoExposure,
@@ -48,7 +56,11 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
                    monitorSubjectAreaChange: !isFocusLocked)
         }
     }
-    
+
+    public override init() {
+        super.init()
+    }
+
     /// Configures the AVFoundation capture session for synchronized color + depth output.
     ///
     /// Call this once, early in the view lifecycle (e.g. `viewDidLoad`), before calling
@@ -81,7 +93,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
     ///     Defaults to `640`.
     ///   - maxFramerate: Target depth frame rate. Passed to
     ///     `activeDepthDataMinFrameDuration`. Defaults to `30` fps.
-    func configureCaptureSession(maxColorResolution: Int = 1280, maxDepthResolution: Int = 640, maxFramerate: Int = 30) {
+    public func configureCaptureSession(maxColorResolution: Int = 1280, maxDepthResolution: Int = 640, maxFramerate: Int = 30) {
         // Check video authorization status, video access is required
         switch AVCaptureDevice.authorizationStatus(for: .video) {
         case .authorized:
@@ -95,7 +107,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
         default:
             _sessionQueue_setupResult = .notAuthorized
         }
-        
+
         _sessionQueue.async {
             if self._sessionQueue_setupResult == .success {
                 self._sessionQueue_setupResult = self._sessionQueue_configureSession(maxColorResolution: maxColorResolution,
@@ -104,50 +116,16 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             }
         }
     }
-    
-    // MARK: - Error Handling
-    //
-    // After startSession calls back, check the SessionSetupResult and respond:
-    //
-    // .notAuthorized
-    //   Present an alert explaining that camera access is required, with a button that
-    //   deep-links to Settings → Privacy → Camera:
-    //
-    //     UIApplication.shared.open(URL(string: UIApplication.openSettingsURLString)!)
-    //
-    // .configurationFailed
-    //   Log the failure (the console will have printed detail from _sessionQueue_configureSession)
-    //   and present a generic alert: "Unable to start the camera. Please try again."
-    //   Do not expose internal error details to the user.
-    //
-    // .success
-    //   No error action needed; the session is running and delegate callbacks will begin.
 
     /// Starts the capture session and reports the outcome via a completion block on the main queue.
     ///
     /// The method is a no-op unless the setup result from ``configureCaptureSession(maxColorResolution:maxDepthResolution:maxFramerate:)``
     /// is `.success`. For any other result the session is *not* started; the caller must
-    /// inspect the result and present appropriate UI (see the Error Handling note above).
-    ///
-    /// **`.success` path**
-    /// 1. KVO and `NotificationCenter` observers are wired up.
-    /// 2. Rendering is enabled (`_renderingEnabled = true`).
-    /// 3. `AVCaptureSession.startRunning()` is called on the session queue.
-    /// 4. The completion block is dispatched to the main queue with `.success`.
-    ///
-    /// **`.notAuthorized` / `.configurationFailed` paths**
-    /// The session is left stopped. The completion block is still called with the
-    /// appropriate result so the caller can present an error.
-    ///
-    /// - Important: `.notAuthorized` — direct the user to **Settings → Privacy → Camera**
-    ///   via `UIApplication.openSettingsURLString`. Do not retry `configureCaptureSession`
-    ///   without re-checking authorization first.
-    ///   `.configurationFailed` — log the failure and show a generic error alert; the
-    ///   specific reason is printed to the console by the configuration step.
+    /// inspect the result and present appropriate UI.
     ///
     /// - Parameter completion: Optional block invoked on the **main queue** with the final
     ///   `SessionSetupResult`. Called even when the session is not started.
-    func startSession(_ completion: (@Sendable (SessionSetupResult) -> Void)? = nil) {
+    public func startSession(_ completion: (@Sendable (SessionSetupResult) -> Void)? = nil) {
         _sessionQueue.async {
             let result = self._sessionQueue_setupResult
             switch result {
@@ -155,23 +133,23 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
                 // Only set up observers and start the session running if setup succeeded
                 self._addObservers()
                 self._renderingEnabled = true
-                
+
                 self._captureSession.startRunning()
                 self._sessionQueue_isSessionRunning = self._captureSession.isRunning
-                
+
             case .notAuthorized, .configurationFailed:
                 break
             }
-            
+
             DispatchQueue.main.async {
                 completion?(result)
             }
         }
     }
-    
-    func stopSession() {
+
+    public func stopSession() {
         self._renderingEnabled = false
-        
+
         _sessionQueue.async {
             if self._sessionQueue_setupResult == .success {
                 self._captureSession.stopRunning()
@@ -179,24 +157,24 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             }
         }
     }
-    
-    func focusOnTap(at location: CGPoint) {
+
+    public func focusOnTap(at location: CGPoint) {
         let locationRect = CGRect(origin: location, size: .zero)
         let deviceRect = _videoDataOutput.metadataOutputRectConverted(fromOutputRect: locationRect)
-        
+
         _focus(with: .autoFocus, exposureMode: .autoExpose, at: deviceRect.origin, monitorSubjectAreaChange: true)
     }
-    
-    var paused: Bool = false {
+
+    public var paused: Bool = false {
         didSet {
             _dataOutputQueue.sync {
                 self._renderingEnabled = !paused
             }
         }
     }
-    
+
     // MARK: - Properties
-    
+
     private var _sessionQueue_setupResult: SessionSetupResult = .success
     private let _captureSession = AVCaptureSession()
     private var _sessionQueue_isSessionRunning = false
@@ -209,7 +187,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
     private let _videoDataOutput = AVCaptureVideoDataOutput()
     private let _depthDataOutput = AVCaptureDepthDataOutput()
     private var _outputSynchronizer: AVCaptureDataOutputSynchronizer?
-    
+
     private let _renderingEnabledLock = NSLock()
     private var __renderingEnabled: Bool = false
     private var _renderingEnabled: Bool {
@@ -225,17 +203,17 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             _renderingEnabledLock.unlock()
         }
     }
-    
+
     // MARK: - KVO and Notifications
-    
+
     private var _sessionRunningContext = 0
-    
+
     private func _addObservers() {
         NotificationCenter.default.addObserver(self, selector: #selector(sessionRuntimeError),
                                                name: NSNotification.Name.AVCaptureSessionRuntimeError, object: _captureSession)
-        
+
         _captureSession.addObserver(self, forKeyPath: "running", options: NSKeyValueObservingOptions.new, context: &_sessionRunningContext)
-        
+
         /*
          A session can only run when the app is full screen. It will be interrupted
          in a multi-app layout, introduced in iOS 9, see also the documentation of
@@ -257,13 +235,13 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
                                                name: NSNotification.Name.AVCaptureDeviceSubjectAreaDidChange,
                                                object: _videoDeviceInput.device)
     }
-    
-    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
+
+    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
         if context != &_sessionRunningContext {
             super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
         }
     }
-    
+
     @objc private func sessionWasInterrupted(notification: NSNotification) {
         if let userInfoValue = notification.userInfo?[AVCaptureSessionInterruptionReasonKey] as AnyObject?,
             let reasonIntegerValue = userInfoValue.integerValue,
@@ -271,18 +249,18 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             print("Capture session was interrupted with reason \(reason)")
         }
     }
-    
+
     @objc private func sessionInterruptionEnded(notification: NSNotification) {
     }
-    
+
     @objc private func sessionRuntimeError(notification: NSNotification) {
         guard let errorValue = notification.userInfo?[AVCaptureSessionErrorKey] as? NSError else {
             return
         }
-        
+
         let error = AVError(_nsError: errorValue)
         print("Capture session runtime error: \(error)")
-        
+
         // Automatically try to restart the session running if media services were reset and the last start running succeeded.
         // Otherwise, enable the user to try to resume the session running.
         if error.code == .mediaServicesWereReset {
@@ -294,37 +272,37 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             }
         }
     }
-    
+
     @objc private func subjectAreaDidChange(notification: NSNotification) {
         guard !isFocusLocked else { return }
-        
+
         let devicePoint = CGPoint(x: 0.5, y: 0.5)
         _focus(with: .continuousAutoFocus, exposureMode: .continuousAutoExposure, at: devicePoint, monitorSubjectAreaChange: false)
     }
-    
+
     @objc private func didEnterBackground(notification: NSNotification) {
         // Free up resources
         self._renderingEnabled = false
     }
-    
+
     @objc private func willEnterForground(notification: NSNotification) {
         self._renderingEnabled = true
     }
-    
+
     // MARK: - AVCaptureDataOutputSynchronizerDelegate
-    
-    func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
-                                didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection)
+
+    public func dataOutputSynchronizer(_ synchronizer: AVCaptureDataOutputSynchronizer,
+                                       didOutput synchronizedDataCollection: AVCaptureSynchronizedDataCollection)
     {
         guard _renderingEnabled else { return }
-        
+
         guard
             let syncedDepthData: AVCaptureSynchronizedDepthData =
                     synchronizedDataCollection.synchronizedData(for: _depthDataOutput) as? AVCaptureSynchronizedDepthData,
             let syncedVideoData: AVCaptureSynchronizedSampleBufferData =
                     synchronizedDataCollection.synchronizedData(for: _videoDataOutput) as? AVCaptureSynchronizedSampleBufferData
         else { return /* Only work on synced pairs */ }
-        
+
         guard !syncedDepthData.depthDataWasDropped &&
               !syncedVideoData.sampleBufferWasDropped
         else { return }
@@ -335,19 +313,19 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
         guard let colorBuffer = CMSampleBufferGetImageBuffer(sampleBuffer),
               let depthCalibrationData = depthData.cameraCalibrationData
         else { return }
-        
+
         let colorTime = syncedVideoData.timestamp
         let depthTime = syncedDepthData.timestamp
-        
+
         delegate?.cameraDidOutput(colorBuffer: colorBuffer,
                                   colorTime: colorTime,
                                   depthBuffer: depthBuffer,
                                   depthTime: depthTime,
                                   depthCalibrationData: depthCalibrationData)
     }
-    
+
     // MARK: - Internal
-    
+
     private func _sessionQueue_configureSession(maxColorResolution: Int,
                                                 maxDepthResolution: Int,
                                                 maxFramerate: Int) -> SessionSetupResult
@@ -374,7 +352,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             print("Could not add depth data output to the session")
             return .configurationFailed
         }
-        
+
         _captureSession.beginConfiguration()
         _captureSession.sessionPreset = AVCaptureSession.Preset(maxWidth: maxColorResolution)
         _captureSession.addInput(_videoDeviceInput)
@@ -384,19 +362,19 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
         _videoDataOutput.alwaysDiscardsLateVideoFrames = true
         _depthDataOutput.isFilteringEnabled = false
         _depthDataOutput.alwaysDiscardsLateDepthData = true
-        
+
         if let captureConnection = _videoDataOutput.connection(with: AVMediaType.video) {
             if captureConnection.isCameraIntrinsicMatrixDeliverySupported {
                 captureConnection.isCameraIntrinsicMatrixDeliveryEnabled = true
             }
         }
-        
+
         if let connection = _depthDataOutput.connection(with: .depthData) {
             connection.isEnabled = true
         } else {
             print("No AVCaptureConnection")
         }
-        
+
         // Search for highest resolution with half-point depth values
         let depthFormats = videoDevice.activeFormat.supportedDepthDataFormats
         let selectedFormat = depthFormats.filter {
@@ -407,7 +385,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
                 CMVideoFormatDescriptionGetDimensions(first.formatDescription).width
               < CMVideoFormatDescriptionGetDimensions(second.formatDescription).width
         }
-        
+
         do {
             try videoDevice.lockForConfiguration()
             videoDevice.activeDepthDataFormat = selectedFormat
@@ -419,16 +397,16 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             _captureSession.commitConfiguration()
             return .configurationFailed
         }
-        
+
         // Use an AVCaptureDataOutputSynchronizer to synchronize the video data and depth data outputs.
         // The first output in the dataOutputs array, in this case the AVCaptureVideoDataOutput, is the "master" output.
         _outputSynchronizer = AVCaptureDataOutputSynchronizer(dataOutputs: [_videoDataOutput, _depthDataOutput])
         _outputSynchronizer!.setDelegate(self, queue: _dataOutputQueue)
         _captureSession.commitConfiguration()
-        
+
         return .success
     }
-    
+
     private func _focus(with focusMode: AVCaptureDevice.FocusMode,
                         exposureMode: AVCaptureDevice.ExposureMode,
                         at devicePoint: CGPoint,
@@ -436,19 +414,19 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
     {
         _sessionQueue.async {
             let videoDevice = self._videoDeviceInput.device
-            
+
             do {
                 try videoDevice.lockForConfiguration()
                 if videoDevice.isFocusPointOfInterestSupported && videoDevice.isFocusModeSupported(focusMode) {
                     videoDevice.focusPointOfInterest = devicePoint
                     videoDevice.focusMode = focusMode
                 }
-                
+
                 if videoDevice.isExposurePointOfInterestSupported && videoDevice.isExposureModeSupported(exposureMode) {
                     videoDevice.exposurePointOfInterest = devicePoint
                     videoDevice.exposureMode = exposureMode
                 }
-                
+
                 videoDevice.isSubjectAreaChangeMonitoringEnabled = monitorSubjectAreaChange
                 videoDevice.unlockForConfiguration()
             } catch {
@@ -456,7 +434,7 @@ final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @u
             }
         }
     }
-    
+
 }
 
 fileprivate extension AVCaptureSession.Preset {
@@ -477,3 +455,5 @@ fileprivate extension AVCaptureSession.Preset {
         }
     }
 }
+
+#endif

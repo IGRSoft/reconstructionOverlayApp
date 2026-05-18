@@ -1,6 +1,7 @@
 //
 //  DepthColoringFilter.swift
 
+#if os(iOS)
 
 import CoreImage
 import CoreVideo
@@ -259,5 +260,7 @@ class DepthColoringFilter {
         
         return buffer.device.makeTexture(descriptor: descriptor)!
     }
-    
+
 }
+
+#endif
