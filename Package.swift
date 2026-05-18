@@ -13,6 +13,11 @@ let package = Package(
             type: .dynamic,
             targets: ["StandardCyborgFusion"]
         ),
+        .library(
+            name: "StandardCyborgCapture",
+            type: .dynamic,
+            targets: ["StandardCyborgCapture"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.6.0"),
@@ -95,6 +100,10 @@ let package = Package(
                 "ZipArchive",
             ],
             path: "Sources",
+            exclude: [
+                "StandardCyborgCapture",
+                "StandardCyborgCaptureObjC",
+            ],
             resources: [
                 .process("StandardCyborgFusion/Models/SCEarLandmarking.mlmodel"),
                 .process("StandardCyborgFusion/Models/SCEarTrackingModel.mlmodel"),
@@ -115,6 +124,25 @@ let package = Package(
                 .headerSearchPath("StandardCyborgFusion/Private"),
                 .headerSearchPath("include/StandardCyborgFusion"),
             ]
+        ),
+        .target(
+            name: "StandardCyborgCaptureObjC",
+            dependencies: ["StandardCyborgFusion"],
+            path: "Sources/StandardCyborgCaptureObjC",
+            publicHeadersPath: "include",
+            cxxSettings: [
+                .unsafeFlags(["-fobjc-arc", "-Os", "-fno-math-errno", "-ffast-math"]),
+                .headerSearchPath("include"),
+            ]
+        ),
+        .target(
+            name: "StandardCyborgCapture",
+            dependencies: [
+                "StandardCyborgFusion",
+                "StandardCyborgCaptureObjC",
+            ],
+            path: "Sources/StandardCyborgCapture",
+            resources: [.process("Resources")]
         ),
         .testTarget(
             name: "StandardCyborgFusionTests",
