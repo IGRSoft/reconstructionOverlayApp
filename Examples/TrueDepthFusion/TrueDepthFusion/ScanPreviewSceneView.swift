@@ -3,7 +3,7 @@
 
 import SceneKit
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 /// UIViewRepresentable wrapper around SCNView.
 /// Uses UIViewRepresentable (not SwiftUI's SceneView) to preserve

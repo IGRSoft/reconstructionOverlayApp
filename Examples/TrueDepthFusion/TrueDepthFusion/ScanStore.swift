@@ -2,7 +2,7 @@
 //  ScanStore.swift
 
 import Foundation
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 @MainActor
 final class ScanStore: ObservableObject {

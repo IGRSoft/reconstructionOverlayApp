@@ -10,7 +10,7 @@ import CoreMotion
 import MediaPlayer
 import Metal
 import StandardCyborgFusion
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 import UIKit
 
 @MainActor

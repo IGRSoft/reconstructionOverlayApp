@@ -2,7 +2,7 @@
 //  ScansListView.swift
 
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 import UIKit
 
 struct ScansListView: View {

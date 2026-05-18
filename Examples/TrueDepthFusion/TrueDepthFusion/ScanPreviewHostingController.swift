@@ -6,7 +6,7 @@
 //  while the body is now SwiftUI (ScanPreviewView via UIHostingController).
 
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 import UIKit
 
 /// Thin UIViewController that hosts ScanPreviewView.

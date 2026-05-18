@@ -3,6 +3,8 @@
 //  DepthRenderer
 //
 
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
 
 #import <ModelIO/ModelIO.h>
 #import <SceneKit/SceneKit.h>
@@ -183,3 +185,5 @@
 }
 
 @end
+
+#endif // TARGET_OS_IOS

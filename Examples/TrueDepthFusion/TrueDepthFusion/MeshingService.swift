@@ -4,7 +4,7 @@
 import Foundation
 import os
 import StandardCyborgFusion
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 // Retroactive Sendable conformance required because SCMesh crosses actor boundaries
 // during async meshing. SCMesh is immutable after construction.

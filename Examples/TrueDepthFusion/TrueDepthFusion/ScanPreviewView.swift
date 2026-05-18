@@ -5,7 +5,7 @@ import ModelIO
 import SceneKit
 import StandardCyborgFusion
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 struct ScanPreviewView: View {
     @EnvironmentObject private var scanStore: ScanStore

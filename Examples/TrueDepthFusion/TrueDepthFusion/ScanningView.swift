@@ -3,7 +3,7 @@
 
 import Metal
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 struct ScanningView: View {
     @EnvironmentObject private var scanStore: ScanStore

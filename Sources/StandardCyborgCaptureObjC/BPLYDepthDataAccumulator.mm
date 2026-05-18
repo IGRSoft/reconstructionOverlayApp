@@ -2,6 +2,8 @@
 //  BPLYDepthDataAccumulator.mm
 //  DepthRenderer
 
+#import <TargetConditionals.h>
+#if TARGET_OS_IOS
 
 #import "BPLYDepthDataAccumulator.h"
 #import <standard_cyborg/math/MathHelpers.hpp>
@@ -343,3 +345,5 @@ using namespace standard_cyborg;
 }
 
 @end
+
+#endif // TARGET_OS_IOS

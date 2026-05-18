@@ -3,7 +3,7 @@
 
 import StandardCyborgFusion
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 import UIKit
 
 enum ExportTarget: Identifiable {

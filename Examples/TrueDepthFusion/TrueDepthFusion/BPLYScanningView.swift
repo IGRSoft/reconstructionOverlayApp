@@ -6,7 +6,7 @@ import CoreMotion
 import Metal
 import StandardCyborgFusion
 import SwiftUI
-import TrueDepthFusionObjC
+import StandardCyborgCapture
 
 struct BPLYScanningView: View {
     @EnvironmentObject private var scanStore: ScanStore
