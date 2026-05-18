@@ -4,32 +4,45 @@
 //  ObservableObject that owns all camera/reconstruction state previously
 //  managed by ScanningViewController.
 
+#if os(iOS)
+
 import AVFoundation
 import Combine
 import CoreMotion
 import MediaPlayer
 import Metal
 import StandardCyborgFusion
-import StandardCyborgCapture
+import StandardCyborgCaptureObjC
 import UIKit
 
+/// Drives the full TrueDepth scan lifecycle: countdown, capture,
+/// reconstruction, and preview-handoff state. Owns its own `CameraManager`,
+/// `SCReconstructionManager`, and `ScanningViewRenderer` instances.
+///
+/// Construct one `ScanningSession` per scanning view, inject a ``ScanStore``
+/// via ``configure(scanStore:)``, then call ``startSession()``/``stopSession()``
+/// on `onAppear`/`onDisappear`.
 @MainActor
-final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, CameraManagerDelegate, SCReconstructionManagerDelegate {
+public final class ScanningSession: NSObject,
+                                    ObservableObject,
+                                    MetalLayerClient,
+                                    CameraManagerDelegate,
+                                    SCReconstructionManagerDelegate {
 
     // MARK: - Published state (drives SwiftUI)
 
-    @Published private(set) var scanning = false
-    @Published private(set) var elapsedSeconds = 0
-    @Published private(set) var countdownSeconds = 0
-    @Published private(set) var scanDurationSeconds = 5
-    @Published private(set) var distanceMessage: String? = nil
-    @Published private(set) var showScanFailed = false
-    @Published private(set) var completedScan: Scan? = nil
-    @Published private(set) var latestScanThumbnail: UIImage? = nil
+    @Published public private(set) var scanning = false
+    @Published public private(set) var elapsedSeconds = 0
+    @Published public private(set) var countdownSeconds = 0
+    @Published public private(set) var scanDurationSeconds = 5
+    @Published public private(set) var distanceMessage: String? = nil
+    @Published public private(set) var showScanFailed = false
+    @Published public private(set) var completedScan: Scan? = nil
+    @Published public private(set) var latestScanThumbnail: UIImage? = nil
 
     // MARK: - Metal output layer (set by MetalLayerView)
 
-    var metalLayer: CAMetalLayer? = nil {
+    public var metalLayer: CAMetalLayer? = nil {
         didSet { _metalLayerSnapshot = metalLayer }
     }
 
@@ -76,7 +89,11 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
 
     // MARK: - Lifecycle
 
-    func configure(scanStore: ScanStore) {
+    public override init() {
+        super.init()
+    }
+
+    public func configure(scanStore: ScanStore) {
         self.scanStore = scanStore
         latestScanThumbnail = scanStore.scans.first?.thumbnail
         cameraManager.delegate = self
@@ -99,7 +116,7 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
                                                name: NSNotification.Name("AVSystemController_SystemVolumeDidChangeNotification"), object: nil)
     }
 
-    func startSession() {
+    public func startSession() {
         cameraManager.startSession { result in
             switch result {
             case .success: break
@@ -116,13 +133,13 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
         UIApplication.shared.isIdleTimerDisabled = true
     }
 
-    func stopSession() {
+    public func stopSession() {
         cameraManager.stopSession()
         motionManager.stopDeviceMotionUpdates()
         UIApplication.shared.isIdleTimerDisabled = false
     }
 
-    func installVolumeView(in parent: UIView) {
+    public func installVolumeView(in parent: UIView) {
         let vv = MPVolumeView(frame: CGRect(x: -CGFloat.greatestFiniteMagnitude, y: 0, width: 0, height: 0))
         parent.addSubview(vv)
         volumeView = vv
@@ -130,7 +147,7 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
 
     // MARK: - Shutter
 
-    func shutterTapped() {
+    public func shutterTapped() {
         if scanning {
             stopScanning(reason: .finished)
         } else if countdownSeconds > 0 {
@@ -141,20 +158,20 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
         }
     }
 
-    func focusOnTap(at point: CGPoint) {
+    public func focusOnTap(at point: CGPoint) {
         guard !scanning else { return }
         cameraManager.focusOnTap(at: point)
     }
 
-    func setScanDuration(_ seconds: Int) {
+    public func setScanDuration(_ seconds: Int) {
         scanDurationSeconds = seconds
     }
 
-    func showLatestScan(from scanStore: ScanStore) -> Scan? {
+    public func showLatestScan(from scanStore: ScanStore) -> Scan? {
         return scanStore.scans.first
     }
 
-    func dismissCompleted() {
+    public func dismissCompleted() {
         completedScan = nil
         // Preview was presented because stopScanning(reason: .finished) fully
         // stopped the AVCaptureSession. Restart it so the live preview resumes
@@ -173,11 +190,11 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
     // All work done inline here (nonisolated). @MainActor state is
     // read via nonisolated(unsafe) snapshots and written via DispatchQueue.main.
 
-    nonisolated func cameraDidOutput(colorBuffer: CVPixelBuffer,
-                                     colorTime: CMTime,
-                                     depthBuffer: CVPixelBuffer,
-                                     depthTime: CMTime,
-                                     depthCalibrationData: AVCameraCalibrationData) {
+    public nonisolated func cameraDidOutput(colorBuffer: CVPixelBuffer,
+                                            colorTime: CMTime,
+                                            depthBuffer: CVPixelBuffer,
+                                            depthTime: CMTime,
+                                            depthCalibrationData: AVCameraCalibrationData) {
         // Snapshot @MainActor state without crossing actor boundary
         let isScanning = _scanningSnapshot
         let viewMatrix = _viewMatrixSnapshot
@@ -270,9 +287,9 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
     // Called on reconstruction thread (nonisolated). Extract Sendable values
     // inline; dispatch to MainActor only with those values.
 
-    nonisolated func reconstructionManager(_ manager: SCReconstructionManager,
-                                           didProcessWith metadata: SCAssimilatedFrameMetadata,
-                                           statistics: SCReconstructionManagerStatistics) {
+    public nonisolated func reconstructionManager(_ manager: SCReconstructionManager,
+                                                  didProcessWith metadata: SCAssimilatedFrameMetadata,
+                                                  statistics: SCReconstructionManagerStatistics) {
         let result = metadata.result
         let viewMatrix = metadata.viewMatrix
         let projMatrix = metadata.projectionMatrix
@@ -310,7 +327,7 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
 
     nonisolated(unsafe) private var _stopScanOnReconFailSnapshot: Bool = true
 
-    nonisolated func reconstructionManager(_ manager: SCReconstructionManager, didEncounterAPIError error: Error) {
+    public nonisolated func reconstructionManager(_ manager: SCReconstructionManager, didEncounterAPIError error: Error) {
         print("Reconstruction API error: \(error)")
     }
 
@@ -414,3 +431,17 @@ final class ScanningSession: NSObject, ObservableObject, MetalLayerClient, Camer
         }
     }
 }
+
+// MARK: - UserDefaults helper
+
+fileprivate extension UserDefaults {
+    func bool(forKey key: String, defaultValue: Bool) -> Bool {
+        if let defaultNumber = object(forKey: key) as? NSNumber {
+            return defaultNumber.boolValue
+        } else {
+            return defaultValue
+        }
+    }
+}
+
+#endif

@@ -1,26 +1,36 @@
 //
 //  MeshingService.swift
 
+#if os(iOS)
+
 import Foundation
 import os
 import StandardCyborgFusion
-import StandardCyborgCapture
+import StandardCyborgCaptureObjC
 
 // Retroactive Sendable conformance required because SCMesh crosses actor boundaries
 // during async meshing. SCMesh is immutable after construction.
 extension SCMesh: @retroactive @unchecked Sendable {}
 
+/// Drives Poisson-reconstruction meshing on a captured `Scan`.
+///
+/// Construct one `MeshingService` per scan-preview view, observe the
+/// `@Published` `progress`/`isRunning`/`mesh` state from SwiftUI, and call
+/// ``runMeshing(on:)`` to kick off reconstruction. Meshing is cancellable via
+/// ``cancelMeshing()``.
 @MainActor
-final class MeshingService: ObservableObject {
-    @Published private(set) var progress: Float = 0
-    @Published private(set) var isRunning = false
-    @Published private(set) var mesh: SCMesh?
+public final class MeshingService: ObservableObject {
+    @Published public private(set) var progress: Float = 0
+    @Published public private(set) var isRunning = false
+    @Published public private(set) var mesh: SCMesh?
 
     // Lock-protected so the SDK's background progress callback can read it
     // without crossing the @MainActor isolation boundary.
     private let cancelFlag = OSAllocatedUnfairLock(initialState: false)
 
-    func runMeshing(on scan: Scan) {
+    public init() {}
+
+    public func runMeshing(on scan: Scan) {
         guard !isRunning else { return }
         isRunning = true
         cancelFlag.withLock { $0 = false }
@@ -59,7 +69,9 @@ final class MeshingService: ObservableObject {
         )
     }
 
-    func cancelMeshing() {
+    public func cancelMeshing() {
         cancelFlag.withLock { $0 = true }
     }
 }
+
+#endif

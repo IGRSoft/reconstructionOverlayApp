@@ -1,6 +1,8 @@
 //
 //  SoundEffect.swift
 
+#if os(iOS)
+
 import AudioToolbox
 import Foundation
 
@@ -8,7 +10,9 @@ final class SoundEffect {
     private var _soundID: SystemSoundID = 0
 
     init(named name: String, type: String) {
-        guard let url = Bundle.main.url(forResource: name, withExtension: type) else { return }
+        guard let url = Bundle.module.url(forResource: name,
+                                          withExtension: type,
+                                          subdirectory: "SoundEffects") else { return }
         AudioServicesCreateSystemSoundID(url as CFURL, &_soundID)
     }
 
@@ -22,3 +26,5 @@ final class SoundEffect {
         AudioServicesPlaySystemSound(_soundID)
     }
 }
+
+#endif

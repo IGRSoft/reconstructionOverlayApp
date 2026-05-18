@@ -6,16 +6,9 @@
 //  Tap gesture is forwarded via focusOnTap(at:).
 
 import Metal
+import StandardCyborgCapture
 import SwiftUI
 import UIKit
-
-// MARK: - Protocol
-
-@MainActor
-protocol MetalLayerClient: AnyObject {
-    var metalLayer: CAMetalLayer? { get set }
-    func focusOnTap(at point: CGPoint)
-}
 
 // MARK: - MetalLayerView
 
