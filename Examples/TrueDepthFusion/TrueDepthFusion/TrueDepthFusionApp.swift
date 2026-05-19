@@ -1,6 +1,7 @@
 //
 //  TrueDepthFusionApp.swift
 
+import StandardCyborgCapture
 import SwiftUI
 
 @main

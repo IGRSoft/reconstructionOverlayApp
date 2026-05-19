@@ -2,7 +2,7 @@
 
 import Testing
 import Foundation
-@testable import TrueDepthFusion
+import StandardCyborgCapture
 
 @MainActor
 @Suite("ScanStore")

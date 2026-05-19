@@ -1,7 +1,7 @@
 // SoundEffectTests.swift
 
 import Testing
-@testable import TrueDepthFusion
+import StandardCyborgCapture
 
 @Suite("SoundEffect")
 struct SoundEffectTests {

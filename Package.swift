@@ -18,6 +18,10 @@ let package = Package(
             type: .dynamic,
             targets: ["StandardCyborgCapture"]
         ),
+        .library(
+            name: "StandardCyborgCaptureObjC",
+            targets: ["StandardCyborgCaptureObjC"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/ZipArchive/ZipArchive.git", from: "2.6.0"),
@@ -133,6 +137,15 @@ let package = Package(
             cxxSettings: [
                 .unsafeFlags(["-fobjc-arc", "-Os", "-fno-math-errno", "-ffast-math"]),
                 .headerSearchPath("include"),
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("CoreVideo"),
+                .linkedFramework("CoreMedia"),
+                .linkedFramework("CoreImage"),
+                .linkedFramework("Metal"),
+                .linkedFramework("AVFoundation"),
+                .linkedFramework("UIKit", .when(platforms: [.iOS])),
             ]
         ),
         .target(

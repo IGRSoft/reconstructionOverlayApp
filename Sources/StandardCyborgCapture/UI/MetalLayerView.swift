@@ -68,11 +68,12 @@ public struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
 // MARK: - Host UIView
 
 /// Internal host `UIView` for `CAMetalLayer`. Public consumers do not
-/// reference this type directly.
-final class MetalHostView: UIView {
+/// reference this type directly, but the type itself must be `public`
+/// because it appears in the signature of `MetalLayerView.makeUIView`.
+public final class MetalHostView: UIView {
     var metalLayer: CAMetalLayer?
 
-    override func layoutSubviews() {
+    public override func layoutSubviews() {
         super.layoutSubviews()
         guard let metalLayer else { return }
         CATransaction.begin()

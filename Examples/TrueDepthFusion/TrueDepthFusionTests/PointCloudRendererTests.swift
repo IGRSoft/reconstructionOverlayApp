@@ -3,7 +3,7 @@
 import Testing
 import Metal
 import MetalKit
-@testable import TrueDepthFusion
+import StandardCyborgCapture
 
 @Suite("SCPointCloudRenderer")
 struct PointCloudRendererTests {

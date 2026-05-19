@@ -29,9 +29,15 @@ lisbon-v3/                          ← root is the StandardCyborgSDK Swift Pack
         └── TrueDepthFusion/            ← example app sources
 ```
 
-## Consuming `StandardCyborgSDK`
+## Consuming the SDK
 
-Add this repo as a Swift Package dependency in your `Package.swift`:
+The package exposes three iOS-facing products:
+
+| Product | Purpose |
+|---|---|
+| `StandardCyborgSDK` | Reconstruction engine (Swift/ObjC++/Metal/C++): `SCPointCloud`, `SCReconstructionManager`, `SCMeshTexturing`, etc. |
+| `StandardCyborgCaptureObjC` | ObjC++ scan data model: `Scan`, `BPLYDepthDataAccumulator`. |
+| `StandardCyborgCapture` | Swift iOS scanning toolkit: `CameraManager`, renderer, `ScanningSession`, `ScanStore`, `MeshingService`, `ScanningView`, `ScanPreviewView`, `ScanControls`. Depends transitively on the other two. |
 
 ```swift
 dependencies: [
@@ -39,10 +45,37 @@ dependencies: [
 ],
 targets: [
     .target(name: "MyApp", dependencies: [
-        .product(name: "StandardCyborgSDK", package: "<repo>")
+        .product(name: "StandardCyborgCapture", package: "<repo>"),
+        .product(name: "StandardCyborgCaptureObjC", package: "<repo>"),
     ])
 ]
 ```
+
+### Minimal adoption
+
+```swift
+import StandardCyborgCapture
+import StandardCyborgCaptureObjC
+import SwiftUI
+
+@main
+struct MyScanApp: App {
+    @StateObject private var scanStore = ScanStore()
+    var body: some Scene {
+        WindowGroup {
+            ScanningView(
+                onExport: { scan, mesh in /* present your share sheet */ },
+                onShowSettings: { /* present settings */ },
+                onDone: { /* dismiss */ },
+                onShowLatestScan: { /* push to your scans list */ }
+            )
+            .environmentObject(scanStore)
+        }
+    }
+}
+```
+
+`StandardCyborgCapture` is iOS-only. The SDK ships ready-made `ScanningView` + `ScanPreviewView` screens; supply your app-specific export/share/settings UX via closures.
 
 ---
 
