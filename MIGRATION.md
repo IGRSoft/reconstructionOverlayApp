@@ -75,7 +75,8 @@ If you had copied any of the example app's scanning files into your own project,
 | Old | New |
 |---|---|
 | `import TrueDepthFusionObjC` | `import StandardCyborgCaptureObjC` |
-| Local copy of `CameraManager`, `ScanningSession`, `ScanStore`, `MeshingService`, `ScanningViewRenderer`, `SCPointCloudRenderer`, `DepthColoringFilter`, `MetalLayerView`, `FaceOvalOverlay`, `ScanControls`, `ScanPreviewView`, `ScanPreviewSceneView`, `ScanningView`, `BPLYScanningView`, `AudioAndHapticEngine`, `SoundEffect`, `UIImage.resized(toWidth:)` | `import StandardCyborgCapture` |
+| Local copy of `CameraManager`, `ScanningSession`, `ScanStore`, `MeshingService`, `ScanningViewRenderer`, `SCPointCloudRenderer`, `DepthColoringFilter`, `MetalLayerView`, `ScanPreviewView`, `ScanPreviewSceneView`, `ScanningView`, `BPLYScanningView`, `UIImage.resized(toWidth:)` | `import StandardCyborgCapture` |
+| Local copy of `AudioAndHapticEngine`, `SoundEffect`, `FaceOvalOverlay`, `ScanControls` | App-level code; implement `ScanFeedbackProvider` and inject via `ScanningView(feedbackProvider:)` |
 
 ### Public API changes from the prior example-local versions
 
@@ -86,7 +87,7 @@ If you had copied any of the example app's scanning files into your own project,
 
 ### Bundle / resource loading
 
-Inside the package, `Bundle.module` is the resource bundle. Consumers writing custom SwiftUI views that load matcap, camera-button images, sound effects, or `ScanPreviewViewController.scn` should use `Image("…", bundle: .module)` and `Bundle.module.url(forResource:withExtension:subdirectory:)`. The package-internal `MTLDevice.makeStandardCyborgCaptureLibrary()` helper loads the package's Metal shaders.
+Inside the package, `Bundle.module` is the resource bundle. Consumers writing custom SwiftUI views that load matcap, camera-button images, or `ScanPreviewViewController.scn` should use `Image("…", bundle: .module)` and `Bundle.module.url(forResource:withExtension:)`. The package-internal `MTLDevice.makeStandardCyborgCaptureLibrary()` helper loads the package's Metal shaders. Sound effects are no longer in the package — apps provide their own audio via `ScanFeedbackProvider`.
 
 ### `ScanPreviewHostingController` removed
 

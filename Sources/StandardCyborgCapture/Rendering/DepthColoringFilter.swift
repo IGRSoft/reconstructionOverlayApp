@@ -15,6 +15,7 @@ class DepthColoringFilter {
         var minDepth: Float = 0
         var maxDepth: Float = .greatestFiniteMagnitude
         var transform = simd_float3x3(0)
+        var dimPreview: UInt32 = 1
     }
     
     var inputImage: CIImage?
@@ -98,16 +99,20 @@ class DepthColoringFilter {
     func encodeCommands(onto commandBuffer: MTLCommandBuffer,
                         colorBuffer: CVPixelBuffer,
                         depthBuffer: CVPixelBuffer?,
-                        outputTexture: MTLTexture)
+                        outputTexture: MTLTexture,
+                        dimPreview: Bool = true)
     {
+        CVMetalTextureCacheFlush(_metalTextureCache, 0)
+
         let colorTexture = _metalTexture(fromColorBuffer: colorBuffer)!
-        
+
         _uniforms.transform = DepthColoringFilter._buildRotateAspectFitTransform(
             sourceWidth: colorTexture.width,
             sourceHeight: colorTexture.height,
             resultWidth: outputTexture.width,
             resultHeight: outputTexture.height)
-        
+        _uniforms.dimPreview = dimPreview ? 1 : 0
+
         if let depthBuffer = depthBuffer {
             CVPixelBufferReplaceNaNs(depthBuffer, 0)
             
@@ -131,21 +136,18 @@ class DepthColoringFilter {
                                             colorTexture: MTLTexture,
                                             outputTexture: MTLTexture)
     {
-        let resultWidth = outputTexture.width
-        let resultHeight = outputTexture.height
-        let threadgroupCounts = MTLSize(width: 8, height: 8, depth: 1)
-        let threadgroups = MTLSize( width: resultWidth  / threadgroupCounts.width  + (resultWidth  % threadgroupCounts.width  == 0 ? 0 : 1),
-                                   height: resultHeight / threadgroupCounts.height + (resultHeight % threadgroupCounts.height == 0 ? 0 : 1),
-                                   depth: 1)
-        
-        
+        let w = _colorPipelineState.threadExecutionWidth
+        let h = _colorPipelineState.maxTotalThreadsPerThreadgroup / w
+        let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: 1)
+        let threadsPerGrid = MTLSize(width: outputTexture.width, height: outputTexture.height, depth: 1)
+
         let commandEncoder = commandBuffer.makeComputeCommandEncoder()!
         commandEncoder.label = "DepthColoringFilter.commandEncoder"
         commandEncoder.setComputePipelineState(_colorPipelineState)
-        commandEncoder.setBytes(&_uniforms, length: MemoryLayout<Uniforms>.size, index: 0)
+        commandEncoder.setBytes(&_uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
         commandEncoder.setTexture(colorTexture, index: 0)
         commandEncoder.setTexture(outputTexture, index: 1)
-        commandEncoder.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threadgroupCounts)
+        commandEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         commandEncoder.endEncoding()
     }
     
@@ -171,21 +173,19 @@ class DepthColoringFilter {
                            sourceTexture: depthTexture,
                            destinationTexture: _blurredDepthTexture!)
         
-        let resultWidth = outputTexture.width
-        let resultHeight = outputTexture.height
-        let threadgroupCounts = MTLSize(width: 8, height: 8, depth: 1)
-        let threadgroups = MTLSize( width: resultWidth  / threadgroupCounts.width  + (resultWidth  % threadgroupCounts.width  == 0 ? 0 : 1),
-                                   height: resultHeight / threadgroupCounts.height + (resultHeight % threadgroupCounts.height == 0 ? 0 : 1),
-                                   depth: 1)
-        
+        let w = _depthColorPipelineState.threadExecutionWidth
+        let h = _depthColorPipelineState.maxTotalThreadsPerThreadgroup / w
+        let threadsPerThreadgroup = MTLSize(width: w, height: h, depth: 1)
+        let threadsPerGrid = MTLSize(width: outputTexture.width, height: outputTexture.height, depth: 1)
+
         let commandEncoder = commandBuffer.makeComputeCommandEncoder()!
         commandEncoder.label = "DepthColoringFilter.commandEncoder"
         commandEncoder.setComputePipelineState(_depthColorPipelineState)
-        commandEncoder.setBytes(&_uniforms, length: MemoryLayout<Uniforms>.size, index: 0)
+        commandEncoder.setBytes(&_uniforms, length: MemoryLayout<Uniforms>.stride, index: 0)
         commandEncoder.setTexture(colorTexture, index: 0)
         commandEncoder.setTexture(_blurredDepthTexture, index: 1)
         commandEncoder.setTexture(outputTexture, index: 2)
-        commandEncoder.dispatchThreadgroups(threadgroups, threadsPerThreadgroup: threadgroupCounts)
+        commandEncoder.dispatchThreads(threadsPerGrid, threadsPerThreadgroup: threadsPerThreadgroup)
         commandEncoder.endEncoding()
     }
     
@@ -212,7 +212,7 @@ class DepthColoringFilter {
     private func _metalTexture(fromDepthBuffer depthBuffer: CVPixelBuffer, device: MTLDevice) -> MTLTexture? {
         let textureAttributes: [CFString: Any] = [
             kCVPixelBufferMetalCompatibilityKey: true,
-            kCVMetalTextureUsage: MTLTextureUsage.shaderWrite.rawValue
+            kCVMetalTextureUsage: MTLTextureUsage.shaderRead.rawValue
         ]
         
         var texture: CVMetalTexture?

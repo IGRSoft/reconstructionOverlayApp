@@ -25,12 +25,17 @@ private struct SharedUniforms {
 /// loaded from `Bundle.module` so the package supplies its own shading asset.
 public final class SCPointCloudRenderer: @unchecked Sendable {
 
+    private static let maxInflightFrames = 3
+
     private let _device: MTLDevice
     private let _pipelineState: MTLRenderPipelineState
     private let _depthStencilState: MTLDepthStencilState
-    private let _sharedUniformsBuffer: MTLBuffer
+    private let _sharedUniformsBuffers: [MTLBuffer]
+    private var _inflightBufferIndex = 0
     private let _matcapTexture: MTLTexture
     private var _depthTexture: MTLTexture?
+    private var _cachedPointsBuffer: MTLBuffer?
+    private var _cachedPointCount: Int = 0
 
     public init(device: MTLDevice, library: MTLLibrary) {
         _device = device
@@ -64,11 +69,14 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
             fatalError("Unable to create SCPointCloudRenderer pipeline state")
         }()
 
-        _sharedUniformsBuffer = device.makeBuffer(
-            length: MemoryLayout<SharedUniforms>.stride,
-            options: .cpuCacheModeWriteCombined
-        )!
-        _sharedUniformsBuffer.label = "SCPointCloudRenderer._sharedUniformsBuffer"
+        _sharedUniformsBuffers = (0..<SCPointCloudRenderer.maxInflightFrames).map { i in
+            let buf = device.makeBuffer(
+                length: MemoryLayout<SharedUniforms>.stride,
+                options: .cpuCacheModeWriteCombined
+            )!
+            buf.label = "SCPointCloudRenderer._sharedUniformsBuffers[\(i)]"
+            return buf
+        }
     }
 
     public func encodeCommands(onto commandBuffer: MTLCommandBuffer,
@@ -94,10 +102,22 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
             _depthTexture?.label = "SCPointCloudRenderer._depthTexture"
         }
 
-        let pointsBuffer = pointCloud.buildPointsMTLBuffer(with: _device)
-        pointsBuffer.label = "SCPointCloudRenderer.pointsBuffer"
+        let pointsBuffer: MTLBuffer
+        if _cachedPointCount == pointCloud.pointCount, let cached = _cachedPointsBuffer {
+            pointsBuffer = cached
+        } else {
+            let buf = pointCloud.buildPointsMTLBuffer(with: _device)
+            buf.label = "SCPointCloudRenderer.pointsBuffer"
+            _cachedPointsBuffer = buf
+            _cachedPointCount = pointCloud.pointCount
+            pointsBuffer = buf
+        }
+
+        let uniformsBuffer = _sharedUniformsBuffers[_inflightBufferIndex]
+        _inflightBufferIndex = (_inflightBufferIndex + 1) % SCPointCloudRenderer.maxInflightFrames
 
         _updateSharedUniformsBuffer(
+            uniformsBuffer,
             intrinsicMatrix: depthCameraCalibrationData.intrinsicMatrix,
             intrinsicMatrixReferenceDimensions: depthCameraCalibrationData.intrinsicMatrixReferenceDimensions,
             viewMatrix: viewMatrix,
@@ -129,7 +149,7 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
         commandEncoder.setFrontFacing(.counterClockwise)
         commandEncoder.setCullMode(.back)
         commandEncoder.setVertexBuffer(pointsBuffer, offset: 0, index: 0)
-        commandEncoder.setVertexBuffer(_sharedUniformsBuffer, offset: 0, index: 1)
+        commandEncoder.setVertexBuffer(uniformsBuffer, offset: 0, index: 1)
         commandEncoder.setFragmentTexture(_matcapTexture, index: 0)
         commandEncoder.drawPrimitives(type: .point, vertexStart: 0, vertexCount: pointCloud.pointCount)
 
@@ -152,7 +172,8 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
         return descriptor
     }
 
-    private func _updateSharedUniformsBuffer(intrinsicMatrix: matrix_float3x3,
+    private func _updateSharedUniformsBuffer(_ buffer: MTLBuffer,
+                                              intrinsicMatrix: matrix_float3x3,
                                               intrinsicMatrixReferenceDimensions: CGSize,
                                               viewMatrix: matrix_float4x4,
                                               resultWidth: Int,
@@ -169,7 +190,6 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
         let far: Float = 10.0
 
         let resultAspectRatio = Float(resultWidth) / Float(resultHeight)
-        // Source aspect ratio inverted because the incoming frame is sideways
         let sourceAspectRatio = sourceHeight / sourceWidth
 
         let nominalPointSize: Float = 8.0
@@ -217,13 +237,15 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
 
         let view = matrix_multiply(orientationTransform, viewInverse)
 
+        // orientationTransform is orthogonal and viewMatrix is rigid-body,
+        // so the upper-left 3x3 of view is orthonormal: transpose == inverse
         let truncatedView = simd_float3x3(columns: (
             simd_float3(view.columns.0.x, view.columns.0.y, view.columns.0.z),
             simd_float3(view.columns.1.x, view.columns.1.y, view.columns.1.z),
             simd_float3(view.columns.2.x, view.columns.2.y, view.columns.2.z)
         ))
-        let viewNormalMatrix = matrix_transpose(matrix_invert(truncatedView))
-        let viewProjectionMatrix = matrix_multiply(projection, matrix_multiply(orientationTransform, viewInverse))
+        let viewNormalMatrix = matrix_transpose(truncatedView)
+        let viewProjectionMatrix = matrix_multiply(projection, view)
 
         var uniforms = SharedUniforms(
             viewNormalMatrix: viewNormalMatrix,
@@ -232,7 +254,7 @@ public final class SCPointCloudRenderer: @unchecked Sendable {
             pointSize: pointSize
         )
 
-        memcpy(_sharedUniformsBuffer.contents(), &uniforms, MemoryLayout<SharedUniforms>.stride)
+        memcpy(buffer.contents(), &uniforms, MemoryLayout<SharedUniforms>.stride)
     }
 }
 

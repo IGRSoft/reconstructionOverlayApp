@@ -58,7 +58,7 @@ fragment float4 RenderSCPointCloudFragment(ProjectedVertex inVertex [[stage_in]]
     
     // Eye vector is implicitly at the origin since we're in viewMatrix coordinates
     float3 positionRelEye = normalize(inVertex.viewPosition);
-    float3 normalizedNormal = inVertex.normal;
+    float3 normalizedNormal = normalize(inVertex.normal);
     float2 matcapLookup = computeMatcap(positionRelEye, normalizedNormal);
     
     float3 matcapColor = matcap.sample(matcapSampler, float2(1.0 - matcapLookup.x, matcapLookup.y)).xyz;

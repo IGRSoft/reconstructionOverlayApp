@@ -24,19 +24,23 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
 
     private let overlay: (ScanningSession) -> Overlay
     private let previewControls: (Scan, MeshingService) -> PreviewControls
+    private weak var feedbackProvider: ScanFeedbackProvider?
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
     /// - Parameters:
+    ///   - feedbackProvider: Optional audio/haptic feedback for scan events.
     ///   - overlay: A view builder that receives the ``ScanningSession``
     ///     and returns overlay content layered on top of the Metal preview.
     ///   - previewControls: A view builder that receives the completed
     ///     ``Scan`` and ``MeshingService``, used inside the post-capture
     ///     ``ScanPreviewView``.
     public init(
+        feedbackProvider: ScanFeedbackProvider? = nil,
         @ViewBuilder overlay: @escaping (ScanningSession) -> Overlay,
         @ViewBuilder previewControls: @escaping (Scan, MeshingService) -> PreviewControls
     ) {
+        self.feedbackProvider = feedbackProvider
         self.overlay = overlay
         self.previewControls = previewControls
     }
@@ -50,6 +54,7 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
         }
         .ignoresSafeArea()
         .onAppear {
+            session.feedbackProvider = feedbackProvider
             session.configure(scanStore: scanStore)
             session.startSession()
         }

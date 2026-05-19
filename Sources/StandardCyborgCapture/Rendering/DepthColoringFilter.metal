@@ -11,6 +11,7 @@ struct Uniforms
     float minDepth;
     float maxDepth;
     float3x3 transform;
+    uint dimPreview;
 };
 
 constant float minAlpha = 0.3;
@@ -49,7 +50,9 @@ kernel void DrawColorTexture(texture2d<float, access::sample> colorTexture [[tex
     float2 uv = (uniforms->transform * float3(float2(gid), 1.0)).xy;
     
     float4 color = colorTexture.sample(colorSampler, uv);
-    color.rgb *= minAlpha;
-    
+    if (uniforms->dimPreview) {
+        color.rgb *= minAlpha;
+    }
+
     resultTexture.write(color, gid);
 }

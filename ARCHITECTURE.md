@@ -34,10 +34,10 @@ Swift, iOS-only (`#if os(iOS)` guards throughout). Public scanning toolkit:
 - **Camera/** — `CameraManager` (AVFoundation TrueDepth wrapper).
 - **Rendering/** — `ScanningViewRenderer`, `DepthColoringFilter`, `SCPointCloudRenderer`, plus `MTLDevice.makeStandardCyborgCaptureLibrary()` helper for loading the package's Metal shaders from `Bundle.module`.
 - **Meshing/** — `MeshingService` (wrapper over `SCMeshTexturing`).
-- **Session/** — `ScanningSession` (`@MainActor ObservableObject` driving the scan), `ScanStore`, `AudioAndHapticEngine`, `SoundEffect`.
-- **UI/** — SwiftUI views (`ScanningView`, `ScanPreviewView`, `ScanControls`, `ScanPreviewSceneView`, `FaceOvalOverlay`, `MetalLayerView`, `BPLYScanningView`). App-specific glue (export/Jetson) is extracted via `onExport: (Scan, SCMesh?) -> Void` and `onShowSettings: () -> Void` closures.
+- **Session/** — `ScanningSession` (`@MainActor ObservableObject` driving the scan), `ScanStore`, `ScanFeedbackProvider` (protocol for injecting audio/haptic feedback from the host app).
+- **UI/** — SwiftUI views (`ScanningView`, `ScanPreviewView`, `ScanPreviewSceneView`, `MetalLayerView`, `BPLYScanningView`). App-specific overlays and controls live in the example app's `Overlays/` directory.
 - **Helpers/** — `UIImage.resized(toWidth:)`.
-- **Resources/** — `Media.xcassets` (camera buttons, matcap), `ScanPreviewViewController.scn`, `SoundEffects/*.m4a`/`.wav`. Loaded via `Bundle.module`.
+- **Resources/** — `Media.xcassets` (camera buttons, matcap), `ScanPreviewViewController.scn`. Loaded via `Bundle.module`. Sound effects live in the example app's `Audio/SoundEffects/` directory.
 
 ### `StandardCyborgCaptureObjC` — `Sources/StandardCyborgCaptureObjC/`
 

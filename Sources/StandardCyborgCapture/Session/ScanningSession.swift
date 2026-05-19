@@ -46,6 +46,8 @@ public final class ScanningSession: NSObject,
         didSet { _metalLayerSnapshot = metalLayer }
     }
 
+    public weak var feedbackProvider: ScanFeedbackProvider?
+
     // MARK: - Private
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
@@ -151,7 +153,7 @@ public final class ScanningSession: NSObject,
         if scanning {
             stopScanning(reason: .finished)
         } else if countdownSeconds > 0 {
-            AudioAndHapticEngine.shared.scanningCanceled()
+            feedbackProvider?.scanningCanceled()
             cancelCountdown()
         } else {
             startCountdown { [weak self] in self?.startScanning() }
@@ -359,7 +361,7 @@ public final class ScanningSession: NSObject,
     }
 
     private func iterateCountdown(_ completion: @escaping () -> Void) {
-        AudioAndHapticEngine.shared.countdownCountedDown()
+        feedbackProvider?.countdownCountedDown()
         if countdownSeconds == 0 { completion(); return }
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -371,7 +373,7 @@ public final class ScanningSession: NSObject,
     }
 
     private func startScanning() {
-        AudioAndHapticEngine.shared.scanningBegan()
+        feedbackProvider?.scanningBegan()
         scanningTimer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
             guard let self else { return }
             Task { @MainActor in
@@ -401,8 +403,8 @@ public final class ScanningSession: NSObject,
         _syncSnapshots()
 
         switch reason {
-        case .canceled: AudioAndHapticEngine.shared.scanningCanceled()
-        case .finished: AudioAndHapticEngine.shared.scanningFinished()
+        case .canceled: feedbackProvider?.scanningCanceled()
+        case .finished: feedbackProvider?.scanningFinished()
         }
 
         if reason == .finished {

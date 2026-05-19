@@ -67,6 +67,7 @@ struct InitialView: View {
                 .ignoresSafeArea()
             case .bplyScanning:
                 BPLYScanningView(
+                    feedbackProvider: AudioAndHapticEngine.shared,
                     onExport: { bplyShareItems = [$0] },
                     onDone: { fullScreen = nil }
                 )
@@ -91,7 +92,7 @@ private struct ScanningContainerView: View {
     @State private var previewScan: ScanSelection?
 
     var body: some View {
-        ScanningView { session in
+        ScanningView(feedbackProvider: AudioAndHapticEngine.shared) { session in
             FaceOvalOverlay(isScanning: session.scanning)
                 .allowsHitTesting(false)
                 .frame(maxHeight: 600)

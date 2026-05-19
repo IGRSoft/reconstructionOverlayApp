@@ -21,15 +21,18 @@ public struct BPLYScanningView: View {
 
     private let onExport: (URL) -> Void
     private let onDone: () -> Void
+    private weak var feedbackProvider: ScanFeedbackProvider?
 
     @StateObject private var session = BPLYScanningSession()
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
     public init(
+        feedbackProvider: ScanFeedbackProvider? = nil,
         onExport: @escaping (URL) -> Void,
         onDone: @escaping () -> Void
     ) {
+        self.feedbackProvider = feedbackProvider
         self.onExport = onExport
         self.onDone = onDone
     }
@@ -46,6 +49,7 @@ public struct BPLYScanningView: View {
         }
         .ignoresSafeArea()
         .onAppear {
+            session.feedbackProvider = feedbackProvider
             session.configure()
             session.startSession()
         }
@@ -65,6 +69,8 @@ public struct BPLYScanningView: View {
 
 @MainActor
 private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
+
+    weak var feedbackProvider: ScanFeedbackProvider?
 
     @Published private(set) var scanning = false
     @Published private(set) var elapsedSeconds = 0
@@ -138,7 +144,7 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
         if scanning {
             stopScanning(reason: .finished)
         } else if countdownSeconds > 0 {
-            AudioAndHapticEngine.shared.scanningCanceled()
+            feedbackProvider?.scanningCanceled()
             countdownSeconds = 0
         } else {
             startCountdown { [weak self] in self?.startScanning() }
@@ -154,7 +160,7 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
     }
 
     private func iterateCountdown(_ completion: @escaping () -> Void) {
-        AudioAndHapticEngine.shared.countdownCountedDown()
+        feedbackProvider?.countdownCountedDown()
         if countdownSeconds == 0 { completion(); return }
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -166,7 +172,7 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
     }
 
     private func startScanning() {
-        AudioAndHapticEngine.shared.scanningBegan()
+        feedbackProvider?.scanningBegan()
         bplyAccumulator = BPLYDepthDataAccumulator()
         _accumulatorRef = bplyAccumulator
         scanningTimer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
@@ -195,8 +201,8 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
         scanningTimer = nil
         elapsedSeconds = 0
         switch reason {
-        case .canceled: AudioAndHapticEngine.shared.scanningCanceled()
-        case .finished: AudioAndHapticEngine.shared.scanningFinished()
+        case .canceled: feedbackProvider?.scanningCanceled()
+        case .finished: feedbackProvider?.scanningFinished()
         }
         if reason == .finished, let accumulator {
             exportURL = accumulator.exportFrameSequenceToZip()

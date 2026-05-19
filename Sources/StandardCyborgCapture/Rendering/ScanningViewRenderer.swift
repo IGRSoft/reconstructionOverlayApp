@@ -20,6 +20,7 @@ public final class ScanningViewRenderer: @unchecked Sendable {
     private let _commandQueue: MTLCommandQueue
     private let _depthColoringFilter: DepthColoringFilter
     private let _pointCloudRenderer: SCPointCloudRenderer
+    private let _inflightSemaphore = DispatchSemaphore(value: 2)
 
     /// - Throws: `MetalLibraryError.libraryNotFound` if `Bundle.module` does not
     ///   contain the package's compiled Metal library.
@@ -40,17 +41,25 @@ public final class ScanningViewRenderer: @unchecked Sendable {
                      into metalLayer: CAMetalLayer,
                      flipsInputHorizontally: Bool)
     {
+        _inflightSemaphore.wait()
+
         autoreleasepool {
             let commandBuffer = _commandQueue.makeCommandBuffer()!
             commandBuffer.label = "ScanningViewRenderer.commandBuffer"
 
-            guard let drawable = metalLayer.nextDrawable() else { return }
+            guard let drawable = metalLayer.nextDrawable() else {
+                _inflightSemaphore.signal()
+                return
+            }
             let outputTexture = drawable.texture
+
+            let hasPointCloud = depthBuffer != nil && pointCloud != nil && (pointCloud?.pointCount ?? 0) > 0
 
             _depthColoringFilter.encodeCommands(onto: commandBuffer,
                                                 colorBuffer: colorBuffer,
                                                 depthBuffer: nil,
-                                                outputTexture: outputTexture)
+                                                outputTexture: outputTexture,
+                                                dimPreview: hasPointCloud)
 
             if let depthBuffer = depthBuffer,
                let pointCloud = pointCloud,
@@ -68,9 +77,11 @@ public final class ScanningViewRenderer: @unchecked Sendable {
                                                    flipsInputHorizontally: flipsInputHorizontally)
             }
 
+            commandBuffer.addCompletedHandler { [weak self] _ in
+                self?._inflightSemaphore.signal()
+            }
             commandBuffer.present(drawable)
             commandBuffer.commit()
-            commandBuffer.waitUntilCompleted()
         }
     }
 }
