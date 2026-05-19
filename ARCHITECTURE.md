@@ -100,5 +100,5 @@ The `Tests/` target mirrors the same set of header search paths via `..` prefixe
 
 - [README.md](README.md) — app overview, scanning UX, Jetson integration
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, building, testing
-- Migration context — see the **SPM Package Split** section above for upgrade notes from the pre-split structure
+- [MIGRATION.md](MIGRATION.md) — upgrade notes from the pre-split structure
 - [CppDependencies/README.md](CppDependencies/README.md) — vendored-library index

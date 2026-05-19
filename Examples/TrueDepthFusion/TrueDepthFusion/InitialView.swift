@@ -11,9 +11,6 @@ struct InitialView: View {
     @State private var fullScreen: FullScreenDestination?
     @State private var navigationPath = NavigationPath()
 
-    @State private var previewScan: ScanSelection?
-    @State private var exportContext: ExportContext?
-    @State private var showJetsonSettings = false
     @State private var bplyShareItems: [Any]?
 
     private var isBPLYMode: Bool {
@@ -63,55 +60,19 @@ struct InitialView: View {
         .fullScreenCover(item: $fullScreen) { destination in
             switch destination {
             case .scanning:
-                ScanningView(
-                    onExport: { scan, mesh in
-                        exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
-                    },
-                    onShowSettings: {
-                        showJetsonSettings = true
-                    },
-                    onDone: {
-                        fullScreen = nil
-                    },
-                    onShowLatestScan: {
-                        if let scan = scanStore.scans.first {
-                            previewScan = ScanSelection(scan: scan)
-                        }
-                    }
-                )
+                ScanningContainerView {
+                    fullScreen = nil
+                }
                 .environmentObject(scanStore)
                 .ignoresSafeArea()
             case .bplyScanning:
                 BPLYScanningView(
-                    onExport: { url in
-                        bplyShareItems = [url]
-                    },
-                    onDone: {
-                        fullScreen = nil
-                    }
+                    onExport: { bplyShareItems = [$0] },
+                    onDone: { fullScreen = nil }
                 )
                 .environmentObject(scanStore)
                 .ignoresSafeArea()
             }
-        }
-        .sheet(item: $previewScan) { selection in
-            ScanPreviewView(
-                scan: selection.scan,
-                onExport: { scan, mesh in
-                    exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
-                },
-                onShowSettings: {
-                    showJetsonSettings = true
-                }
-            )
-            .environmentObject(scanStore)
-        }
-        .sheet(item: $exportContext) { ctx in
-            ExportSheet(scan: ctx.scan, mesh: ctx.mesh, target: ctx.target)
-                .environmentObject(scanStore)
-        }
-        .sheet(isPresented: $showJetsonSettings) {
-            JetsonSettingsView()
         }
         .sheet(item: Binding(
             get: { bplyShareItems.map { BPLYShare(items: $0) } },
@@ -119,6 +80,50 @@ struct InitialView: View {
         )) { payload in
             ActivityView(activityItems: payload.items, applicationActivities: nil)
                 .ignoresSafeArea()
+        }
+    }
+}
+
+private struct ScanningContainerView: View {
+    @EnvironmentObject var scanStore: ScanStore
+    let onDone: () -> Void
+
+    @State private var previewScan: ScanSelection?
+
+    var body: some View {
+        ScanningView { session in
+            FaceOvalOverlay(isScanning: session.scanning)
+                .allowsHitTesting(false)
+                .frame(maxHeight: 600)
+                .padding(.vertical, 20)
+
+            GuidanceLabelsOverlay(
+                isScanning: session.scanning,
+                distanceMessage: session.distanceMessage
+            )
+
+            ScanControls(
+                session: session,
+                latestScanThumbnail: session.latestScanThumbnail.map { Image(uiImage: $0) },
+                tapToStartStop: UserDefaults.standard.bool(forKey: "tap_to_start_stop"),
+                onShowLatestScan: {
+                    if let scan = scanStore.scans.first {
+                        previewScan = ScanSelection(scan: scan)
+                    }
+                },
+                onDone: {
+                    session.stopSession()
+                    onDone()
+                }
+            )
+        } previewControls: { scan, meshingService in
+            ScanPreviewControls(scan: scan, meshingService: meshingService)
+        }
+        .sheet(item: $previewScan) { selection in
+            ScanPreviewView(scan: selection.scan) { scan, meshingService in
+                ScanPreviewControls(scan: scan, meshingService: meshingService)
+            }
+            .environmentObject(scanStore)
         }
     }
 }

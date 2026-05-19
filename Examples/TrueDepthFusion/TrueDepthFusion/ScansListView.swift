@@ -86,15 +86,9 @@ struct ScansListView: View {
             }
         }
         .sheet(item: $selectedScan) { selection in
-            ScanPreviewView(
-                scan: selection.scan,
-                onExport: { scan, mesh in
-                    exportContext = ExportContext(scan: scan, mesh: mesh, target: .share)
-                },
-                onShowSettings: {
-                    showJetsonSettings = true
-                }
-            )
+            ScanPreviewView(scan: selection.scan) { scan, meshingService in
+                ScanPreviewControls(scan: scan, meshingService: meshingService)
+            }
             .environmentObject(scanStore)
             .ignoresSafeArea()
         }

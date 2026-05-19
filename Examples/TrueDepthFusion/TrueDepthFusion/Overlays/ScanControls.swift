@@ -4,39 +4,18 @@
 //  HUD overlay for ScanningView: shutter, duration slider, elapsed timer,
 //  scan-failed message, latest-scan thumbnail button.
 
-#if os(iOS)
-
+import StandardCyborgCapture
 import SwiftUI
 
-/// SwiftUI HUD overlay layered on top of a ``ScanningView``'s Metal preview.
-///
-/// Use ``init(session:latestScanThumbnail:tapToStartStop:onShowLatestScan:onDone:)``
-/// from inside a scanning view to wire the shutter button, duration slider,
-/// and latest-scan thumbnail button.
-public struct ScanControls: View {
-    @ObservedObject private var session: ScanningSession
-    private let latestScanThumbnail: Image?
-    private let tapToStartStop: Bool
-    private let onShowLatestScan: () -> Void
-    private let onDone: () -> Void
+struct ScanControls: View {
+    @ObservedObject var session: ScanningSession
+    let latestScanThumbnail: Image?
+    var tapToStartStop: Bool = false
+    let onShowLatestScan: () -> Void
+    let onDone: () -> Void
 
-    public init(
-        session: ScanningSession,
-        latestScanThumbnail: Image?,
-        tapToStartStop: Bool = false,
-        onShowLatestScan: @escaping () -> Void,
-        onDone: @escaping () -> Void
-    ) {
-        self.session = session
-        self.latestScanThumbnail = latestScanThumbnail
-        self.tapToStartStop = tapToStartStop
-        self.onShowLatestScan = onShowLatestScan
-        self.onDone = onDone
-    }
-
-    public var body: some View {
+    var body: some View {
         ZStack {
-            // Scan failed overlay
             if session.showScanFailed {
                 Text("Scan failed")
                     .foregroundStyle(.white)
@@ -48,7 +27,6 @@ public struct ScanControls: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
             }
 
-            // Countdown label (centered)
             if session.countdownSeconds > 0 {
                 Text("\(session.countdownSeconds)")
                     .font(.system(size: 72, weight: .bold))
@@ -58,7 +36,6 @@ public struct ScanControls: View {
             }
 
             VStack {
-                // Top row: elapsed / duration
                 HStack {
                     if session.scanning {
                         Text("\(session.elapsedSeconds + 1)")
@@ -75,7 +52,6 @@ public struct ScanControls: View {
                 }
                 .padding(.top, 60)
 
-                // Duration slider (hidden while scanning or in tap-to-start-stop mode)
                 if !session.scanning && !tapToStartStop {
                     Slider(value: Binding(
                         get: { Double(session.scanDurationSeconds) },
@@ -87,9 +63,7 @@ public struct ScanControls: View {
 
                 Spacer()
 
-                // Bottom row: latest scan thumbnail | shutter | done
                 HStack(alignment: .center) {
-                    // Latest scan thumbnail button
                     Button(action: onShowLatestScan) {
                         if let img = latestScanThumbnail {
                             img
@@ -107,16 +81,14 @@ public struct ScanControls: View {
 
                     Spacer()
 
-                    // Shutter button
                     Button(action: { session.shutterTapped() }) {
-                        Image(session.scanning ? "CameraButtonRecording" : "CameraButton", bundle: .module)
+                        Image(session.scanning ? "CameraButtonRecording" : "CameraButton")
                             .resizable()
                             .frame(width: 72, height: 72)
                     }
 
                     Spacer()
 
-                    // Done button
                     Button("Done", action: onDone)
                         .foregroundStyle(.white)
                         .padding(.trailing, 24)
@@ -126,5 +98,3 @@ public struct ScanControls: View {
         }
     }
 }
-
-#endif
