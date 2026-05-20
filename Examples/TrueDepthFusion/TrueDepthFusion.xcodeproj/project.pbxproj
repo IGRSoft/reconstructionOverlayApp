@@ -35,6 +35,7 @@
 		OV000002OVOV0002OV000002 /* GuidanceLabelsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */; };
 		OV000003OVOV0003OV000003 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000003OVOV0003OV000000 /* ScanControls.swift */; };
 		OV000004OVOV0004OV000004 /* ScanPreviewControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */; };
+		LC000001LCLC0001LC000001 /* LoggingCameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */; };
 		TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000001TTTT0001TT000000 /* SoundEffectTests.swift */; };
 		TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000002TTTT0002TT000000 /* ScanStoreTests.swift */; };
 		TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */; };
@@ -107,6 +108,7 @@
 		OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceLabelsOverlay.swift; sourceTree = "<group>"; };
 		OV000003OVOV0003OV000000 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
 		OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewControls.swift; sourceTree = "<group>"; };
+		LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingCameraManager.swift; sourceTree = "<group>"; };
 		TT000001TTTT0001TT000000 /* SoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectTests.swift; sourceTree = "<group>"; };
 		TT000002TTTT0002TT000000 /* ScanStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStoreTests.swift; sourceTree = "<group>"; };
 		TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRendererTests.swift; sourceTree = "<group>"; };
@@ -188,6 +190,7 @@
 				AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */,
 				AA000006AAAA0006AA000001 /* RootView.swift */,
 				AA000007AAAA0007AA000001 /* InitialView.swift */,
+				LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */,
 				AA000008AAAA0008AA000001 /* Route.swift */,
 				AA000009AAAA0009AA000001 /* ScansListView.swift */,
 				AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */,
@@ -359,6 +362,7 @@
 				AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */,
 				AA000006AAAA0006AA000006 /* RootView.swift in Sources */,
 				AA000007AAAA0007AA000007 /* InitialView.swift in Sources */,
+				LC000001LCLC0001LC000001 /* LoggingCameraManager.swift in Sources */,
 				AA000008AAAA0008AA000008 /* Route.swift in Sources */,
 				AA000009AAAA0009AA000009 /* ScansListView.swift in Sources */,
 				AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */,

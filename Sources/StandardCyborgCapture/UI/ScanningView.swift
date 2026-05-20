@@ -42,6 +42,7 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
         configuration: ScanningConfiguration = .default,
         feedbackProvider: (any ScanFeedbackProvider)? = nil,
         onBPLYExport: ((URL) -> Void)? = nil,
+        cameraManager: (any CameraManagerProtocol)? = nil,
         @ViewBuilder overlay: @escaping (ScanningSession) -> Overlay,
         @ViewBuilder previewControls: @escaping (Scan, MeshingService) -> PreviewControls
     ) {
@@ -49,7 +50,14 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
         self.onBPLYExport = onBPLYExport
         self.overlay = overlay
         self.previewControls = previewControls
-        _session = StateObject(wrappedValue: ScanningSession(configuration: configuration))
+        let session: ScanningSession = {
+            if let cameraManager {
+                return ScanningSession(configuration: configuration, cameraManager: cameraManager)
+            } else {
+                return ScanningSession(configuration: configuration)
+            }
+        }()
+        _session = StateObject(wrappedValue: session)
     }
 
     public var body: some View {

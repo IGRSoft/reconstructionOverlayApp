@@ -47,7 +47,7 @@ public final class ScanningSession: NSObject,
     // MARK: - Private
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
-    private let cameraManager = CameraManager()
+    private let cameraManager: any CameraManagerProtocol
     private let motionManager = CMMotionManager()
     private let meshTexturing = SCMeshTexturing()
     private var frameIndex = 0
@@ -86,7 +86,9 @@ public final class ScanningSession: NSObject,
 
     // MARK: - Lifecycle
 
-    public init(configuration: ScanningConfiguration = .default) {
+    public init(configuration: ScanningConfiguration = .default,
+                cameraManager: any CameraManagerProtocol = CameraManager()) {
+        self.cameraManager = cameraManager
         lifecycle = ScanningLifecycle(configuration: configuration)
         scanDurationSeconds = configuration.defaultScanDurationSeconds
         super.init()

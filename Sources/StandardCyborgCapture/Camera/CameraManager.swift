@@ -23,6 +23,26 @@ public enum SessionSetupResult: Sendable {
     case configurationFailed
 }
 
+/// Protocol abstraction that mirrors ``CameraManager``'s public API so apps
+/// can supply a custom camera pipeline to ``ScanningSession`` — e.g. a mock
+/// for tests, a decorator that logs frames, or an alternate AVFoundation
+/// configuration (back camera, LiDAR, etc.).
+///
+/// Conformance is class-only because the type owns reference state (AVCaptureSession,
+/// dispatch queues) and is expected to be mutated across threads.
+public protocol CameraManagerProtocol: AnyObject {
+    var delegate: CameraManagerDelegate? { get set }
+    var isFocusLocked: Bool { get set }
+    var paused: Bool { get set }
+
+    func configureCaptureSession(maxColorResolution: Int,
+                                 maxDepthResolution: Int,
+                                 maxFramerate: Int)
+    func startSession(_ completion: (@Sendable (SessionSetupResult) -> Void)?)
+    func stopSession()
+    func focusOnTap(at location: CGPoint)
+}
+
 /// Delegate that receives synchronized color + depth frames from
 /// ``CameraManager``.
 ///
@@ -414,6 +434,8 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
     }
 
 }
+
+extension CameraManager: CameraManagerProtocol {}
 
 fileprivate extension AVCaptureSession.Preset {
     init(maxWidth: Int) {
