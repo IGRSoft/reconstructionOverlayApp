@@ -103,7 +103,7 @@ private struct ScanningContainerView: View {
     @State private var previewScan: ScanSelection?
 
     var body: some View {
-        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared, onBPLYExport: onBPLYExport) { session in
+        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared, onBPLYExport: onBPLYExport, cameraManager: LoggingCameraManager()) { session in
             FaceOvalOverlay(isScanning: session.scanning)
                 .allowsHitTesting(false)
                 .frame(maxHeight: 600)
