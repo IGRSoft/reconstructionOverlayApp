@@ -12,20 +12,19 @@ struct InitialView: View {
     @State private var navigationPath = NavigationPath()
 
     @State private var bplyShareItems: [Any]?
-
-    private var isBPLYMode: Bool {
-        UserDefaults.standard.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
-    }
+    @State private var pendingBPLYItems: [Any]?
 
     private var scanningConfiguration: ScanningConfiguration {
         let d = UserDefaults.standard
-        return ScanningConfiguration(
+        let config = ScanningConfiguration(
             tapToStartStop: d.bool(forKey: "tap_to_start_stop"),
             useFullResolutionDepthFrames: d.bool(forKey: "full_resolution_depth_frames", defaultValue: false),
             stopScanOnReconstructionFailure: d.bool(forKey: "stop_scanning_on_reconstruction_failure", defaultValue: true),
             maxICPIterations: Int32(d.integer(forKey: "icp_max_iteration_count")),
-            icpTolerance: d.float(forKey: "icp_tolerance")
+            icpTolerance: d.float(forKey: "icp_tolerance"),
+            bplyExportEnabled: d.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
         )
+        return config
     }
 
     var body: some View {
@@ -38,7 +37,7 @@ struct InitialView: View {
                     .padding(.horizontal, 24)
 
                 Button(action: {
-                    fullScreen = isBPLYMode ? .bplyScanning : .scanning
+                    fullScreen = .scanning
                 }) {
                     Text("SCAN")
                         .frame(maxWidth: .infinity)
@@ -68,24 +67,22 @@ struct InitialView: View {
                 }
             }
         }
-        .fullScreenCover(item: $fullScreen) { destination in
-            switch destination {
-            case .scanning:
-                ScanningContainerView(configuration: scanningConfiguration) {
-                    fullScreen = nil
-                }
-                .environmentObject(scanStore)
-                .ignoresSafeArea()
-            case .bplyScanning:
-                BPLYScanningView(
-                    configuration: scanningConfiguration,
-                    feedbackProvider: AudioAndHapticEngine.shared,
-                    onExport: { bplyShareItems = [$0] },
-                    onDone: { fullScreen = nil }
-                )
-                .environmentObject(scanStore)
-                .ignoresSafeArea()
+        .fullScreenCover(item: $fullScreen, onDismiss: {
+            if let items = pendingBPLYItems {
+                bplyShareItems = items
+                pendingBPLYItems = nil
             }
+        }) { _ in
+            ScanningContainerView(
+                configuration: scanningConfiguration,
+                onBPLYExport: { url in
+                    pendingBPLYItems = [url]
+                    fullScreen = nil
+                },
+                onDone: { fullScreen = nil }
+            )
+            .environmentObject(scanStore)
+            .ignoresSafeArea()
         }
         .sheet(item: Binding(
             get: { bplyShareItems.map { BPLYShare(items: $0) } },
@@ -100,12 +97,13 @@ struct InitialView: View {
 private struct ScanningContainerView: View {
     @EnvironmentObject var scanStore: ScanStore
     let configuration: ScanningConfiguration
+    let onBPLYExport: ((URL) -> Void)?
     let onDone: () -> Void
 
     @State private var previewScan: ScanSelection?
 
     var body: some View {
-        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared) { session in
+        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared, onBPLYExport: onBPLYExport) { session in
             FaceOvalOverlay(isScanning: session.scanning)
                 .allowsHitTesting(false)
                 .frame(maxHeight: 600)
@@ -151,10 +149,10 @@ private struct BPLYShare: Identifiable {
 
 extension UserDefaults {
     func bool(forKey key: String, defaultValue: Bool) -> Bool {
-        if let defaultNumber = object(forKey: key) as? NSNumber {
-            return defaultNumber.boolValue
+        if let _ = value(forKey: key) {
+            bool(forKey: key)
         } else {
-            return defaultValue
+            defaultValue
         }
     }
 }

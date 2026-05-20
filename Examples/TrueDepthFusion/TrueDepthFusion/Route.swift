@@ -11,12 +11,10 @@ enum Route: Hashable {
 /// Type-safe full-screen cover destinations.
 enum FullScreenDestination: Identifiable {
     case scanning
-    case bplyScanning
 
     var id: String {
         switch self {
         case .scanning: return "scanning"
-        case .bplyScanning: return "bplyScanning"
         }
     }
 }

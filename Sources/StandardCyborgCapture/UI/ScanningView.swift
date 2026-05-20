@@ -25,6 +25,7 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     private let overlay: (ScanningSession) -> Overlay
     private let previewControls: (Scan, MeshingService) -> PreviewControls
     private let feedbackProvider: (any ScanFeedbackProvider)?
+    private let onBPLYExport: ((URL) -> Void)?
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
@@ -40,10 +41,12 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     public init(
         configuration: ScanningConfiguration = .default,
         feedbackProvider: (any ScanFeedbackProvider)? = nil,
+        onBPLYExport: ((URL) -> Void)? = nil,
         @ViewBuilder overlay: @escaping (ScanningSession) -> Overlay,
         @ViewBuilder previewControls: @escaping (Scan, MeshingService) -> PreviewControls
     ) {
         self.feedbackProvider = feedbackProvider
+        self.onBPLYExport = onBPLYExport
         self.overlay = overlay
         self.previewControls = previewControls
         _session = StateObject(wrappedValue: ScanningSession(configuration: configuration))
@@ -64,6 +67,12 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
         }
         .onDisappear {
             session.stopSession()
+        }
+        .onChange(of: session.exportURL) { url in
+            if let url {
+                onBPLYExport?(url)
+                session.dismissExport()
+            }
         }
         .fullScreenCover(item: Binding(
             get: { session.completedScan.map { ScanSelection(scan: $0) } },

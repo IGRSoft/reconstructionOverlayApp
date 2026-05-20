@@ -77,8 +77,13 @@ public final class ScanningViewRenderer: @unchecked Sendable {
                                                    flipsInputHorizontally: flipsInputHorizontally)
             }
 
-            commandBuffer.addCompletedHandler { [weak self] _ in
-                self?._inflightSemaphore.signal()
+            // Capture the semaphore strongly so it outlives the renderer if
+            // the view is torn down between commit and GPU completion.
+            // libdispatch traps if a semaphore is deallocated with
+            // value < original (i.e. an outstanding wait at dealloc time).
+            let semaphore = _inflightSemaphore
+            commandBuffer.addCompletedHandler { _ in
+                semaphore.signal()
             }
             commandBuffer.present(drawable)
             commandBuffer.commit()

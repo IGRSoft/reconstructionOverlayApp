@@ -36,6 +36,7 @@ public final class ScanningSession: NSObject,
     @Published public private(set) var showScanFailed = false
     @Published public private(set) var completedScan: Scan? = nil
     @Published public private(set) var latestScanThumbnail: UIImage? = nil
+    @Published public private(set) var exportURL: URL? = nil
 
     // MARK: - Metal output layer (set by MetalLayerView)
 
@@ -80,6 +81,7 @@ public final class ScanningSession: NSObject,
         UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
     }()
 
+    private var bplyAccumulator: BPLYDepthDataAccumulator?
     private var volumeView: MPVolumeView?
 
     // MARK: - Lifecycle
@@ -131,6 +133,10 @@ public final class ScanningSession: NSObject,
         motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
             guard let self, let motion, self.scanning else { return }
             self.reconstructionManager.accumulateDeviceMotion(motion)
+            if let bply = self.bplyAccumulator {
+                bply.accumulate(deviceMotion: motion)
+                self._accumulatorRef = bply
+            }
         }
         UIApplication.shared.isIdleTimerDisabled = true
     }
@@ -142,7 +148,7 @@ public final class ScanningSession: NSObject,
     }
 
     public func installVolumeView(in parent: UIView) {
-        let vv = MPVolumeView(frame: CGRect(x: -CGFloat.greatestFiniteMagnitude, y: 0, width: 0, height: 0))
+        let vv = MPVolumeView(frame: CGRect(x: -CGFloat.greatestFiniteMagnitude, y: .zero, width: .zero, height: .zero))
         parent.addSubview(vv)
         volumeView = vv
     }
@@ -186,6 +192,8 @@ public final class ScanningSession: NSObject,
         }
     }
 
+    public func dismissExport() { exportURL = nil }
+
     // MARK: - Published state sync
 
     private func _syncPublishedState(_ state: ScanningState) {
@@ -202,10 +210,14 @@ public final class ScanningSession: NSObject,
 
     private func _handleStateChange(_ newState: ScanningState) {
         switch newState {
-        case .scanning(let elapsed) where elapsed == 0:
+        case .scanning(let elapsed) where elapsed == .zero:
             meshTexturing.reset()
-            frameIndex = 0
-            _frameIndexSnapshot = 0
+            frameIndex = .zero
+            _frameIndexSnapshot = .zero
+            if lifecycle.configuration.bplyExportEnabled {
+                bplyAccumulator = BPLYDepthDataAccumulator()
+                _accumulatorRef = bplyAccumulator
+            }
             _syncSnapshots(for: newState)
         case .idle, .completed, .failed:
             _syncSnapshots(for: newState)
@@ -213,7 +225,18 @@ public final class ScanningSession: NSObject,
             cameraManager.paused = true
             latestViewMatrix = matrix_identity_float4x4
             _syncSnapshots(for: newState)
-            _finalizeScan()
+            // BPLY mode reuses the live reconstruction for preview but discards
+            // it at finalize — only the raw-frame ZIP is the user-visible output.
+            if let accumulator = bplyAccumulator {
+                bplyAccumulator = nil
+                _accumulatorRef = nil
+                exportURL = accumulator.exportFrameSequenceToZip()
+                reconstructionManager.reset()
+                cameraManager.paused = false
+                Task { @MainActor in self.lifecycle.reset() }
+            } else {
+                _finalizeScan()
+            }
         default:
             break
         }
@@ -273,6 +296,11 @@ public final class ScanningSession: NSObject,
             _reconstructionManagerRef.accumulate(depthBuffer: depthBuffer,
                                                  colorBuffer: colorBuffer,
                                                  calibrationData: depthCalibrationData)
+            _accumulatorRef?.accumulate(colorBuffer: colorBuffer,
+                                        colorTime: colorTime,
+                                        depthBuffer: depthBuffer,
+                                        depthTime: depthTime,
+                                        calibrationData: depthCalibrationData)
         } else {
             _updateDistanceGuidanceNonisolated(from: depthBuffer)
         }
@@ -286,6 +314,7 @@ public final class ScanningSession: NSObject,
     nonisolated(unsafe) private var _flipsSnapshot: Bool = false
     nonisolated(unsafe) private var _reconstructionManagerRef: SCReconstructionManager!
     nonisolated(unsafe) private var _scanningViewRendererRef: ScanningViewRenderer!
+    nonisolated(unsafe) private var _accumulatorRef: BPLYDepthDataAccumulator?
 
     private func _syncSnapshots(for state: ScanningState) {
         _scanningSnapshot = state.isScanning

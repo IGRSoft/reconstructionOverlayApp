@@ -26,6 +26,8 @@ public struct ScanningConfiguration: Sendable {
     /// 0 = keep the reconstruction engine's built-in default.
     public var icpTolerance: Float
 
+    public var bplyExportEnabled: Bool
+
     public init(
         tapToStartStop: Bool = false,
         useFullResolutionDepthFrames: Bool = false,
@@ -41,7 +43,8 @@ public struct ScanningConfiguration: Sendable {
         failedScanMinFrameCount: Int = 50,
         failedScanDismissDelaySeconds: Double = 3.8,
         maxICPIterations: Int32 = 0,
-        icpTolerance: Float = 0
+        icpTolerance: Float = 0,
+        bplyExportEnabled: Bool = false
     ) {
         self.tapToStartStop = tapToStartStop
         self.useFullResolutionDepthFrames = useFullResolutionDepthFrames
@@ -58,6 +61,7 @@ public struct ScanningConfiguration: Sendable {
         self.failedScanDismissDelaySeconds = failedScanDismissDelaySeconds
         self.maxICPIterations = maxICPIterations
         self.icpTolerance = icpTolerance
+        self.bplyExportEnabled = bplyExportEnabled
     }
 
     public static let `default` = ScanningConfiguration()
