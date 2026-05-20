@@ -17,6 +17,17 @@ struct InitialView: View {
         UserDefaults.standard.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
     }
 
+    private var scanningConfiguration: ScanningConfiguration {
+        let d = UserDefaults.standard
+        return ScanningConfiguration(
+            tapToStartStop: d.bool(forKey: "tap_to_start_stop"),
+            useFullResolutionDepthFrames: d.bool(forKey: "full_resolution_depth_frames", defaultValue: false),
+            stopScanOnReconstructionFailure: d.bool(forKey: "stop_scanning_on_reconstruction_failure", defaultValue: true),
+            maxICPIterations: Int32(d.integer(forKey: "icp_max_iteration_count")),
+            icpTolerance: d.float(forKey: "icp_tolerance")
+        )
+    }
+
     var body: some View {
         NavigationStack(path: $navigationPath) {
             VStack(spacing: 32) {
@@ -60,13 +71,14 @@ struct InitialView: View {
         .fullScreenCover(item: $fullScreen) { destination in
             switch destination {
             case .scanning:
-                ScanningContainerView {
+                ScanningContainerView(configuration: scanningConfiguration) {
                     fullScreen = nil
                 }
                 .environmentObject(scanStore)
                 .ignoresSafeArea()
             case .bplyScanning:
                 BPLYScanningView(
+                    configuration: scanningConfiguration,
                     feedbackProvider: AudioAndHapticEngine.shared,
                     onExport: { bplyShareItems = [$0] },
                     onDone: { fullScreen = nil }
@@ -87,26 +99,27 @@ struct InitialView: View {
 
 private struct ScanningContainerView: View {
     @EnvironmentObject var scanStore: ScanStore
+    let configuration: ScanningConfiguration
     let onDone: () -> Void
 
     @State private var previewScan: ScanSelection?
 
     var body: some View {
-        ScanningView(feedbackProvider: AudioAndHapticEngine.shared) { session in
+        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared) { session in
             FaceOvalOverlay(isScanning: session.scanning)
                 .allowsHitTesting(false)
                 .frame(maxHeight: 600)
                 .padding(.vertical, 20)
 
             GuidanceLabelsOverlay(
-                isScanning: session.scanning,
+                isPreparing: session.countdownSeconds > 0, isScanning: session.scanning,
                 distanceMessage: session.distanceMessage
             )
 
             ScanControls(
                 session: session,
                 latestScanThumbnail: session.latestScanThumbnail.map { Image(uiImage: $0) },
-                tapToStartStop: UserDefaults.standard.bool(forKey: "tap_to_start_stop"),
+                tapToStartStop: configuration.tapToStartStop,
                 onShowLatestScan: {
                     if let scan = scanStore.scans.first {
                         previewScan = ScanSelection(scan: scan)

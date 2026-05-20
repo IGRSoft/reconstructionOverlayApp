@@ -4,6 +4,7 @@
 import SwiftUI
 
 struct GuidanceLabelsOverlay: View {
+    let isPreparing: Bool
     let isScanning: Bool
     let distanceMessage: String?
 
@@ -13,7 +14,7 @@ struct GuidanceLabelsOverlay: View {
             let ovalTop = (proxy.size.height - ovalH) / 2
             let centerY = ovalTop + ovalH / 2
 
-            if !isScanning {
+            if !isScanning, !isPreparing {
                 VStack(spacing: 10) {
                     Text("Center your face\nin the oval")
                         .font(.system(size: 16, weight: .semibold))

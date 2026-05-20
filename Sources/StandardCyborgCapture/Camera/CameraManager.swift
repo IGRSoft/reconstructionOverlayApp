@@ -4,7 +4,9 @@
 #if os(iOS)
 
 import AVFoundation
+import Combine
 import Foundation
+import os
 import UIKit
 
 /// Outcome of an AVFoundation capture-session setup attempt initiated by
@@ -42,10 +44,6 @@ public protocol CameraManagerDelegate: AnyObject {
 /// once before ``startSession(_:)``. All AVFoundation work runs on a private
 /// serial session queue; delegate callbacks fire on the data-output queue.
 public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDelegate, @unchecked Sendable {
-
-    deinit {
-        _captureSession.removeObserver(self, forKeyPath: "running", context: &_sessionRunningContext)
-    }
 
     public weak var delegate: CameraManagerDelegate?
     public var isFocusLocked: Bool = false {
@@ -188,58 +186,38 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
     private let _depthDataOutput = AVCaptureDepthDataOutput()
     private var _outputSynchronizer: AVCaptureDataOutputSynchronizer?
 
-    private let _renderingEnabledLock = NSLock()
-    private var __renderingEnabled: Bool = false
+    private let _renderingEnabledLock = OSAllocatedUnfairLock(initialState: false)
     private var _renderingEnabled: Bool {
-        get {
-            _renderingEnabledLock.lock()
-            let enabled = __renderingEnabled
-            _renderingEnabledLock.unlock()
-            return enabled
-        }
-        set {
-            _renderingEnabledLock.lock()
-            __renderingEnabled = newValue
-            _renderingEnabledLock.unlock()
-        }
+        get { _renderingEnabledLock.withLock { $0 } }
+        set { _renderingEnabledLock.withLock { $0 = newValue } }
     }
 
-    // MARK: - KVO and Notifications
+    // MARK: - Observers
 
-    private var _sessionRunningContext = 0
+    private var _cancellables = Set<AnyCancellable>()
 
     private func _addObservers() {
+        _captureSession.publisher(for: \.isRunning)
+            .sink { [weak self] _ in
+                guard let _ = self else { return }
+            }
+            .store(in: &_cancellables)
+
         NotificationCenter.default.addObserver(self, selector: #selector(sessionRuntimeError),
-                                               name: NSNotification.Name.AVCaptureSessionRuntimeError, object: _captureSession)
-
-        _captureSession.addObserver(self, forKeyPath: "running", options: NSKeyValueObservingOptions.new, context: &_sessionRunningContext)
-
-        /*
-         A session can only run when the app is full screen. It will be interrupted
-         in a multi-app layout, introduced in iOS 9, see also the documentation of
-         AVCaptureSessionInterruptionReason. Add observers to handle these session
-         interruptions and show a preview is paused message. See the documentation
-         of AVCaptureSessionWasInterruptedNotification for other interruption reasons.
-         */
+                                               name: .AVCaptureSessionRuntimeError, object: _captureSession)
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(willEnterForground),
                                                name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(sessionWasInterrupted),
-                                               name: NSNotification.Name.AVCaptureSessionWasInterrupted,
+                                               name: .AVCaptureSessionWasInterrupted,
                                                object: _captureSession)
         NotificationCenter.default.addObserver(self, selector: #selector(sessionInterruptionEnded),
-                                               name: NSNotification.Name.AVCaptureSessionInterruptionEnded,
+                                               name: .AVCaptureSessionInterruptionEnded,
                                                object: _captureSession)
         NotificationCenter.default.addObserver(self, selector: #selector(subjectAreaDidChange),
-                                               name: NSNotification.Name.AVCaptureDeviceSubjectAreaDidChange,
+                                               name: .AVCaptureDeviceSubjectAreaDidChange,
                                                object: _videoDeviceInput.device)
-    }
-
-    public override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        if context != &_sessionRunningContext {
-            super.observeValue(forKeyPath: keyPath, of: object, change: change, context: context)
-        }
     }
 
     @objc private func sessionWasInterrupted(notification: NSNotification) {

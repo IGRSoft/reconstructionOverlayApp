@@ -20,15 +20,17 @@ import SwiftUI
 public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     @EnvironmentObject private var scanStore: ScanStore
 
-    @StateObject private var session = ScanningSession()
+    @StateObject private var session: ScanningSession
 
     private let overlay: (ScanningSession) -> Overlay
     private let previewControls: (Scan, MeshingService) -> PreviewControls
-    private weak var feedbackProvider: ScanFeedbackProvider?
+    private let feedbackProvider: (any ScanFeedbackProvider)?
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
     /// - Parameters:
+    ///   - configuration: Scanning behavior (camera resolution, distance
+    ///     thresholds, durations, …). Defaults to ``ScanningConfiguration/default``.
     ///   - feedbackProvider: Optional audio/haptic feedback for scan events.
     ///   - overlay: A view builder that receives the ``ScanningSession``
     ///     and returns overlay content layered on top of the Metal preview.
@@ -36,13 +38,15 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     ///     ``Scan`` and ``MeshingService``, used inside the post-capture
     ///     ``ScanPreviewView``.
     public init(
-        feedbackProvider: ScanFeedbackProvider? = nil,
+        configuration: ScanningConfiguration = .default,
+        feedbackProvider: (any ScanFeedbackProvider)? = nil,
         @ViewBuilder overlay: @escaping (ScanningSession) -> Overlay,
         @ViewBuilder previewControls: @escaping (Scan, MeshingService) -> PreviewControls
     ) {
         self.feedbackProvider = feedbackProvider
         self.overlay = overlay
         self.previewControls = previewControls
+        _session = StateObject(wrappedValue: ScanningSession(configuration: configuration))
     }
 
     public var body: some View {
@@ -54,7 +58,7 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
         }
         .ignoresSafeArea()
         .onAppear {
-            session.feedbackProvider = feedbackProvider
+            session.lifecycle.feedbackProvider = feedbackProvider
             session.configure(scanStore: scanStore)
             session.startSession()
         }

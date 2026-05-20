@@ -13,6 +13,8 @@
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
 		76FFDF122150559300500A84 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 76FFDF112150559300500A84 /* Settings.bundle */; };
+		A5D397E82FBD837800D6FB1C /* StandardCyborgCapture in Frameworks */ = {isa = PBXBuildFile; productRef = 9AB40DE8892C63FB479CA885 /* StandardCyborgCapture */; };
+		A5D397E92FBD837800D6FB1C /* StandardCyborgCaptureObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 44977C217582912F7BE48E8E /* StandardCyborgCaptureObjC */; };
 		AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */; };
 		AA000006AAAA0006AA000006 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006AAAA0006AA000001 /* RootView.swift */; };
 		AA000007AAAA0007AA000007 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000007AAAA0007AA000001 /* InitialView.swift */; };
@@ -21,10 +23,6 @@
 		AA000010AAAA0010AA000010 /* JetsonSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */; };
 		AA000014AAAA0014AA000014 /* ActivityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000014AAAA0014AA000001 /* ActivityView.swift */; };
 		AA000022AAAA0022AA000022 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000022AAAA0022AA000001 /* ExportSheet.swift */; };
-		OV000001OVOV0001OV000001 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */; };
-		OV000002OVOV0002OV000002 /* GuidanceLabelsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */; };
-		OV000003OVOV0003OV000003 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000003OVOV0003OV000000 /* ScanControls.swift */; };
-		OV000004OVOV0004OV000004 /* ScanPreviewControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */; };
 		AU000001AUAU0001AU000001 /* SoundEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = AU000001AUAU0001AU000000 /* SoundEffect.swift */; };
 		AU000002AUAU0002AU000002 /* AudioAndHapticEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = AU000002AUAU0002AU000000 /* AudioAndHapticEngine.swift */; };
 		AU000003AUAU0003AU000003 /* Countdown.m4a in Resources */ = {isa = PBXBuildFile; fileRef = AU000003AUAU0003AU000000 /* Countdown.m4a */; };
@@ -35,6 +33,10 @@
 		B1D121DD9CA0DE55C5210794 /* StandardCyborgCapture in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		B446B5BBE9E78D1925F1AFF7 /* StandardCyborgCaptureObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 5F6D6BCE1C6C7014A659C4B6 /* StandardCyborgCaptureObjC */; };
 		F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */; };
+		OV000001OVOV0001OV000001 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */; };
+		OV000002OVOV0002OV000002 /* GuidanceLabelsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */; };
+		OV000003OVOV0003OV000003 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000003OVOV0003OV000000 /* ScanControls.swift */; };
+		OV000004OVOV0004OV000004 /* ScanPreviewControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */; };
 		TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000001TTTT0001TT000000 /* SoundEffectTests.swift */; };
 		TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000002TTTT0002TT000000 /* ScanStoreTests.swift */; };
 		TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */; };
@@ -97,10 +99,6 @@
 		AA000010AAAA0010AA000001 /* JetsonSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JetsonSettingsView.swift; sourceTree = "<group>"; };
 		AA000014AAAA0014AA000001 /* ActivityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ActivityView.swift; sourceTree = "<group>"; };
 		AA000022AAAA0022AA000001 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
-		OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
-		OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceLabelsOverlay.swift; sourceTree = "<group>"; };
-		OV000003OVOV0003OV000000 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
-		OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewControls.swift; sourceTree = "<group>"; };
 		AU000001AUAU0001AU000000 /* SoundEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffect.swift; sourceTree = "<group>"; };
 		AU000002AUAU0002AU000000 /* AudioAndHapticEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioAndHapticEngine.swift; sourceTree = "<group>"; };
 		AU000003AUAU0003AU000000 /* Countdown.m4a */ = {isa = PBXFileReference; lastKnownFileType = audio.m4a; path = Countdown.m4a; sourceTree = "<group>"; };
@@ -108,6 +106,10 @@
 		AU000005AUAU0005AU000000 /* ScanningFinished.m4a */ = {isa = PBXFileReference; lastKnownFileType = audio.m4a; path = ScanningFinished.m4a; sourceTree = "<group>"; };
 		AU000006AUAU0006AU000000 /* ScanningCanceled.m4a */ = {isa = PBXFileReference; lastKnownFileType = audio.m4a; path = ScanningCanceled.m4a; sourceTree = "<group>"; };
 		AU000007AUAU0007AU000000 /* ScanningContinued.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ScanningContinued.wav; sourceTree = "<group>"; };
+		OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
+		OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceLabelsOverlay.swift; sourceTree = "<group>"; };
+		OV000003OVOV0003OV000000 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
+		OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewControls.swift; sourceTree = "<group>"; };
 		TT000001TTTT0001TT000000 /* SoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectTests.swift; sourceTree = "<group>"; };
 		TT000002TTTT0002TT000000 /* ScanStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStoreTests.swift; sourceTree = "<group>"; };
 		TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRendererTests.swift; sourceTree = "<group>"; };
@@ -131,6 +133,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5D397E92FBD837800D6FB1C /* StandardCyborgCaptureObjC in Frameworks */,
+				A5D397E82FBD837800D6FB1C /* StandardCyborgCapture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -203,17 +207,6 @@
 			path = TrueDepthFusion;
 			sourceTree = "<group>";
 		};
-		OV000010OVOV0010OV000010 /* Overlays */ = {
-			isa = PBXGroup;
-			children = (
-				OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */,
-				OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */,
-				OV000003OVOV0003OV000000 /* ScanControls.swift */,
-			OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */,
-			);
-			path = Overlays;
-			sourceTree = "<group>";
-		};
 		AU000010AUAU0010AU000010 /* Audio */ = {
 			isa = PBXGroup;
 			children = (
@@ -234,6 +227,17 @@
 				AU000007AUAU0007AU000000 /* ScanningContinued.wav */,
 			);
 			path = SoundEffects;
+			sourceTree = "<group>";
+		};
+		OV000010OVOV0010OV000010 /* Overlays */ = {
+			isa = PBXGroup;
+			children = (
+				OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */,
+				OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */,
+				OV000003OVOV0003OV000000 /* ScanControls.swift */,
+				OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */,
+			);
+			path = Overlays;
 			sourceTree = "<group>";
 		};
 		TT000020TTTT0020TT000020 /* TrueDepthFusionTests */ = {
@@ -323,7 +327,7 @@
 			);
 			mainGroup = 76539C8D20F5B1FE009C332E;
 			packageReferences = (
-				763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */,
+				763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */,
 				76296F292CFE1317003EE037 /* XCRemoteSwiftPackageReference "ZipArchive" */,
 			);
 			productRefGroup = 76539C9820F5B1FE009C332E /* Products */;
@@ -675,7 +679,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */ = {
+		763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = ../..;
 		};
@@ -695,17 +699,17 @@
 /* Begin XCSwiftPackageProductDependency section */
 		202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */;
+			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
 			productName = StandardCyborgCapture;
 		};
 		44977C217582912F7BE48E8E /* StandardCyborgCaptureObjC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */;
+			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
 			productName = StandardCyborgCaptureObjC;
 		};
 		5F6D6BCE1C6C7014A659C4B6 /* StandardCyborgCaptureObjC */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */;
+			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
 			productName = StandardCyborgCaptureObjC;
 		};
 		76296F2A2CFE1317003EE037 /* ZipArchive */ = {
@@ -720,7 +724,7 @@
 		};
 		9AB40DE8892C63FB479CA885 /* StandardCyborgCapture */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference ".." */;
+			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
 			productName = StandardCyborgCapture;
 		};
 /* End XCSwiftPackageProductDependency section */

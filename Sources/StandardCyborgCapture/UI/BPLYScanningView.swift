@@ -4,37 +4,34 @@
 #if os(iOS)
 
 import AVFoundation
+import Combine
 import CoreMotion
 import Metal
 import StandardCyborgFusion
 import StandardCyborgCaptureObjC
 import SwiftUI
 
-/// SwiftUI scanning view for the BPLY (raw frame dump) developer mode.
-///
-/// Captures frames into a per-session BPLY accumulator and hands the
-/// resulting zip URL back to the host via ``onExport``. Internals
-/// (`BPLYScanningSession`, `BPLYScanControls`) are intentionally
-/// fileprivate — the host customizes only the export and dismissal hooks.
 public struct BPLYScanningView: View {
     @EnvironmentObject private var scanStore: ScanStore
 
     private let onExport: (URL) -> Void
     private let onDone: () -> Void
-    private weak var feedbackProvider: ScanFeedbackProvider?
+    private let feedbackProvider: (any ScanFeedbackProvider)?
 
-    @StateObject private var session = BPLYScanningSession()
+    @StateObject private var session: BPLYScanningSession
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
     public init(
-        feedbackProvider: ScanFeedbackProvider? = nil,
+        configuration: ScanningConfiguration = .default,
+        feedbackProvider: (any ScanFeedbackProvider)? = nil,
         onExport: @escaping (URL) -> Void,
         onDone: @escaping () -> Void
     ) {
         self.feedbackProvider = feedbackProvider
         self.onExport = onExport
         self.onDone = onDone
+        _session = StateObject(wrappedValue: BPLYScanningSession(configuration: configuration))
     }
 
     public var body: some View {
@@ -49,7 +46,7 @@ public struct BPLYScanningView: View {
         }
         .ignoresSafeArea()
         .onAppear {
-            session.feedbackProvider = feedbackProvider
+            session.lifecycle.feedbackProvider = feedbackProvider
             session.configure()
             session.startSession()
         }
@@ -68,20 +65,26 @@ public struct BPLYScanningView: View {
 // MARK: - BPLYScanningSession
 
 @MainActor
-private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
+final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerClient {
 
-    weak var feedbackProvider: ScanFeedbackProvider?
+    let lifecycle: ScanningLifecycle
 
     @Published private(set) var scanning = false
     @Published private(set) var elapsedSeconds = 0
     @Published private(set) var countdownSeconds = 0
-    @Published private(set) var scanDurationSeconds = 5
+    @Published private(set) var scanDurationSeconds: Int
     @Published private(set) var exportURL: URL? = nil
 
-    // MetalLayerClient conformance
+    init(configuration: ScanningConfiguration = .default) {
+        lifecycle = ScanningLifecycle(configuration: configuration)
+        scanDurationSeconds = configuration.defaultScanDurationSeconds
+        super.init()
+    }
+
     var metalLayer: CAMetalLayer? = nil {
         didSet { _metalLayerRef = metalLayer }
     }
+
     func focusOnTap(at point: CGPoint) {
         guard !scanning else { return }
         cameraManager.focusOnTap(at: point)
@@ -89,7 +92,13 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
     private lazy var commandQueue = metalDevice.makeCommandQueue()!
-    private lazy var reconstructionManager = SCReconstructionManager(device: metalDevice, commandQueue: commandQueue, maxThreadCount: 2)
+    private lazy var reconstructionManager = SCReconstructionManager(
+        device: metalDevice,
+        commandQueue: commandQueue,
+        maxThreadCount: 2,
+        maxICPIterations: lifecycle.configuration.maxICPIterations,
+        icpTolerance: lifecycle.configuration.icpTolerance
+    )
     private lazy var scanningViewRenderer: ScanningViewRenderer = {
         do {
             return try ScanningViewRenderer(device: metalDevice, commandQueue: commandQueue)
@@ -99,14 +108,9 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
     }()
     private let cameraManager = CameraManager()
     private let motionManager = CMMotionManager()
-    private var scanningTimer: Timer?
     private var bplyAccumulator: BPLYDepthDataAccumulator?
+    private var lifecycleCancellable: AnyCancellable?
 
-    private enum TerminationReason { case canceled, finished }
-    private var tapToStartStop: Bool { UserDefaults.standard.bool(forKey: "tap_to_start_stop") }
-    private var useFullResolution: Bool { UserDefaults.standard.bool(forKey: "full_resolution_depth_frames", defaultValue: false) }
-
-    // nonisolated(unsafe) snapshots for camera delegate
     nonisolated(unsafe) private var _metalLayerRef: CAMetalLayer?
     nonisolated(unsafe) private var _reconstructionManagerRef: SCReconstructionManager!
     nonisolated(unsafe) private var _rendererRef: ScanningViewRenderer!
@@ -116,14 +120,19 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
 
     func configure() {
         cameraManager.delegate = self
-        cameraManager.configureCaptureSession(maxColorResolution: 1920,
-                                              maxDepthResolution: useFullResolution ? 640 : 320,
-                                              maxFramerate: 30)
+        cameraManager.configureCaptureSession(maxColorResolution: lifecycle.configuration.maxColorResolution,
+                                              maxDepthResolution: lifecycle.configuration.activeDepthResolution,
+                                              maxFramerate: lifecycle.configuration.maxFramerate)
         _reconstructionManagerRef = reconstructionManager
         _rendererRef = scanningViewRenderer
-        _useFullResSnapshot = useFullResolution
-        NotificationCenter.default.addObserver(self, selector: #selector(thermalStateChanged),
-                                               name: ProcessInfo.thermalStateDidChangeNotification, object: nil)
+        _useFullResSnapshot = lifecycle.configuration.useFullResolutionDepthFrames
+
+        lifecycleCancellable = lifecycle.$state
+            .sink { [weak self] newState in
+                guard let self else { return }
+                self._syncPublishedState(newState)
+                self._handleStateChange(newState)
+            }
     }
 
     func startSession() {
@@ -141,77 +150,54 @@ private final class BPLYScanningSession: NSObject, ObservableObject, MetalLayerC
     }
 
     func shutterTapped() {
-        if scanning {
-            stopScanning(reason: .finished)
-        } else if countdownSeconds > 0 {
-            feedbackProvider?.scanningCanceled()
-            countdownSeconds = 0
-        } else {
-            startCountdown { [weak self] in self?.startScanning() }
+        switch lifecycle.state {
+        case .idle:
+            lifecycle.requestStartCountdown()
+        case .countdown:
+            lifecycle.cancelCountdown()
+        case .scanning:
+            lifecycle.stopScanning(reason: .finished)
+        default:
+            break
         }
     }
 
-    func setScanDuration(_ seconds: Int) { scanDurationSeconds = seconds }
+    func setScanDuration(_ seconds: Int) {
+        lifecycle.scanDurationSeconds = seconds
+        scanDurationSeconds = seconds
+    }
     func dismissExport() { exportURL = nil }
 
-    private func startCountdown(_ completion: @escaping () -> Void) {
-        countdownSeconds = 3
-        iterateCountdown(completion)
+    // MARK: - Published state sync
+
+    private func _syncPublishedState(_ state: ScanningState) {
+        scanning = state.isScanning
+        elapsedSeconds = state.elapsed ?? 0
+        countdownSeconds = state.countdownRemaining ?? 0
     }
 
-    private func iterateCountdown(_ completion: @escaping () -> Void) {
-        feedbackProvider?.countdownCountedDown()
-        if countdownSeconds == 0 { completion(); return }
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            if self.countdownSeconds > 0 {
-                self.countdownSeconds -= 1
-                self.iterateCountdown(completion)
+    // MARK: - State change handling
+
+    private func _handleStateChange(_ newState: ScanningState) {
+        switch newState {
+        case .scanning(let elapsed) where elapsed == 0:
+            bplyAccumulator = BPLYDepthDataAccumulator()
+            _accumulatorRef = bplyAccumulator
+            _scanningSnapshot = true
+        case .idle:
+            _scanningSnapshot = false
+        case .finalizing:
+            let accumulator = bplyAccumulator
+            bplyAccumulator = nil
+            _accumulatorRef = nil
+            _scanningSnapshot = false
+            if let accumulator {
+                exportURL = accumulator.exportFrameSequenceToZip()
             }
+            Task { @MainActor in self.lifecycle.reset() }
+        default:
+            break
         }
-    }
-
-    private func startScanning() {
-        feedbackProvider?.scanningBegan()
-        bplyAccumulator = BPLYDepthDataAccumulator()
-        _accumulatorRef = bplyAccumulator
-        scanningTimer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                self.elapsedSeconds += 1
-                if !self.tapToStartStop && self.elapsedSeconds >= self.scanDurationSeconds {
-                    self.stopScanning(reason: .finished)
-                }
-            }
-        }
-        RunLoop.current.add(scanningTimer!, forMode: .default)
-        elapsedSeconds = 0
-        scanning = true
-        _scanningSnapshot = true
-    }
-
-    private func stopScanning(reason: TerminationReason) {
-        guard scanning else { return }
-        let accumulator = bplyAccumulator
-        bplyAccumulator = nil
-        _accumulatorRef = nil
-        scanning = false
-        _scanningSnapshot = false
-        scanningTimer?.invalidate()
-        scanningTimer = nil
-        elapsedSeconds = 0
-        switch reason {
-        case .canceled: feedbackProvider?.scanningCanceled()
-        case .finished: feedbackProvider?.scanningFinished()
-        }
-        if reason == .finished, let accumulator {
-            exportURL = accumulator.exportFrameSequenceToZip()
-        }
-    }
-
-    @objc private func thermalStateChanged(_ n: Notification) {
-        guard let info = n.object as? ProcessInfo, info.thermalState == .critical else { return }
-        Task { @MainActor in if self.scanning { self.stopScanning(reason: .finished) } }
     }
 }
 
@@ -256,10 +242,6 @@ private struct BPLYScanControls: View {
     @ObservedObject var session: BPLYScanningSession
     let onDone: () -> Void
 
-    private var tapToStartStop: Bool {
-        UserDefaults.standard.bool(forKey: "tap_to_start_stop")
-    }
-
     var body: some View {
         ZStack {
             if session.countdownSeconds > 0 {
@@ -278,7 +260,7 @@ private struct BPLYScanControls: View {
                             .padding(.leading, 20)
                     }
                     Spacer()
-                    if !tapToStartStop {
+                    if !session.lifecycle.configuration.tapToStartStop {
                         Text("\(session.scanDurationSeconds) sec")
                             .foregroundStyle(.white)
                             .padding(.trailing, 20)
@@ -286,7 +268,7 @@ private struct BPLYScanControls: View {
                 }
                 .padding(.top, 60)
 
-                if !session.scanning && !tapToStartStop {
+                if !session.scanning && !session.lifecycle.configuration.tapToStartStop {
                     Slider(value: Binding(
                         get: { Double(session.scanDurationSeconds) },
                         set: { session.setScanDuration(Int($0)) }
@@ -311,18 +293,6 @@ private struct BPLYScanControls: View {
                 }
                 .padding(.bottom, 40)
             }
-        }
-    }
-}
-
-// MARK: - UserDefaults helper
-
-fileprivate extension UserDefaults {
-    func bool(forKey key: String, defaultValue: Bool) -> Bool {
-        if let defaultNumber = object(forKey: key) as? NSNumber {
-            return defaultNumber.boolValue
-        } else {
-            return defaultValue
         }
     }
 }

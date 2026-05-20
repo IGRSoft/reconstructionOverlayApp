@@ -15,13 +15,6 @@ import StandardCyborgFusion
 import StandardCyborgCaptureObjC
 import UIKit
 
-/// Drives the full TrueDepth scan lifecycle: countdown, capture,
-/// reconstruction, and preview-handoff state. Owns its own `CameraManager`,
-/// `SCReconstructionManager`, and `ScanningViewRenderer` instances.
-///
-/// Construct one `ScanningSession` per scanning view, inject a ``ScanStore``
-/// via ``configure(scanStore:)``, then call ``startSession()``/``stopSession()``
-/// on `onAppear`/`onDisappear`.
 @MainActor
 public final class ScanningSession: NSObject,
                                     ObservableObject,
@@ -29,12 +22,16 @@ public final class ScanningSession: NSObject,
                                     CameraManagerDelegate,
                                     SCReconstructionManagerDelegate {
 
+    // MARK: - Lifecycle (single source of truth for scan state)
+
+    public let lifecycle: ScanningLifecycle
+
     // MARK: - Published state (drives SwiftUI)
 
     @Published public private(set) var scanning = false
     @Published public private(set) var elapsedSeconds = 0
     @Published public private(set) var countdownSeconds = 0
-    @Published public private(set) var scanDurationSeconds = 5
+    @Published public private(set) var scanDurationSeconds: Int
     @Published public private(set) var distanceMessage: String? = nil
     @Published public private(set) var showScanFailed = false
     @Published public private(set) var completedScan: Scan? = nil
@@ -46,8 +43,6 @@ public final class ScanningSession: NSObject,
         didSet { _metalLayerSnapshot = metalLayer }
     }
 
-    public weak var feedbackProvider: ScanFeedbackProvider?
-
     // MARK: - Private
 
     private let metalDevice = MTLCreateSystemDefaultDevice()!
@@ -56,15 +51,19 @@ public final class ScanningSession: NSObject,
     private let meshTexturing = SCMeshTexturing()
     private var frameIndex = 0
     private var latestViewMatrix = matrix_identity_float4x4
-    private var scanningTimer: Timer?
     private var scanStore: ScanStore!
-
-    private enum TerminationReason { case canceled, finished }
+    private var lifecycleCancellable: AnyCancellable?
 
     private lazy var algorithmCommandQueue: MTLCommandQueue = metalDevice.makeCommandQueue()!
     private lazy var visualizationCommandQueue: MTLCommandQueue = metalDevice.makeCommandQueue()!
     private lazy var reconstructionManager: SCReconstructionManager = {
-        let mgr = SCReconstructionManager(device: metalDevice, commandQueue: algorithmCommandQueue, maxThreadCount: maxReconstructionThreadCount)
+        let mgr = SCReconstructionManager(
+            device: metalDevice,
+            commandQueue: algorithmCommandQueue,
+            maxThreadCount: maxReconstructionThreadCount,
+            maxICPIterations: lifecycle.configuration.maxICPIterations,
+            icpTolerance: lifecycle.configuration.icpTolerance
+        )
         mgr.delegate = self
         mgr.includesColorBuffersInMetadata = true
         return mgr
@@ -77,21 +76,17 @@ public final class ScanningSession: NSObject,
         }
     }()
 
-    private var tapToStartStop: Bool { UserDefaults.standard.bool(forKey: "tap_to_start_stop") }
-    private var useFullResolutionDepthFrames: Bool { UserDefaults.standard.bool(forKey: "full_resolution_depth_frames", defaultValue: false) }
-    private var stopScanOnReconFail: Bool { UserDefaults.standard.bool(forKey: "stop_scanning_on_reconstruction_failure", defaultValue: true) }
-    private let failedScanShowPreviewMinFrameCount = 50
-
     private lazy var maxReconstructionThreadCount: Int32 = {
         UIDevice.current.userInterfaceIdiom == .pad ? 4 : 2
     }()
 
-    // Volume button
     private var volumeView: MPVolumeView?
 
     // MARK: - Lifecycle
 
-    public override init() {
+    public init(configuration: ScanningConfiguration = .default) {
+        lifecycle = ScanningLifecycle(configuration: configuration)
+        scanDurationSeconds = configuration.defaultScanDurationSeconds
         super.init()
     }
 
@@ -100,20 +95,25 @@ public final class ScanningSession: NSObject,
         latestScanThumbnail = scanStore.scans.first?.thumbnail
         cameraManager.delegate = self
         cameraManager.configureCaptureSession(
-            maxColorResolution: 1920,
-            maxDepthResolution: useFullResolutionDepthFrames ? 640 : 320,
-            maxFramerate: 30
+            maxColorResolution: lifecycle.configuration.maxColorResolution,
+            maxDepthResolution: lifecycle.configuration.activeDepthResolution,
+            maxFramerate: lifecycle.configuration.maxFramerate
         )
         algorithmCommandQueue.label = "ScanningSession.algorithmCommandQueue"
         visualizationCommandQueue.label = "ScanningSession.visualizationCommandQueue"
-        // Expose refs to nonisolated camera/reconstruction callbacks
         _reconstructionManagerRef = reconstructionManager
         _scanningViewRendererRef = scanningViewRenderer
         _meshTexturingRef = meshTexturing
-        _useFullResSnapshot = useFullResolutionDepthFrames
-        _stopScanOnReconFailSnapshot = stopScanOnReconFail
-        NotificationCenter.default.addObserver(self, selector: #selector(thermalStateChanged(_:)),
-                                               name: ProcessInfo.thermalStateDidChangeNotification, object: nil)
+        _useFullResSnapshot = lifecycle.configuration.useFullResolutionDepthFrames
+        _stopScanOnReconFailSnapshot = lifecycle.configuration.stopScanOnReconstructionFailure
+
+        lifecycleCancellable = lifecycle.$state
+            .sink { [weak self] newState in
+                guard let self else { return }
+                self._syncPublishedState(newState)
+                self._handleStateChange(newState)
+            }
+
         NotificationCenter.default.addObserver(self, selector: #selector(volumeChanged(_:)),
                                                name: NSNotification.Name("AVSystemController_SystemVolumeDidChangeNotification"), object: nil)
     }
@@ -125,7 +125,7 @@ public final class ScanningSession: NSObject,
             case .configurationFailed:
                 print("Camera configuration failed")
             case .notAuthorized:
-                break  // Handled by permission request at app level
+                break
             }
         }
         motionManager.startDeviceMotionUpdates(to: .main) { [weak self] motion, _ in
@@ -150,13 +150,15 @@ public final class ScanningSession: NSObject,
     // MARK: - Shutter
 
     public func shutterTapped() {
-        if scanning {
-            stopScanning(reason: .finished)
-        } else if countdownSeconds > 0 {
-            feedbackProvider?.scanningCanceled()
-            cancelCountdown()
-        } else {
-            startCountdown { [weak self] in self?.startScanning() }
+        switch lifecycle.state {
+        case .idle:
+            lifecycle.requestStartCountdown()
+        case .countdown:
+            lifecycle.cancelCountdown()
+        case .scanning:
+            lifecycle.stopScanning(reason: .finished)
+        default:
+            break
         }
     }
 
@@ -166,6 +168,7 @@ public final class ScanningSession: NSObject,
     }
 
     public func setScanDuration(_ seconds: Int) {
+        lifecycle.scanDurationSeconds = seconds
         scanDurationSeconds = seconds
     }
 
@@ -174,11 +177,7 @@ public final class ScanningSession: NSObject,
     }
 
     public func dismissCompleted() {
-        completedScan = nil
-        // Preview was presented because stopScanning(reason: .finished) fully
-        // stopped the AVCaptureSession. Restart it so the live preview resumes
-        // when the user returns to ScanningView (.onAppear does not re-fire
-        // after a .fullScreenCover dismiss).
+        lifecycle.reset()
         cameraManager.paused = false
         cameraManager.startSession { result in
             if case .configurationFailed = result {
@@ -187,17 +186,60 @@ public final class ScanningSession: NSObject,
         }
     }
 
+    // MARK: - Published state sync
+
+    private func _syncPublishedState(_ state: ScanningState) {
+        scanning = state.isScanning
+        elapsedSeconds = state.elapsed ?? 0
+        countdownSeconds = state.countdownRemaining ?? 0
+        if case .failed = state { showScanFailed = true }
+        else { showScanFailed = false }
+        if case .completed(let ref) = state { completedScan = ref.scan }
+        else { completedScan = nil }
+    }
+
+    // MARK: - State change handling
+
+    private func _handleStateChange(_ newState: ScanningState) {
+        switch newState {
+        case .scanning(let elapsed) where elapsed == 0:
+            meshTexturing.reset()
+            frameIndex = 0
+            _frameIndexSnapshot = 0
+            _syncSnapshots(for: newState)
+        case .idle, .completed, .failed:
+            _syncSnapshots(for: newState)
+        case .finalizing:
+            cameraManager.paused = true
+            latestViewMatrix = matrix_identity_float4x4
+            _syncSnapshots(for: newState)
+            _finalizeScan()
+        default:
+            break
+        }
+    }
+
+    private func _finalizeScan() {
+        cameraManager.stopSession()
+        reconstructionManager.finalize { [weak self] in
+            guard let self else { return }
+            Task { @MainActor in
+                let pointCloud = self.reconstructionManager.buildPointCloud()
+                let scan = Scan(pointCloud: pointCloud, thumbnail: nil, meshTexturing: self.meshTexturing)
+                self.lifecycle.markCompleted(scan)
+                self.reconstructionManager.reset()
+                self.cameraManager.paused = false
+            }
+        }
+    }
+
     // MARK: - CameraManagerDelegate
-    // NOTE: Called from camera session queue (background thread).
-    // All work done inline here (nonisolated). @MainActor state is
-    // read via nonisolated(unsafe) snapshots and written via DispatchQueue.main.
 
     public nonisolated func cameraDidOutput(colorBuffer: CVPixelBuffer,
                                             colorTime: CMTime,
                                             depthBuffer: CVPixelBuffer,
                                             depthTime: CMTime,
                                             depthCalibrationData: AVCameraCalibrationData) {
-        // Snapshot @MainActor state without crossing actor boundary
         let isScanning = _scanningSnapshot
         let viewMatrix = _viewMatrixSnapshot
         let useFullRes = _useFullResSnapshot
@@ -236,23 +278,19 @@ public final class ScanningSession: NSObject,
         }
     }
 
-    // Nonisolated snapshots of @MainActor state — written on main, read on bg.
-    // Swift 6: safe because writes are serialized on MainActor and reads are
-    // on a single serial camera queue (no torn reads for value types).
+    // Nonisolated snapshots
     nonisolated(unsafe) private var _scanningSnapshot: Bool = false
     nonisolated(unsafe) private var _viewMatrixSnapshot = matrix_identity_float4x4
     nonisolated(unsafe) private var _useFullResSnapshot: Bool = false
     nonisolated(unsafe) private var _metalLayerSnapshot: CAMetalLayer? = nil
     nonisolated(unsafe) private var _flipsSnapshot: Bool = false
-
-    // Nonisolated references — set once during configure() on MainActor.
     nonisolated(unsafe) private var _reconstructionManagerRef: SCReconstructionManager!
     nonisolated(unsafe) private var _scanningViewRendererRef: ScanningViewRenderer!
 
-    private func _syncSnapshots() {
-        _scanningSnapshot = scanning
+    private func _syncSnapshots(for state: ScanningState) {
+        _scanningSnapshot = state.isScanning
         _viewMatrixSnapshot = latestViewMatrix
-        _useFullResSnapshot = useFullResolutionDepthFrames
+        _useFullResSnapshot = lifecycle.configuration.useFullResolutionDepthFrames
         _metalLayerSnapshot = metalLayer
         _flipsSnapshot = reconstructionManager.flipsInputHorizontally
     }
@@ -279,15 +317,16 @@ public final class ScanningSession: NSObject,
 
     private func updateDistanceLabel(depth: Float) {
         guard !scanning else { distanceMessage = nil; return }
-        if depth.isNaN || depth <= 0 { distanceMessage = "No face detected" }
-        else if depth < 0.25 { distanceMessage = "Move back" }
-        else if depth > 0.60 { distanceMessage = "Move closer" }
-        else { distanceMessage = nil }
+        let message: String?
+        if depth.isNaN || depth <= 0 { message = "No face detected" }
+        else if depth < lifecycle.configuration.nearDistanceMeters { message = "Move back" }
+        else if depth > lifecycle.configuration.farDistanceMeters { message = "Move closer" }
+        else { message = nil }
+        distanceMessage = message
+        lifecycle.feedbackProvider?.distanceGuidanceChanged(message)
     }
 
     // MARK: - SCReconstructionManagerDelegate
-    // Called on reconstruction thread (nonisolated). Extract Sendable values
-    // inline; dispatch to MainActor only with those values.
 
     public nonisolated func reconstructionManager(_ manager: SCReconstructionManager,
                                                   didProcessWith metadata: SCAssimilatedFrameMetadata,
@@ -298,8 +337,6 @@ public final class ScanningSession: NSObject,
         let succeededCount = statistics.succeededCount
         let shouldStopOnFail = _stopScanOnReconFailSnapshot
 
-        // Update meshTexturing inline on reconstruction thread (same thread as finalize).
-        // SCMeshTexturing is @unchecked Sendable and only accessed here + finalize block.
         if result == .succeeded || result == .poorTracking {
             _meshTexturingRef.cameraCalibrationData = manager.latestCameraCalibrationData
             _meshTexturingRef.cameraCalibrationFrameWidth = manager.latestCameraCalibrationFrameWidth
@@ -316,133 +353,44 @@ public final class ScanningSession: NSObject,
             self.frameIndex = self._frameIndexSnapshot
             self._viewMatrixSnapshot = viewMatrix
             if shouldStopOnFail && result == .failed {
-                let tooFew = succeededCount < self.failedScanShowPreviewMinFrameCount
-                self.stopScanning(reason: tooFew ? .canceled : .finished)
-                self.showScanFailedBriefly()
+                let tooFew = succeededCount < self.lifecycle.configuration.failedScanMinFrameCount
+                if tooFew {
+                    self.lifecycle.stopScanning(reason: .canceled)
+                    self.lifecycle.markFailed(.reconstructionFailed(frameCount: Int(succeededCount)))
+                    self._dismissFailedAfterDelay()
+                } else {
+                    self.lifecycle.stopScanning(reason: .finished)
+                }
             }
         }
     }
 
-    // nonisolated(unsafe) refs for reconstruction thread access
     nonisolated(unsafe) private var _meshTexturingRef: SCMeshTexturing!
     nonisolated(unsafe) private var _frameIndexSnapshot: Int = 0
-
     nonisolated(unsafe) private var _stopScanOnReconFailSnapshot: Bool = true
 
     public nonisolated func reconstructionManager(_ manager: SCReconstructionManager, didEncounterAPIError error: Error) {
         print("Reconstruction API error: \(error)")
     }
 
-    // MARK: - Notifications
-
-    @objc private func thermalStateChanged(_ n: Notification) {
-        guard let info = n.object as? ProcessInfo, info.thermalState == .critical else { return }
+    private func _dismissFailedAfterDelay() {
+        let delaySeconds = lifecycle.configuration.failedScanDismissDelaySeconds
         Task { @MainActor in
-            if self.scanning { self.stopScanning(reason: .finished) }
+            let nanoseconds = UInt64((delaySeconds * 1_000_000_000).rounded())
+            try? await Task.sleep(nanoseconds: nanoseconds)
+            if case .failed = self.lifecycle.state {
+                self.lifecycle.reset()
+            }
         }
     }
+
+    // MARK: - Notifications
 
     @objc private func volumeChanged(_ n: Notification) {
         guard let info = n.userInfo,
               let reason = info["AVSystemController_AudioVolumeChangeReasonNotificationParameter"] as? String,
               reason == "ExplicitVolumeChange" else { return }
         Task { @MainActor in self.shutterTapped() }
-    }
-
-    // MARK: - Private scanning logic
-
-    private func startCountdown(_ completion: @escaping () -> Void) {
-        countdownSeconds = 3
-        iterateCountdown(completion)
-    }
-
-    private func cancelCountdown() {
-        countdownSeconds = 0
-    }
-
-    private func iterateCountdown(_ completion: @escaping () -> Void) {
-        feedbackProvider?.countdownCountedDown()
-        if countdownSeconds == 0 { completion(); return }
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-            if self.countdownSeconds > 0 {
-                self.countdownSeconds -= 1
-                self.iterateCountdown(completion)
-            }
-        }
-    }
-
-    private func startScanning() {
-        feedbackProvider?.scanningBegan()
-        scanningTimer = Timer(timeInterval: 1, repeats: true) { [weak self] _ in
-            guard let self else { return }
-            Task { @MainActor in
-                self.elapsedSeconds += 1
-                if !self.tapToStartStop && self.elapsedSeconds >= self.scanDurationSeconds {
-                    self.stopScanning(reason: .finished)
-                }
-            }
-        }
-        RunLoop.current.add(scanningTimer!, forMode: .default)
-        elapsedSeconds = 0
-        scanning = true
-        meshTexturing.reset()
-        frameIndex = 0
-        _frameIndexSnapshot = 0
-        _syncSnapshots()
-    }
-
-    private func stopScanning(reason: TerminationReason) {
-        guard scanning else { return }
-        cameraManager.paused = true
-        scanning = false
-        scanningTimer?.invalidate()
-        scanningTimer = nil
-        elapsedSeconds = 0
-        latestViewMatrix = matrix_identity_float4x4
-        _syncSnapshots()
-
-        switch reason {
-        case .canceled: feedbackProvider?.scanningCanceled()
-        case .finished: feedbackProvider?.scanningFinished()
-        }
-
-        if reason == .finished {
-            cameraManager.stopSession()
-            reconstructionManager.finalize { [weak self] in
-                guard let self else { return }
-                Task { @MainActor in
-                    let pointCloud = self.reconstructionManager.buildPointCloud()
-                    let scan = Scan(pointCloud: pointCloud, thumbnail: nil, meshTexturing: self.meshTexturing)
-                    self.completedScan = scan
-                    self.reconstructionManager.reset()
-                    self.cameraManager.paused = false
-                }
-            }
-        } else {
-            reconstructionManager.reset()
-            cameraManager.paused = false
-        }
-    }
-
-    private func showScanFailedBriefly() {
-        showScanFailed = true
-        Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 3_800_000_000)
-            self.showScanFailed = false
-        }
-    }
-}
-
-// MARK: - UserDefaults helper
-
-fileprivate extension UserDefaults {
-    func bool(forKey key: String, defaultValue: Bool) -> Bool {
-        if let defaultNumber = object(forKey: key) as? NSNumber {
-            return defaultNumber.boolValue
-        } else {
-            return defaultValue
-        }
     }
 }
 
