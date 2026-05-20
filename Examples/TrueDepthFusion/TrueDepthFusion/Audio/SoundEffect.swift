@@ -1,7 +1,6 @@
 //
 //  SoundEffect.swift
 
-#if os(iOS)
 
 import AudioToolbox
 import Foundation
@@ -26,4 +25,3 @@ final class SoundEffect {
     }
 }
 
-#endif

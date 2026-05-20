@@ -5,17 +5,15 @@ import PackageDescription
 let package = Package(
     name: "StandardCyborgSDK",
     platforms: [
-        .iOS(.v16), .macOS(.v13)
+        .iOS(.v16)
     ],
     products: [
         .library(
-            name: "StandardCyborgSDK",
-            type: .dynamic,
+            name: "StandardCyborgFusion",
             targets: ["StandardCyborgFusion"]
         ),
         .library(
             name: "StandardCyborgCapture",
-            type: .dynamic,
             targets: ["StandardCyborgCapture"]
         ),
         .library(
