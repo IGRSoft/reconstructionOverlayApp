@@ -7,14 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5812B6623D6562023B6D82D8 /* StandardCyborgCapture in Frameworks */ = {isa = PBXBuildFile; productRef = 202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */; };
 		76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */ = {isa = PBXBuildFile; productRef = 76296F2A2CFE1317003EE037 /* ZipArchive */; };
 		767001C3227B82580037210E /* MetalKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A52430AE213F482D00A39A38 /* MetalKit.framework */; };
 		768967F42394306D007179B2 /* SceneKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 768967EE2394305D007179B2 /* SceneKit.framework */; };
 		768F64F62121570700C1B1DA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 768F64F52121570700C1B1DA /* Assets.xcassets */; };
 		76FFDF122150559300500A84 /* Settings.bundle in Resources */ = {isa = PBXBuildFile; fileRef = 76FFDF112150559300500A84 /* Settings.bundle */; };
-		A5D397E82FBD837800D6FB1C /* StandardCyborgCapture in Frameworks */ = {isa = PBXBuildFile; productRef = 9AB40DE8892C63FB479CA885 /* StandardCyborgCapture */; };
-		A5D397E92FBD837800D6FB1C /* StandardCyborgCaptureObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 44977C217582912F7BE48E8E /* StandardCyborgCaptureObjC */; };
+		A5D39BD42FBDDDC300D6FB1C /* StandardCyborgCapture in Frameworks */ = {isa = PBXBuildFile; productRef = A5D39BD32FBDDDC300D6FB1C /* StandardCyborgCapture */; };
+		A5D39BD62FBDDDC300D6FB1C /* StandardCyborgCaptureObjC in Frameworks */ = {isa = PBXBuildFile; productRef = A5D39BD52FBDDDC300D6FB1C /* StandardCyborgCaptureObjC */; };
+		A5D39BD82FBDDDC300D6FB1C /* StandardCyborgFusion in Frameworks */ = {isa = PBXBuildFile; productRef = A5D39BD72FBDDDC300D6FB1C /* StandardCyborgFusion */; };
 		AA000004AAAA0004AA000004 /* TrueDepthFusionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004AAAA0004AA000001 /* TrueDepthFusionApp.swift */; };
 		AA000006AAAA0006AA000006 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000006AAAA0006AA000001 /* RootView.swift */; };
 		AA000007AAAA0007AA000007 /* InitialView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000007AAAA0007AA000001 /* InitialView.swift */; };
@@ -30,8 +30,6 @@
 		AU000005AUAU0005AU000005 /* ScanningFinished.m4a in Resources */ = {isa = PBXBuildFile; fileRef = AU000005AUAU0005AU000000 /* ScanningFinished.m4a */; };
 		AU000006AUAU0006AU000006 /* ScanningCanceled.m4a in Resources */ = {isa = PBXBuildFile; fileRef = AU000006AUAU0006AU000000 /* ScanningCanceled.m4a */; };
 		AU000007AUAU0007AU000007 /* ScanningContinued.wav in Resources */ = {isa = PBXBuildFile; fileRef = AU000007AUAU0007AU000000 /* ScanningContinued.wav */; };
-		B1D121DD9CA0DE55C5210794 /* StandardCyborgCapture in Copy Frameworks */ = {isa = PBXBuildFile; productRef = 202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		B446B5BBE9E78D1925F1AFF7 /* StandardCyborgCaptureObjC in Frameworks */ = {isa = PBXBuildFile; productRef = 5F6D6BCE1C6C7014A659C4B6 /* StandardCyborgCaptureObjC */; };
 		F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */; };
 		OV000001OVOV0001OV000001 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */; };
 		OV000002OVOV0002OV000002 /* GuidanceLabelsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */; };
@@ -59,7 +57,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				B1D121DD9CA0DE55C5210794 /* StandardCyborgCapture in Copy Frameworks */,
 			);
 			name = "Copy Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -121,11 +118,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A5D39BD42FBDDDC300D6FB1C /* StandardCyborgCapture in Frameworks */,
 				767001C3227B82580037210E /* MetalKit.framework in Frameworks */,
+				A5D39BD62FBDDDC300D6FB1C /* StandardCyborgCaptureObjC in Frameworks */,
 				768967F42394306D007179B2 /* SceneKit.framework in Frameworks */,
 				76296F2B2CFE1317003EE037 /* ZipArchive in Frameworks */,
-				5812B6623D6562023B6D82D8 /* StandardCyborgCapture in Frameworks */,
-				B446B5BBE9E78D1925F1AFF7 /* StandardCyborgCaptureObjC in Frameworks */,
+				A5D39BD82FBDDDC300D6FB1C /* StandardCyborgFusion in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,8 +131,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				A5D397E92FBD837800D6FB1C /* StandardCyborgCaptureObjC in Frameworks */,
-				A5D397E82FBD837800D6FB1C /* StandardCyborgCapture in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -265,12 +261,12 @@
 			buildRules = (
 			);
 			dependencies = (
-				76296F2D2CFE13EC003EE037 /* PBXTargetDependency */,
 			);
 			name = TrueDepthFusion;
 			packageProductDependencies = (
-				202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */,
-				5F6D6BCE1C6C7014A659C4B6 /* StandardCyborgCaptureObjC */,
+				A5D39BD32FBDDDC300D6FB1C /* StandardCyborgCapture */,
+				A5D39BD52FBDDDC300D6FB1C /* StandardCyborgCaptureObjC */,
+				A5D39BD72FBDDDC300D6FB1C /* StandardCyborgFusion */,
 			);
 			productName = TrueDepthFusion;
 			productReference = 768F64E82121570600C1B1DA /* TrueDepthFusion.app */;
@@ -290,8 +286,6 @@
 			);
 			name = TrueDepthFusionTests;
 			packageProductDependencies = (
-				9AB40DE8892C63FB479CA885 /* StandardCyborgCapture */,
-				44977C217582912F7BE48E8E /* StandardCyborgCaptureObjC */,
 			);
 			productName = TrueDepthFusionTests;
 			productReference = TT000004TTTT0004TT000000 /* TrueDepthFusionTests.xctest */;
@@ -327,8 +321,7 @@
 			);
 			mainGroup = 76539C8D20F5B1FE009C332E;
 			packageReferences = (
-				763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */,
-				76296F292CFE1317003EE037 /* XCRemoteSwiftPackageReference "ZipArchive" */,
+				A5D39BD22FBDDDC300D6FB1C /* XCLocalSwiftPackageReference "../.." */,
 			);
 			productRefGroup = 76539C9820F5B1FE009C332E /* Products */;
 			projectDirPath = "";
@@ -393,10 +386,6 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		76296F2D2CFE13EC003EE037 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = 76296F2C2CFE13EC003EE037 /* ZipArchive */;
-		};
 		TT000060TTTT0060TT000060 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 768F64E72121570600C1B1DA /* TrueDepthFusion */;
@@ -679,9 +668,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */ = {
+		A5D39BD22FBDDDC300D6FB1C /* XCLocalSwiftPackageReference "../.." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../..;
+			relativePath = "../..";
 		};
 /* End XCLocalSwiftPackageReference section */
 
@@ -697,35 +686,22 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		202AFAD39C6C92F89B40A4FA /* StandardCyborgCapture */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
-			productName = StandardCyborgCapture;
-		};
-		44977C217582912F7BE48E8E /* StandardCyborgCaptureObjC */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
-			productName = StandardCyborgCaptureObjC;
-		};
-		5F6D6BCE1C6C7014A659C4B6 /* StandardCyborgCaptureObjC */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
-			productName = StandardCyborgCaptureObjC;
-		};
 		76296F2A2CFE1317003EE037 /* ZipArchive */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 76296F292CFE1317003EE037 /* XCRemoteSwiftPackageReference "ZipArchive" */;
 			productName = ZipArchive;
 		};
-		76296F2C2CFE13EC003EE037 /* ZipArchive */ = {
+		A5D39BD32FBDDDC300D6FB1C /* StandardCyborgCapture */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 76296F292CFE1317003EE037 /* XCRemoteSwiftPackageReference "ZipArchive" */;
-			productName = ZipArchive;
-		};
-		9AB40DE8892C63FB479CA885 /* StandardCyborgCapture */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 763CA4C12CE29245000A0214 /* XCLocalSwiftPackageReference "../.." */;
 			productName = StandardCyborgCapture;
+		};
+		A5D39BD52FBDDDC300D6FB1C /* StandardCyborgCaptureObjC */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = StandardCyborgCaptureObjC;
+		};
+		A5D39BD72FBDDDC300D6FB1C /* StandardCyborgFusion */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = StandardCyborgFusion;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
