@@ -1,6 +1,8 @@
 //
 //  InitialView.swift
 
+import StandardCyborgCapture
+import StandardCyborgFusion
 import SwiftUI
 import UIKit  // needed for UIDevice.current.localizedModel
 
@@ -9,8 +11,20 @@ struct InitialView: View {
     @State private var fullScreen: FullScreenDestination?
     @State private var navigationPath = NavigationPath()
 
-    private var isBPLYMode: Bool {
-        UserDefaults.standard.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
+    @State private var bplyShareItems: [Any]?
+    @State private var pendingBPLYItems: [Any]?
+
+    private var scanningConfiguration: ScanningConfiguration {
+        let d = UserDefaults.standard
+        let config = ScanningConfiguration(
+            tapToStartStop: d.bool(forKey: "tap_to_start_stop"),
+            useFullResolutionDepthFrames: d.bool(forKey: "full_resolution_depth_frames", defaultValue: false),
+            stopScanOnReconstructionFailure: d.bool(forKey: "stop_scanning_on_reconstruction_failure", defaultValue: true),
+            maxICPIterations: Int32(d.integer(forKey: "icp_max_iteration_count")),
+            icpTolerance: d.float(forKey: "icp_tolerance"),
+            bplyExportEnabled: d.bool(forKey: "dump_raw_frames_to_bply", defaultValue: false)
+        )
+        return config
     }
 
     var body: some View {
@@ -23,7 +37,7 @@ struct InitialView: View {
                     .padding(.horizontal, 24)
 
                 Button(action: {
-                    fullScreen = isBPLYMode ? .bplyScanning : .scanning
+                    fullScreen = .scanning
                 }) {
                     Text("SCAN")
                         .frame(maxWidth: .infinity)
@@ -53,30 +67,92 @@ struct InitialView: View {
                 }
             }
         }
-        .fullScreenCover(item: $fullScreen) { destination in
-            switch destination {
-            case .scanning:
-                ScanningView()
-                    .environmentObject(scanStore)
-                    .ignoresSafeArea()
-            case .bplyScanning:
-                BPLYScanningView()
-                    .environmentObject(scanStore)
-                    .ignoresSafeArea()
+        .fullScreenCover(item: $fullScreen, onDismiss: {
+            if let items = pendingBPLYItems {
+                bplyShareItems = items
+                pendingBPLYItems = nil
             }
+        }) { _ in
+            ScanningContainerView(
+                configuration: scanningConfiguration,
+                onBPLYExport: { url in
+                    pendingBPLYItems = [url]
+                    fullScreen = nil
+                },
+                onDone: { fullScreen = nil }
+            )
+            .environmentObject(scanStore)
+            .ignoresSafeArea()
+        }
+        .sheet(item: Binding(
+            get: { bplyShareItems.map { BPLYShare(items: $0) } },
+            set: { if $0 == nil { bplyShareItems = nil } }
+        )) { payload in
+            ActivityView(activityItems: payload.items, applicationActivities: nil)
+                .ignoresSafeArea()
         }
     }
+}
+
+private struct ScanningContainerView: View {
+    @EnvironmentObject var scanStore: ScanStore
+    let configuration: ScanningConfiguration
+    let onBPLYExport: ((URL) -> Void)?
+    let onDone: () -> Void
+
+    @State private var previewScan: ScanSelection?
+
+    var body: some View {
+        ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared, onBPLYExport: onBPLYExport) { session in
+            FaceOvalOverlay(isScanning: session.scanning)
+                .allowsHitTesting(false)
+                .frame(maxHeight: 600)
+                .padding(.vertical, 20)
+
+            GuidanceLabelsOverlay(
+                isPreparing: session.countdownSeconds > 0, isScanning: session.scanning,
+                distanceMessage: session.distanceMessage
+            )
+
+            ScanControls(
+                session: session,
+                latestScanThumbnail: session.latestScanThumbnail.map { Image(uiImage: $0) },
+                tapToStartStop: configuration.tapToStartStop,
+                onShowLatestScan: {
+                    if let scan = scanStore.scans.first {
+                        previewScan = ScanSelection(scan: scan)
+                    }
+                },
+                onDone: {
+                    session.stopSession()
+                    onDone()
+                }
+            )
+        } previewControls: { scan, meshingService in
+            ScanPreviewControls(scan: scan, meshingService: meshingService)
+        }
+        .sheet(item: $previewScan) { selection in
+            ScanPreviewView(scan: selection.scan) { scan, meshingService in
+                ScanPreviewControls(scan: scan, meshingService: meshingService)
+            }
+            .environmentObject(scanStore)
+        }
+    }
+}
+
+private struct BPLYShare: Identifiable {
+    let id = UUID()
+    let items: [Any]
 }
 
 // MARK: - UserDefaults Helper
 
 extension UserDefaults {
     func bool(forKey key: String, defaultValue: Bool) -> Bool {
-        if let defaultNumber = object(forKey: key) as? NSNumber {
-            return defaultNumber.boolValue
+        if let _ = value(forKey: key) {
+            bool(forKey: key)
         } else {
-            return defaultValue
+            defaultValue
         }
     }
 }
-

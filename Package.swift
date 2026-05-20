@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.3
 
 import PackageDescription
 
@@ -12,6 +12,15 @@ let package = Package(
             name: "StandardCyborgSDK",
             type: .dynamic,
             targets: ["StandardCyborgFusion"]
+        ),
+        .library(
+            name: "StandardCyborgCapture",
+            type: .dynamic,
+            targets: ["StandardCyborgCapture"]
+        ),
+        .library(
+            name: "StandardCyborgCaptureObjC",
+            targets: ["StandardCyborgCaptureObjC"]
         ),
     ],
     dependencies: [
@@ -95,6 +104,10 @@ let package = Package(
                 "ZipArchive",
             ],
             path: "Sources",
+            exclude: [
+                "StandardCyborgCapture",
+                "StandardCyborgCaptureObjC",
+            ],
             resources: [
                 .process("StandardCyborgFusion/Models/SCEarLandmarking.mlmodel"),
                 .process("StandardCyborgFusion/Models/SCEarTrackingModel.mlmodel"),
@@ -114,6 +127,38 @@ let package = Package(
                 .headerSearchPath("StandardCyborgFusion/MetalDepthProcessor"),
                 .headerSearchPath("StandardCyborgFusion/Private"),
                 .headerSearchPath("include/StandardCyborgFusion"),
+            ]
+        ),
+        .target(
+            name: "StandardCyborgCaptureObjC",
+            dependencies: ["StandardCyborgFusion"],
+            path: "Sources/StandardCyborgCaptureObjC",
+            publicHeadersPath: "include",
+            cxxSettings: [
+                .unsafeFlags(["-fobjc-arc", "-Os", "-fno-math-errno", "-ffast-math"]),
+                .headerSearchPath("include"),
+            ],
+            linkerSettings: [
+                .linkedFramework("CoreGraphics"),
+                .linkedFramework("CoreVideo"),
+                .linkedFramework("CoreMedia"),
+                .linkedFramework("CoreImage"),
+                .linkedFramework("Metal"),
+                .linkedFramework("AVFoundation"),
+                .linkedFramework("UIKit", .when(platforms: [.iOS])),
+            ]
+        ),
+        .target(
+            name: "StandardCyborgCapture",
+            dependencies: [
+                "StandardCyborgFusion",
+                "StandardCyborgCaptureObjC",
+            ],
+            path: "Sources/StandardCyborgCapture",
+            resources: [
+                .process("Resources"),
+                .process("Rendering/DepthColoringFilter.metal"),
+                .process("Rendering/SCPointCloudRenderer.metal"),
             ]
         ),
         .testTarget(
@@ -143,5 +188,5 @@ let package = Package(
         )
     ],
     swiftLanguageModes: [.v6],
-    cxxLanguageStandard: .cxx17
+    cxxLanguageStandard: .cxx20
 )

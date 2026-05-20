@@ -61,6 +61,38 @@ In your project: **File → Add Package Dependencies… → Add Local…** and p
 
 The folder layout under `Sources/StandardCyborgFusion/` was preserved during the split, so existing `#include "Algorithm/..."`, `#include "DataStructures/..."`, etc. resolve unchanged via the `headerSearchPath` entries in the root `Package.swift`. If a previously-resolving include now fails, see the **Header search paths** section of [ARCHITECTURE.md](ARCHITECTURE.md).
 
+## Migration: scanning stack lifted into `StandardCyborgCapture`
+
+A second restructuring (branch `feature/extract-scanning-package`) lifted the SwiftUI scanning stack from the example app into the package as two new targets:
+
+- `StandardCyborgCaptureObjC` — ObjC++ scan data model (`Scan`, `BPLYDepthDataAccumulator`).
+- `StandardCyborgCapture` — Swift capture/render/session/UI toolkit, iOS-only.
+
+If you had copied any of the example app's scanning files into your own project, replace them with imports.
+
+### Import swaps
+
+| Old | New |
+|---|---|
+| `import TrueDepthFusionObjC` | `import StandardCyborgCaptureObjC` |
+| Local copy of `CameraManager`, `ScanningSession`, `ScanStore`, `MeshingService`, `ScanningViewRenderer`, `SCPointCloudRenderer`, `DepthColoringFilter`, `MetalLayerView`, `ScanPreviewView`, `ScanPreviewSceneView`, `ScanningView`, `BPLYScanningView`, `UIImage.resized(toWidth:)` | `import StandardCyborgCapture` |
+| Local copy of `AudioAndHapticEngine`, `SoundEffect`, `FaceOvalOverlay`, `ScanControls` | App-level code; implement `ScanFeedbackProvider` and inject via `ScanningView(feedbackProvider:)` |
+
+### Public API changes from the prior example-local versions
+
+- `ScanningViewRenderer.init(device:commandQueue:)` now `throws` (replaces force-unwrap of `device.makeDefaultLibrary()`).
+- `ScanControls` gains `tapToStartStop: Bool` parameter (replacing the implicit `UserDefaults` read); `latestScanThumbnail` is now SwiftUI `Image?` (was `UIImage?`).
+- `ScanPreviewView` gains required closures `onExport: (Scan, SCMesh?) -> Void` and `onShowSettings: () -> Void`; export/Jetson `.sheet` modifiers were removed (apps wire their own).
+- `ScanningView` gains required closures `onExport`, `onShowSettings`, `onDone`, `onShowLatestScan` that forward to the embedded `ScanPreviewView`.
+
+### Bundle / resource loading
+
+Inside the package, `Bundle.module` is the resource bundle. Consumers writing custom SwiftUI views that load matcap, camera-button images, or `ScanPreviewViewController.scn` should use `Image("…", bundle: .module)` and `Bundle.module.url(forResource:withExtension:)`. The package-internal `MTLDevice.makeStandardCyborgCaptureLibrary()` helper loads the package's Metal shaders. Sound effects are no longer in the package — apps provide their own audio via `ScanFeedbackProvider`.
+
+### `ScanPreviewHostingController` removed
+
+The transient SwiftUI/UIKit bridge `ScanPreviewHostingController` is deleted (dead code post-SwiftUI migration). Apps using it should migrate to the SwiftUI `ScanPreviewView` directly.
+
 ## See also
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — package boundaries and rationale

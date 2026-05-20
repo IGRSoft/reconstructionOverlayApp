@@ -4,11 +4,15 @@ This document describes the modular Swift Package Manager (SPM) layout of the re
 
 ## Overview
 
-The repository is a single Swift Package (`StandardCyborgSDK`) whose product, `StandardCyborgFusion`, depends on a layered set of nested path packages. The example app under `Examples/TrueDepthFusion/` consumes the same package as a downstream client would.
+The repository is a single Swift Package (`StandardCyborgSDK`) exposing three iOS-facing products in layered tiers: `StandardCyborgSDK` (the reconstruction engine), `StandardCyborgCaptureObjC` (ObjC++ scan data model), and `StandardCyborgCapture` (Swift capture/render/session/UI). The example app under `Examples/TrueDepthFusion/` consumes the top tier as a downstream client would.
 
 ```
 StandardCyborgSDK (root Package.swift)
-└── StandardCyborgFusion        — Swift/Obj-C/Metal/C++ target, public API
+├── StandardCyborgCapture        — Swift target, public scanning toolkit (iOS-only)
+│   ├── StandardCyborgCaptureObjC — ObjC++ target: Scan, BPLYDepthDataAccumulator
+│   └── StandardCyborgFusion      — Swift/Obj-C/Metal/C++ target (transitive)
+├── StandardCyborgCaptureObjC    — exposed separately for direct `import` of Scan
+└── StandardCyborgFusion         — Swift/Obj-C/Metal/C++ target, reconstruction engine
     ├── ZipArchive              — remote SPM dep (ZipArchive/ZipArchive)
     ├── json                    — path: CppDependencies/json
     ├── PoissonRecon            — path: CppDependencies/PoissonRecon
@@ -22,6 +26,22 @@ StandardCyborgSDK (root Package.swift)
         ├── stb                 — path: CppDependencies/stb
         └── tinygltf            — path: CppDependencies/tinygltf
 ```
+
+### `StandardCyborgCapture` — `Sources/StandardCyborgCapture/`
+
+Swift, iOS-only (`#if os(iOS)` guards throughout). Public scanning toolkit:
+
+- **Camera/** — `CameraManager` (AVFoundation TrueDepth wrapper).
+- **Rendering/** — `ScanningViewRenderer`, `DepthColoringFilter`, `SCPointCloudRenderer`, plus `MTLDevice.makeStandardCyborgCaptureLibrary()` helper for loading the package's Metal shaders from `Bundle.module`.
+- **Meshing/** — `MeshingService` (wrapper over `SCMeshTexturing`).
+- **Session/** — `ScanningSession` (`@MainActor ObservableObject` driving the scan), `ScanStore`, `ScanFeedbackProvider` (protocol for injecting audio/haptic feedback from the host app).
+- **UI/** — SwiftUI views (`ScanningView`, `ScanPreviewView`, `ScanPreviewSceneView`, `MetalLayerView`, `BPLYScanningView`). App-specific overlays and controls live in the example app's `Overlays/` directory.
+- **Helpers/** — `UIImage.resized(toWidth:)`.
+- **Resources/** — `Media.xcassets` (camera buttons, matcap), `ScanPreviewViewController.scn`. Loaded via `Bundle.module`. Sound effects live in the example app's `Audio/SoundEffects/` directory.
+
+### `StandardCyborgCaptureObjC` — `Sources/StandardCyborgCaptureObjC/`
+
+ObjC++ target exposed because SPM does not allow mixed Swift+ObjC++ in one target. Contains `Scan` (PLY/USDZ I/O over `SCPointCloud` + `SCMeshTexturing`) and `BPLYDepthDataAccumulator` (raw depth-frame capture). Public headers under `include/`. Links CoreGraphics/CoreVideo/CoreMedia/CoreImage/Metal/AVFoundation/UIKit.
 
 All `CppDependencies/*` packages are vendored, header-mostly C++ libraries exposed as SPM targets with `publicHeadersPath: "include"`. See [CppDependencies/README.md](CppDependencies/README.md) for the full index.
 
@@ -80,5 +100,5 @@ The `Tests/` target mirrors the same set of header search paths via `..` prefixe
 
 - [README.md](README.md) — app overview, scanning UX, Jetson integration
 - [CONTRIBUTING.md](CONTRIBUTING.md) — dev setup, building, testing
-- Migration context — see the **SPM Package Split** section above for upgrade notes from the pre-split structure
+- [MIGRATION.md](MIGRATION.md) — upgrade notes from the pre-split structure
 - [CppDependencies/README.md](CppDependencies/README.md) — vendored-library index

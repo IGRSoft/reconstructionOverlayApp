@@ -119,6 +119,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                   commandQueue:(id<MTLCommandQueue>)commandQueue
                 maxThreadCount:(int)maxThreadCount
+              maxICPIterations:(int)maxICPIterations
+                  icpTolerance:(float)icpTolerance
 {
     self = [super init];
     if (self) {
@@ -127,17 +129,17 @@ NS_ASSUME_NONNULL_BEGIN
 
         _modelQueue_maxDepth = _surfelFusionConfig.maxDepth;
         _userSetMaxDepth = NO;
-        
+
         NSError *libError = nil;
         id<MTLLibrary> library = [device newDefaultLibraryWithBundle:SWIFTPM_MODULE_BUNDLE
                                                                error:&libError];
         NSAssert(library != nil, @"Failed to load StandardCyborgFusion Metal library: %@", libError);
-        
+
         std::shared_ptr<SurfelIndexMap> surfelIndexMap(new MetalSurfelIndexMap(device, library, commandQueue));
         _modelQueue_model = new PBFModel(surfelIndexMap);
-        
-        _icpConfig.maxIterations = (int)[[NSUserDefaults standardUserDefaults] integerForKey:@"icp_max_iteration_count"] ?: _icpConfig.maxIterations;
-        _icpConfig.tolerance = [[NSUserDefaults standardUserDefaults] floatForKey:@"icp_tolerance"] ?: _icpConfig.tolerance;
+
+        if (maxICPIterations > 0) { _icpConfig.maxIterations = maxICPIterations; }
+        if (icpTolerance > 0)     { _icpConfig.tolerance = icpTolerance; }
         
         _modelQueue_depthProcessor = new MetalDepthProcessor(device, library, commandQueue);
         

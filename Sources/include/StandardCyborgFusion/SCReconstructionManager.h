@@ -65,9 +65,16 @@ typedef struct {
 @property (nonatomic, readonly) NSInteger latestCameraCalibrationFrameHeight;
 
 - (instancetype)init NS_UNAVAILABLE;
+
+/**
+ Designated initializer.
+ Pass 0 for @c maxICPIterations or @c icpTolerance to keep the built-in algorithm defaults.
+ */
 - (instancetype)initWithDevice:(id<MTLDevice>)device
                   commandQueue:(id<MTLCommandQueue>)commandQueue
-                maxThreadCount:(int)maxThreadCount;
+                maxThreadCount:(int)maxThreadCount
+              maxICPIterations:(int)maxICPIterations
+                  icpTolerance:(float)icpTolerance NS_DESIGNATED_INITIALIZER;
 
 /** Useful for un-projecting a single depth frame into a 3D point cloud,
  such as for live pre-scan visualization */

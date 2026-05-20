@@ -14,9 +14,13 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 ## Repository Layout
 
 ```
-lisbon-v3/                          ← root is the StandardCyborgSDK Swift Package
+copenhagen-v2/                      ← root is the StandardCyborgSDK Swift Package
 ├── Package.swift                   ← package definition (name: "StandardCyborgSDK")
-├── Sources/                        ← SDK source (target: StandardCyborgFusion)
+├── Sources/
+│   ├── StandardCyborgFusion/       ← reconstruction engine (Swift/ObjC++/Metal/C++)
+│   ├── StandardCyborgCapture/      ← Swift scanning toolkit (iOS-only)
+│   ├── StandardCyborgCaptureObjC/  ← ObjC++ scan data model
+│   └── include/                    ← public bridging headers
 ├── Tests/                          ← SDK tests
 ├── libigl/                         ← vendored libigl headers
 ├── scsdk/                          ← nested pure-C++ core package
@@ -29,9 +33,15 @@ lisbon-v3/                          ← root is the StandardCyborgSDK Swift Pack
         └── TrueDepthFusion/            ← example app sources
 ```
 
-## Consuming `StandardCyborgSDK`
+## Consuming the SDK
 
-Add this repo as a Swift Package dependency in your `Package.swift`:
+The package exposes three iOS-facing products:
+
+| Product | Purpose |
+|---|---|
+| `StandardCyborgSDK` | Reconstruction engine (Swift/ObjC++/Metal/C++): `SCPointCloud`, `SCReconstructionManager`, `SCMeshTexturing`, etc. |
+| `StandardCyborgCaptureObjC` | ObjC++ scan data model: `Scan`, `BPLYDepthDataAccumulator`. |
+| `StandardCyborgCapture` | Swift iOS scanning toolkit: `CameraManager`, renderer, `ScanningSession`, `ScanStore`, `MeshingService`, `ScanningView`, `ScanPreviewView`, `ScanControls`. Depends transitively on the other two. |
 
 ```swift
 dependencies: [
@@ -39,17 +49,44 @@ dependencies: [
 ],
 targets: [
     .target(name: "MyApp", dependencies: [
-        .product(name: "StandardCyborgSDK", package: "<repo>")
+        .product(name: "StandardCyborgCapture", package: "<repo>"),
+        .product(name: "StandardCyborgCaptureObjC", package: "<repo>"),
     ])
 ]
 ```
+
+### Minimal adoption
+
+```swift
+import StandardCyborgCapture
+import StandardCyborgCaptureObjC
+import SwiftUI
+
+@main
+struct MyScanApp: App {
+    @StateObject private var scanStore = ScanStore()
+    var body: some Scene {
+        WindowGroup {
+            ScanningView(
+                onExport: { scan, mesh in /* present your share sheet */ },
+                onShowSettings: { /* present settings */ },
+                onDone: { /* dismiss */ },
+                onShowLatestScan: { /* push to your scans list */ }
+            )
+            .environmentObject(scanStore)
+        }
+    }
+}
+```
+
+`StandardCyborgCapture` is iOS-only. The SDK ships ready-made `ScanningView` + `ScanPreviewView` screens; supply your app-specific export/share/settings UX via closures.
 
 ---
 
 ## Requirements
 
 - iPhone X or later (any iPhone with a front-facing TrueDepth camera)
-- iOS 15+
+- iOS 16+
 - For Jetson export: Jetson Nano running the [jetson_receiver](https://github.com/josh-overlay/jetson_receiver) service, connected to the same Wi-Fi network as the iPhone
 
 ---
@@ -215,7 +252,7 @@ This SDK enables real-time 3D scanning on iOS using the TrueDepth camera, plus a
 
 ## Installing
 
-To run the example app, open `Examples/TrueDepthFusion/TrueDepthFusion.xcodeproj` in Xcode. The project consumes the SDK as a local Swift Package at the repo root (`../..` relative to the xcodeproj).
+To run the example app, open `Examples/TrueDepthFusion/TrueDepthFusion.xcodeproj` in Xcode. The project consumes the SDK as a local Swift Package at the repo root (`../..` relative to the xcodeproj). For the scanning UI, import `StandardCyborgCapture` — see the "Consuming the SDK" section above.
 
 The SDK is consumed as a **local Swift Package** at the repo root. If you need to reference the upstream Standard Cyborg packages separately (e.g. in your own project), see `Package.swift` for the local-path declaration and the upstream sources below:
 

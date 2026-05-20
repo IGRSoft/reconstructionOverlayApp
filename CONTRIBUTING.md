@@ -53,7 +53,7 @@ open Examples/TrueDepthFusion/TrueDepthFusion.xcodeproj
 
 The active scheme is **`TrueDepthFusion`** — select a real iPhone with TrueDepth and run.
 
-Several legacy schemes (`VisualTesterMac`, `StandardCyborgAlgorithmsTestbed`, `All-iOS-Debug`/`Release`, `All-Mac-Debug`/`Release`) are still present in `xcshareddata/xcschemes/` but their underlying targets are no longer in the project — they will fail to build. Treat them as historical artifacts pending cleanup.
+Several legacy schemes (`VisualTesterMac`, `StandardCyborgAlgorithmsTestbed`, `All-iOS-Debug`/`Release`, `All-Mac-Debug`/`Release`) are still present in `xcshareddata/xcschemes/` but their underlying targets are no longer in the project — they will fail to build. Treat them as historical artifacts pending cleanup. To build and test the scanning UI package, select the `StandardCyborgCapture` scheme from the root `Package.swift`.
 
 The project consumes `StandardCyborgSDK` as a Swift Package dependency, so any change you make to the SDK rebuilds when the example app builds.
 
@@ -101,4 +101,4 @@ This repo doesn't currently ship a formatter config. Match the surrounding style
 ## See also
 
 - [ARCHITECTURE.md](ARCHITECTURE.md) — how the packages fit together
-- [ARCHITECTURE.md](ARCHITECTURE.md) — migration context for the pre-split structure
+- [MIGRATION.md](MIGRATION.md) — migration context for the pre-split structure
