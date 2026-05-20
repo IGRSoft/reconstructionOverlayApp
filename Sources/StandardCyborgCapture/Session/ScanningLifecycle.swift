@@ -100,6 +100,8 @@ public final class ScanningLifecycle: ObservableObject {
     }
 
     public func markFailed(_ error: ScanningError) {
+        scanningTimer?.invalidate()
+        scanningTimer = nil
         feedbackProvider?.scanningFailed(error)
         transition(to: .failed(error))
     }
@@ -130,12 +132,12 @@ public final class ScanningLifecycle: ObservableObject {
     }
 
     private func iterateCountdown() {
-        feedbackProvider?.countdownCountedDown()
         guard let remaining = state.countdownRemaining else { return }
         if remaining == 0 {
             beginScanning()
             return
         }
+        feedbackProvider?.countdownCountedDown()
         Task { @MainActor in
             try? await Task.sleep(nanoseconds: 1_000_000_000)
             guard let current = self.state.countdownRemaining, current > 0 else { return }

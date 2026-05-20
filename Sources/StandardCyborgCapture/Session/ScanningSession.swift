@@ -384,7 +384,6 @@ public final class ScanningSession: NSObject,
             if shouldStopOnFail && result == .failed {
                 let tooFew = succeededCount < self.lifecycle.configuration.failedScanMinFrameCount
                 if tooFew {
-                    self.lifecycle.stopScanning(reason: .canceled)
                     self.lifecycle.markFailed(.reconstructionFailed(frameCount: Int(succeededCount)))
                     self._dismissFailedAfterDelay()
                 } else {
