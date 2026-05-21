@@ -27,6 +27,13 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     private let feedbackProvider: (any ScanFeedbackProvider)?
     private let onBPLYExport: ((URL) -> Void)?
 
+    /// Whether this view presents its own built-in ``ScanPreviewView`` after
+    /// a scan completes. Defaults to `true` so the reference
+    /// `Examples/TrueDepthFusion` app keeps showing its post-capture preview.
+    /// Consumers that drive their own navigation after a completed scan can
+    /// pass `false` to suppress the built-in `.fullScreenCover`.
+    private let presentsBuiltInPreview: Bool
+
     private let metalDevice = MTLCreateSystemDefaultDevice()!
 
     /// - Parameters:
@@ -38,16 +45,21 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
     ///   - previewControls: A view builder that receives the completed
     ///     ``Scan`` and ``MeshingService``, used inside the post-capture
     ///     ``ScanPreviewView``.
+    ///   - presentsBuiltInPreview: When `true` (default), a completed scan is
+    ///     presented in a built-in ``ScanPreviewView`` via `.fullScreenCover`.
+    ///     Pass `false` when the consumer handles post-scan navigation itself.
     public init(
         configuration: ScanningConfiguration = .default,
         feedbackProvider: (any ScanFeedbackProvider)? = nil,
         onBPLYExport: ((URL) -> Void)? = nil,
         cameraManager: (any CameraManagerProtocol)? = nil,
+        presentsBuiltInPreview: Bool = true,
         @ViewBuilder overlay: @escaping (ScanningSession) -> Overlay,
         @ViewBuilder previewControls: @escaping (Scan, MeshingService) -> PreviewControls
     ) {
         self.feedbackProvider = feedbackProvider
         self.onBPLYExport = onBPLYExport
+        self.presentsBuiltInPreview = presentsBuiltInPreview
         self.overlay = overlay
         self.previewControls = previewControls
         let session: ScanningSession = {
@@ -82,9 +94,17 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
                 session.dismissExport()
             }
         }
-        .fullScreenCover(item: Binding(
-            get: { session.completedScan.map { ScanSelection(scan: $0) } },
-            set: { if $0 == nil { session.dismissCompleted() } }
+        .fullScreenCover(item: Binding<ScanSelection?>(
+            get: {
+                // When the consumer opts out of the built-in preview, never
+                // present the cover — it would otherwise race the consumer's
+                // own post-scan navigation.
+                guard presentsBuiltInPreview else { return nil }
+                return session.completedScan.map { ScanSelection(scan: $0) }
+            },
+            set: { newValue in
+                if newValue == nil { session.dismissCompleted() }
+            }
         )) { selection in
             ScanPreviewView(scan: selection.scan, controls: previewControls)
                 .environmentObject(scanStore)
