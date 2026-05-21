@@ -31,11 +31,11 @@
 		AU000006AUAU0006AU000006 /* ScanningCanceled.m4a in Resources */ = {isa = PBXBuildFile; fileRef = AU000006AUAU0006AU000000 /* ScanningCanceled.m4a */; };
 		AU000007AUAU0007AU000007 /* ScanningContinued.wav in Resources */ = {isa = PBXBuildFile; fileRef = AU000007AUAU0007AU000000 /* ScanningContinued.wav */; };
 		F557736B2C3845BEB7364959 /* JetsonUploader.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2EE912B50A84598AB11D6ED /* JetsonUploader.swift */; };
+		LC000001LCLC0001LC000001 /* LoggingCameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */; };
 		OV000001OVOV0001OV000001 /* FaceOvalOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */; };
 		OV000002OVOV0002OV000002 /* GuidanceLabelsOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */; };
 		OV000003OVOV0003OV000003 /* ScanControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000003OVOV0003OV000000 /* ScanControls.swift */; };
 		OV000004OVOV0004OV000004 /* ScanPreviewControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */; };
-		LC000001LCLC0001LC000001 /* LoggingCameraManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */; };
 		TT000001TTTT0001TT000001 /* SoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000001TTTT0001TT000000 /* SoundEffectTests.swift */; };
 		TT000002TTTT0002TT000002 /* ScanStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000002TTTT0002TT000000 /* ScanStoreTests.swift */; };
 		TT000003TTTT0003TT000003 /* PointCloudRendererTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */; };
@@ -104,11 +104,11 @@
 		AU000005AUAU0005AU000000 /* ScanningFinished.m4a */ = {isa = PBXFileReference; lastKnownFileType = audio.m4a; path = ScanningFinished.m4a; sourceTree = "<group>"; };
 		AU000006AUAU0006AU000000 /* ScanningCanceled.m4a */ = {isa = PBXFileReference; lastKnownFileType = audio.m4a; path = ScanningCanceled.m4a; sourceTree = "<group>"; };
 		AU000007AUAU0007AU000000 /* ScanningContinued.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ScanningContinued.wav; sourceTree = "<group>"; };
+		LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingCameraManager.swift; sourceTree = "<group>"; };
 		OV000001OVOV0001OV000000 /* FaceOvalOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FaceOvalOverlay.swift; sourceTree = "<group>"; };
 		OV000002OVOV0002OV000000 /* GuidanceLabelsOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceLabelsOverlay.swift; sourceTree = "<group>"; };
 		OV000003OVOV0003OV000000 /* ScanControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanControls.swift; sourceTree = "<group>"; };
 		OV000004OVOV0004OV000000 /* ScanPreviewControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanPreviewControls.swift; sourceTree = "<group>"; };
-		LC000001LCLC0001LC000000 /* LoggingCameraManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoggingCameraManager.swift; sourceTree = "<group>"; };
 		TT000001TTTT0001TT000000 /* SoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffectTests.swift; sourceTree = "<group>"; };
 		TT000002TTTT0002TT000000 /* ScanStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanStoreTests.swift; sourceTree = "<group>"; };
 		TT000003TTTT0003TT000000 /* PointCloudRendererTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PointCloudRendererTests.swift; sourceTree = "<group>"; };
@@ -401,11 +401,12 @@
 		76539CA920F5B1FE009C332E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -460,14 +461,11 @@
 				LLVM_LTO = NO;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_LANGUAGE_REVISION = Metal20;
 				ONLY_ACTIVE_ARCH = YES;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
-				VALID_ARCHS = "x86_64 arm64";
-				"VALID_ARCHS[sdk=iphoneos*]" = arm64;
-				"VALID_ARCHS[sdk=iphonesimulator*]" = "x86_64 arm64";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -475,11 +473,12 @@
 		76539CAA20F5B1FE009C332E /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALLOW_TARGET_PLATFORM_SPECIALIZATION = YES;
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++23";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_OBJC_ARC = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
@@ -533,14 +532,11 @@
 				LLVM_LTO = YES;
 				MACOSX_DEPLOYMENT_TARGET = 13.5;
 				MTL_ENABLE_DEBUG_INFO = NO;
-				MTL_LANGUAGE_REVISION = Metal20;
-				SDKROOT = macosx;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_VERSION = 6.0;
 				VALIDATE_PRODUCT = YES;
-				VALID_ARCHS = "x86_64 arm64";
-				"VALID_ARCHS[sdk=iphoneos*]" = arm64;
-				"VALID_ARCHS[sdk=iphonesimulator*]" = "x86_64 arm64";
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;
@@ -562,7 +558,6 @@
 				MARKETING_VERSION = 2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
-				SDKROOT = iphoneos;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -585,7 +580,6 @@
 				MARKETING_VERSION = 2.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.overlay.TrueDepthFusion;
 				PRODUCT_NAME = TrueDepthFusion;
-				SDKROOT = iphoneos;
 				SWIFT_INCLUDE_PATHS = "$(SRCROOT)/TrueDepthFusion/ObjC";
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -674,7 +668,7 @@
 /* Begin XCLocalSwiftPackageReference section */
 		A5D39BD22FBDDDC300D6FB1C /* XCLocalSwiftPackageReference "../.." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = "../..";
+			relativePath = ../..;
 		};
 /* End XCLocalSwiftPackageReference section */
 
