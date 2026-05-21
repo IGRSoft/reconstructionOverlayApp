@@ -14,7 +14,7 @@ Developed by **[Josh Urban Davis](mailto:josh@overlay.com)** for Overlay Robots.
 ## Repository Layout
 
 ```
-copenhagen-v2/                      ← root is the StandardCyborgSDK Swift Package
+/                                   ← root is the StandardCyborgSDK Swift Package
 ├── Package.swift                   ← package definition (name: "StandardCyborgSDK")
 ├── Sources/
 │   ├── StandardCyborgFusion/       ← reconstruction engine (Swift/ObjC++/Metal/C++)
