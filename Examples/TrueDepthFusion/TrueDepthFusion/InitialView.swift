@@ -105,13 +105,15 @@ private struct ScanningContainerView: View {
     var body: some View {
         ScanningView(configuration: configuration, feedbackProvider: AudioAndHapticEngine.shared, onBPLYExport: onBPLYExport, cameraManager: LoggingCameraManager()) { session in
             FaceOvalOverlay(isScanning: session.scanning)
+                .equatable()
                 .allowsHitTesting(false)
                 .frame(maxHeight: 600)
                 .padding(.vertical, 20)
 
             GuidanceLabelsOverlay(
-                isPreparing: session.countdownSeconds > 0, isScanning: session.scanning,
-                distanceMessage: session.distanceMessage
+                isPreparing: session.countdownSeconds > 0,
+                isScanning: session.scanning,
+                guidance: session.distanceGuidance
             )
 
             ScanControls(

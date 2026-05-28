@@ -15,6 +15,25 @@ import StandardCyborgFusion
 import StandardCyborgCaptureObjC
 import UIKit
 
+/// Isolated container for per-frame distance guidance.
+///
+/// Lives outside ``ScanningSession``'s `@Published` set so that ~30 fps updates
+/// from the camera callback do not invalidate every SwiftUI view that observes
+/// the session. Only views that explicitly observe this object re-render.
+@MainActor
+public final class DistanceGuidance: ObservableObject {
+    @Published public private(set) var message: String? = nil
+
+    public init() {}
+
+    /// Assigns `newValue` only when it differs, so identical-frame updates
+    /// don't fire `objectWillChange`.
+    fileprivate func update(_ newValue: String?) {
+        guard message != newValue else { return }
+        message = newValue
+    }
+}
+
 @MainActor
 public final class ScanningSession: NSObject,
                                     ObservableObject,
@@ -32,11 +51,17 @@ public final class ScanningSession: NSObject,
     @Published public private(set) var elapsedSeconds = 0
     @Published public private(set) var countdownSeconds = 0
     @Published public private(set) var scanDurationSeconds: Int
-    @Published public private(set) var distanceMessage: String? = nil
     @Published public private(set) var showScanFailed = false
     @Published public private(set) var completedScan: Scan? = nil
     @Published public private(set) var latestScanThumbnail: UIImage? = nil
     @Published public private(set) var exportURL: URL? = nil
+
+    /// Per-frame distance guidance, isolated from the session's `@Published`
+    /// set so it doesn't invalidate unrelated SwiftUI subscribers.
+    public let distanceGuidance = DistanceGuidance()
+
+    /// Back-compat read accessor. New code should observe ``distanceGuidance``.
+    public var distanceMessage: String? { distanceGuidance.message }
 
     // MARK: - Metal output layer (set by MetalLayerView)
 
@@ -199,13 +224,23 @@ public final class ScanningSession: NSObject,
     // MARK: - Published state sync
 
     private func _syncPublishedState(_ state: ScanningState) {
-        scanning = state.isScanning
-        elapsedSeconds = state.elapsed ?? 0
-        countdownSeconds = state.countdownRemaining ?? 0
-        if case .failed = state { showScanFailed = true }
-        else { showScanFailed = false }
-        if case .completed(let ref) = state { completedScan = ref.scan }
-        else { completedScan = nil }
+        let newScanning = state.isScanning
+        if scanning != newScanning { scanning = newScanning }
+
+        let newElapsed = state.elapsed ?? 0
+        if elapsedSeconds != newElapsed { elapsedSeconds = newElapsed }
+
+        let newCountdown = state.countdownRemaining ?? 0
+        if countdownSeconds != newCountdown { countdownSeconds = newCountdown }
+
+        let newShowFailed: Bool
+        if case .failed = state { newShowFailed = true } else { newShowFailed = false }
+        if showScanFailed != newShowFailed { showScanFailed = newShowFailed }
+
+        let newCompleted: Scan?
+        if case .completed(let ref) = state { newCompleted = ref.scan } else { newCompleted = nil }
+        // Scan is a class — identity compare avoids spurious publishes.
+        if completedScan !== newCompleted { completedScan = newCompleted }
     }
 
     // MARK: - State change handling
@@ -347,13 +382,18 @@ public final class ScanningSession: NSObject,
     }
 
     private func updateDistanceLabel(depth: Float) {
-        guard !scanning else { distanceMessage = nil; return }
+        guard !scanning else {
+            distanceGuidance.update(nil)
+            return
+        }
         let message: String?
         if depth.isNaN || depth <= 0 { message = "No face detected" }
         else if depth < lifecycle.configuration.nearDistanceMeters { message = "Move back" }
         else if depth > lifecycle.configuration.farDistanceMeters { message = "Move closer" }
         else { message = nil }
-        distanceMessage = message
+        // Skip both publish and haptic when guidance is unchanged frame-to-frame.
+        guard distanceGuidance.message != message else { return }
+        distanceGuidance.update(message)
         lifecycle.feedbackProvider?.distanceGuidanceChanged(message)
     }
 
