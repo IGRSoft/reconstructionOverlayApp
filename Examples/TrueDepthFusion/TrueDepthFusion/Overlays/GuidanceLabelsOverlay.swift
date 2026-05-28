@@ -1,12 +1,13 @@
 //
 //  GuidanceLabelsOverlay.swift
 
+import StandardCyborgCapture
 import SwiftUI
 
 struct GuidanceLabelsOverlay: View {
     let isPreparing: Bool
     let isScanning: Bool
-    let distanceMessage: String?
+    @ObservedObject var guidance: DistanceGuidance
 
     var body: some View {
         GeometryReader { proxy in
@@ -27,7 +28,7 @@ struct GuidanceLabelsOverlay: View {
                         .opacity(isScanning ? 0 : 1)
                         .animation(.easeInOut(duration: 0.4), value: isScanning)
 
-                    if let msg = distanceMessage {
+                    if let msg = guidance.message {
                         Text(msg)
                             .font(.system(size: 16, weight: .semibold))
                             .foregroundStyle(.white)

@@ -3,7 +3,7 @@
 
 import SwiftUI
 
-struct FaceOvalOverlay: View {
+struct FaceOvalOverlay: View, Equatable {
     let isScanning: Bool
 
     var body: some View {
