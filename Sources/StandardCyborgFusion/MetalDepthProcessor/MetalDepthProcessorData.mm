@@ -32,9 +32,15 @@ void MetalDepthProcessorData::fill(
     std::vector<float> &weights,
     std::vector<float> &inputConfidences)
 {
+    // Backstop: Metal asserts on a texture descriptor with zero width/height.
+    // Callers should already drop zero-sized frames (see
+    // SCReconstructionManager accumulateDepthBuffer:), but guard here too so any
+    // future caller can't crash the fusion pipeline.
+    if (widthIn == 0 || heightIn == 0) { return; }
+
     width = widthIn;
     height = heightIn;
-    
+
     MTLRegion region = MTLRegionMake2D(0, 0, width, height);
     NSUInteger bytesPerRow = width * sizeof(float);
 

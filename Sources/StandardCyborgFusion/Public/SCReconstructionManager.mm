@@ -298,7 +298,11 @@ NS_ASSUME_NONNULL_BEGIN
     size_t width = CVPixelBufferGetWidth(depthBuffer);
     size_t height = CVPixelBufferGetHeight(depthBuffer);
     size_t depthCount = width * height;
-    
+
+    // Guard against zero-sized buffers (see accumulateDepthBuffer:) — a 0×0
+    // frame would crash Metal during texture allocation.
+    if (width == 0 || height == 0) { return nil; }
+
     _latestCameraCalibrationData = calibrationData;
     _latestCameraCalibrationFrameWidth = (int)width;
     _latestCameraCalibrationFrameHeight = (int)height;
@@ -371,6 +375,14 @@ NS_ASSUME_NONNULL_BEGIN
               calibrationData:(AVCameraCalibrationData *)calibrationData
 {
     if (depthBuffer == NULL || colorBuffer == NULL || calibrationData == nil) { return; }
+    // Drop transient zero-sized frames (e.g. capture-session hand-off during a
+    // screen transition). Passing them through builds a 0×0 ProcessedFrame and
+    // crashes Metal in MetalDepthProcessorData::fill() when it allocates a
+    // texture descriptor with zero width/height.
+    if (CVPixelBufferGetWidth(depthBuffer) == 0 || CVPixelBufferGetHeight(depthBuffer) == 0 ||
+        CVPixelBufferGetWidth(colorBuffer) == 0 || CVPixelBufferGetHeight(colorBuffer) == 0) {
+        return;
+    }
     CVPixelBufferRetain(depthBuffer);
     CVPixelBufferRetain(colorBuffer);
     
