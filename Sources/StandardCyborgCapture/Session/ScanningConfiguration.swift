@@ -10,6 +10,13 @@ public struct ScanningConfiguration: Sendable {
     public var defaultScanDurationSeconds: Int
     public var countdownSeconds: Int
 
+    /// Maximum color (RGB) capture width in pixels.
+    ///
+    /// Defaults to `1280` (720p). This is an intentional performance choice: the 720p
+    /// preset keeps the per-frame color buffer small, reducing GPU upload and
+    /// reconstruction cost during live scanning. Earlier builds defaulted to `1920`
+    /// (1080p). Consumers that specifically need 1080p color must opt back in
+    /// explicitly by passing `maxColorResolution: 1920`.
     public var maxColorResolution: Int
     public var maxFramerate: Int
     public var lowResDepthResolution: Int
@@ -41,6 +48,7 @@ public struct ScanningConfiguration: Sendable {
         stopScanOnReconstructionFailure: Bool = true,
         defaultScanDurationSeconds: Int = 5,
         countdownSeconds: Int = 3,
+        // Default 1280 (720p) is an intentional perf choice; pass 1920 to opt back in to 1080p.
         maxColorResolution: Int = 1280,
         maxFramerate: Int = 30,
         lowResDepthResolution: Int = 320,
