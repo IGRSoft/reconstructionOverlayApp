@@ -355,21 +355,56 @@ public final class ScanningSession: NSObject,
         let flips = _flipsSnapshot
         let decoupled = _decoupledRenderingSnapshot
 
-        // 1. Reconstruction build — synchronous on the camera queue, unchanged.
-        let pointCloud: SCPointCloud
-        if isScanning {
-            pointCloud = _reconstructionManagerRef.buildPointCloud()
-        } else {
-            pointCloud = _reconstructionManagerRef.reconstructSingleDepthBuffer(
-                depthBuffer, colorBuffer: colorBuffer,
-                with: depthCalibrationData,
-                smoothingPoints: !useFullRes
-            )
+        guard let layer else { return }
+        let renderer = _scanningViewRendererRef!
+        let drawViewMatrix = isScanning ? viewMatrix : matrix_identity_float4x4
+
+        // R9: single de-duplicated draw call. Both the decoupled (async, drop-if-busy)
+        // and the synchronous fallback path invoke this one local closure — the ONLY
+        // `renderer.draw(...)` call site in this file. It is NOT `@Sendable` and captures
+        // the camera-owned buffers / calibration / layer by value, exactly as the
+        // original per-branch inline closures inside `_renderQueue.async`/`.sync` did
+        // (those captures already compiled on the camera-output path). `pointCloud` and
+        // `onRenderComplete` are passed per-call because the scanning and preview paths
+        // build the cloud at different points (R4) and only the decoupled paths release
+        // the render slot.
+        let runDraw: (SCPointCloud, (@Sendable () -> Void)?) -> Void = { pointCloud, onRenderComplete in
+            if let onRenderComplete {
+                renderer.draw(colorBuffer: colorBuffer,
+                              depthBuffer: depthBuffer,
+                              pointCloud: pointCloud,
+                              depthCameraCalibrationData: depthCalibrationData,
+                              viewMatrix: drawViewMatrix,
+                              into: layer,
+                              flipsInputHorizontally: flips,
+                              onRenderComplete: onRenderComplete)
+            } else {
+                renderer.draw(colorBuffer: colorBuffer,
+                              depthBuffer: depthBuffer,
+                              pointCloud: pointCloud,
+                              depthCameraCalibrationData: depthCalibrationData,
+                              viewMatrix: drawViewMatrix,
+                              into: layer,
+                              flipsInputHorizontally: flips)
+            }
         }
 
-        // 2. Accumulate — synchronous on the camera queue, unchanged. MUST run
-        //    BEFORE the draw dispatch so reconstruction consumes the buffers first.
+        // GPU-completion handler for the decoupled paths: releases the single
+        // drop-if-busy render slot and, in DEBUG only, ticks the FPS counter (R10).
+        let onRenderComplete: @Sendable () -> Void = { [lock = self._renderInFlightLock, fps = self.fpsCounter] in
+            lock.withLock { $0 = false }   // release the slot
+#if DEBUG
+            fps.tick()
+#endif
+        }
+
         if isScanning {
+            // Scanning path: order is load-bearing and UNCHANGED —
+            //   1. build the point cloud,
+            //   2. accumulate (MUST run before the draw dispatch so reconstruction
+            //      consumes the buffers first),
+            //   3. draw (drop-if-busy when decoupled; synchronous otherwise).
+            let pointCloud = _reconstructionManagerRef.buildPointCloud()
             _reconstructionManagerRef.accumulate(depthBuffer: depthBuffer,
                                                  colorBuffer: colorBuffer,
                                                  calibrationData: depthCalibrationData)
@@ -378,57 +413,57 @@ public final class ScanningSession: NSObject,
                                         depthBuffer: depthBuffer,
                                         depthTime: depthTime,
                                         calibrationData: depthCalibrationData)
+
+            if decoupled {
+                // Drop-if-busy: atomically test-and-set the single render slot.
+                let didAcquire = _renderInFlightLock.withLock { inFlight -> Bool in
+                    if inFlight { return false }   // a render is busy -> drop this frame's draw
+                    inFlight = true                // claim the single render slot
+                    return true
+                }
+                guard didAcquire else { return }   // recon + accumulate already ran above
+                _renderQueue.async { runDraw(pointCloud, onRenderComplete) }
+            } else {
+                // Synchronous blocking draw (camera queue waits on the GPU); gate unused.
+                _renderQueue.sync { runDraw(pointCloud, nil) }
+            }
         } else {
+            // Preview path. Distance guidance runs every frame (cheap, off the reconstruct
+            // cost). R4: for the DECOUPLED case, acquire the drop-if-busy render gate BEFORE
+            // paying the single-depth reconstruction cost — a frame that cannot acquire the
+            // gate returns immediately and skips BOTH reconstruct and draw. The preview path
+            // never accumulates, so reordering reconstruct after the gate is safe.
+            //
+            // Back-pressure note: the decoupled async draw pins the camera-owned color/depth
+            // CVPixelBuffers until GPU completion. Because the capture outputs run with
+            // alwaysDiscardsLate*=true (bounding the pool) and the drop-if-busy gate keeps at
+            // most ~1 frame outstanding, the pinning is self-limiting and does not starve the
+            // camera pool. If on-device testing attributes frame-drop stalls to this pinning,
+            // revisit by staging an explicit buffer copy/release before the GPU dispatch
+            // rather than holding the camera buffers across the async render.
             _updateDistanceGuidanceNonisolated(from: depthBuffer)
-        }
 
-        // 3. Draw — moved to the end. Single dispatch site, only ever on
-        //    _renderQueue, behind the decoupled-rendering flag. Closures capture
-        //    renderer / layer / lock / buffers — never self.
-        guard let layer else { return }
-        let renderer = _scanningViewRendererRef!
-        let drawViewMatrix = isScanning ? viewMatrix : matrix_identity_float4x4
-
-        if decoupled {
-            // Flag ON: latest-frame-wins / drop-if-busy. Atomically test-and-set on
-            // the camera queue; only enqueue a render if none is in flight.
-            let didAcquire = _renderInFlightLock.withLock { inFlight -> Bool in
-                if inFlight { return false }   // a render is busy → drop this frame's draw
-                inFlight = true                // claim the single render slot
-                return true
-            }
-            guard didAcquire else { return }   // recon/accumulate already ran above
-            _renderQueue.async {
-                renderer.draw(
-                    colorBuffer: colorBuffer,
-                    depthBuffer: depthBuffer,
-                    pointCloud: pointCloud,
-                    depthCameraCalibrationData: depthCalibrationData,
-                    viewMatrix: drawViewMatrix,
-                    into: layer,
-                    flipsInputHorizontally: flips,
-                    onRenderComplete: { [lock = self._renderInFlightLock, fps = self.fpsCounter] in
-                        lock.withLock { $0 = false }   // release the slot
-                        fps.tick()
-                    }
+            if decoupled {
+                let didAcquire = _renderInFlightLock.withLock { inFlight -> Bool in
+                    if inFlight { return false }
+                    inFlight = true
+                    return true
+                }
+                guard didAcquire else { return }   // dropped frame: skip reconstruct + draw
+                let pointCloud = _reconstructionManagerRef.reconstructSingleDepthBuffer(
+                    depthBuffer, colorBuffer: colorBuffer,
+                    with: depthCalibrationData,
+                    smoothingPoints: !useFullRes
                 )
-            }
-        } else {
-            // Flag OFF: synchronous blocking draw — restores the original behavior
-            // where the camera queue waits on the GPU. The draw still runs on
-            // _renderQueue (single dispatch site preserved); .sync blocks the camera
-            // queue exactly as the old inline call did. The in-flight gate is unused
-            // here — sync serialization is implicit.
-            _renderQueue.sync {
-                renderer.draw(
-                    colorBuffer: colorBuffer,
-                    depthBuffer: depthBuffer,
-                    pointCloud: pointCloud,
-                    depthCameraCalibrationData: depthCalibrationData,
-                    viewMatrix: drawViewMatrix,
-                    into: layer,
-                    flipsInputHorizontally: flips
+                _renderQueue.async { runDraw(pointCloud, onRenderComplete) }
+            } else {
+                // Synchronous fallback: reconstruct then draw inline (gate unused).
+                let pointCloud = _reconstructionManagerRef.reconstructSingleDepthBuffer(
+                    depthBuffer, colorBuffer: colorBuffer,
+                    with: depthCalibrationData,
+                    smoothingPoints: !useFullRes
                 )
+                _renderQueue.sync { runDraw(pointCloud, nil) }
             }
         }
     }
@@ -461,7 +496,7 @@ public final class ScanningSession: NSObject,
     )
 
     // drop-if-busy gate. true == a render is in flight on _renderQueue (or its GPU
-    // work has not yet completed). Mirrors CameraManager._renderingEnabledLock.
+    // work has not yet completed). Mirrors CameraManager's lock-guarded session state.
     private let _renderInFlightLock = OSAllocatedUnfairLock(initialState: false)
 
     private func _syncSnapshots(for state: ScanningState) {

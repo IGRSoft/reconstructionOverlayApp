@@ -86,12 +86,14 @@ let package = Package(
             path: "scsdk/Sources/standard_cyborg",
             publicHeadersPath: "include",
             cxxSettings: [
-                .unsafeFlags(["-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
+                // Always optimize, even for debug builds, in order to be usable while
+                // debugging the rest of an app.
+                .unsafeFlags(["-Os", "-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
                 .define("EIGEN_NO_DEBUG"),
-                .define("FMT_HEADER_ONLY", to: "1"),
-                .define("HAVE_CONFIG_H", to: "1"),
-                .define("HAVE_PTHREAD", to: "1"),
-                .define("GUID_LIBUUID"),
+                .define("FMT_HEADER_ONLY", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("HAVE_CONFIG_H", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("HAVE_PTHREAD", to: "1", .when(platforms: [.iOS, .macOS])),
+                .define("GUID_LIBUUID", .when(platforms: [.iOS, .macOS])),
             ]
         ),
         .target(
@@ -114,7 +116,9 @@ let package = Package(
             ],
             publicHeadersPath: "include",
             cxxSettings: [
-                .unsafeFlags(["-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
+                // Always optimize, even for debug builds, in order to be usable while
+                // debugging the rest of an app.
+                .unsafeFlags(["-Os", "-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
                 .define("EIGEN_NO_DEBUG"),
                 .headerSearchPath("."),
                 .headerSearchPath("../libigl/include"),
@@ -134,7 +138,10 @@ let package = Package(
             path: "Sources/StandardCyborgCaptureObjC",
             publicHeadersPath: "include",
             cxxSettings: [
-                .unsafeFlags(["-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
+                // Always optimize, even for debug builds, in order to be usable while
+                // debugging the rest of an app.
+                .unsafeFlags(["-Os", "-fobjc-arc", "-fno-math-errno", "-ffast-math"]),
+                .define("EIGEN_NO_DEBUG"),
                 .headerSearchPath("include"),
             ],
             linkerSettings: [

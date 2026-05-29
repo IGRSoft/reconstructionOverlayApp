@@ -57,7 +57,15 @@ public final class ScanningViewRenderer: @unchecked Sendable {
         _inflightSemaphore.wait()
 
         autoreleasepool {
-            let commandBuffer = _commandQueue.makeCommandBuffer()!
+            guard let commandBuffer = _commandQueue.makeCommandBuffer() else {
+                // Under GPU back-pressure makeCommandBuffer() can return nil. Mirror the
+                // nextDrawable()==nil early-return below: signal the inflight semaphore and
+                // fire onRenderComplete (which releases the caller's drop-if-busy render slot)
+                // before returning, so the semaphore stays balanced and the gate is never wedged.
+                _inflightSemaphore.signal()
+                onRenderComplete()
+                return
+            }
             commandBuffer.label = "ScanningViewRenderer.commandBuffer"
 
             guard let drawable = metalLayer.nextDrawable() else {
