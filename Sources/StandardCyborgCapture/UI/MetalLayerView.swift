@@ -32,6 +32,7 @@ public struct MetalLayerView<Client: MetalLayerClient>: UIViewRepresentable {
         metalLayer.device = device
         metalLayer.pixelFormat = .bgra8Unorm
         metalLayer.framebufferOnly = false
+        metalLayer.maximumDrawableCount = 3
         view.metalLayer = metalLayer
         view.layer.addSublayer(metalLayer)
 

@@ -28,13 +28,20 @@ public struct ScanningConfiguration: Sendable {
 
     public var bplyExportEnabled: Bool
 
+    /// When true (default), the live-preview draw runs on a dedicated serial
+    /// render queue with latest-frame-wins / drop-if-busy coalescing, decoupling
+    /// the GPU-blocking draw from camera intake. When false, the draw runs
+    /// synchronously (blocking the camera queue, original behavior) for a
+    /// one-line A/B comparison on device.
+    public var decoupledRenderingEnabled: Bool
+
     public init(
         tapToStartStop: Bool = false,
         useFullResolutionDepthFrames: Bool = false,
         stopScanOnReconstructionFailure: Bool = true,
         defaultScanDurationSeconds: Int = 5,
         countdownSeconds: Int = 3,
-        maxColorResolution: Int = 1920,
+        maxColorResolution: Int = 1280,
         maxFramerate: Int = 30,
         lowResDepthResolution: Int = 320,
         highResDepthResolution: Int = 640,
@@ -44,7 +51,8 @@ public struct ScanningConfiguration: Sendable {
         failedScanDismissDelaySeconds: Double = 3.8,
         maxICPIterations: Int32 = 0,
         icpTolerance: Float = 0,
-        bplyExportEnabled: Bool = false
+        bplyExportEnabled: Bool = false,
+        decoupledRenderingEnabled: Bool = true
     ) {
         self.tapToStartStop = tapToStartStop
         self.useFullResolutionDepthFrames = useFullResolutionDepthFrames
@@ -62,6 +70,7 @@ public struct ScanningConfiguration: Sendable {
         self.maxICPIterations = maxICPIterations
         self.icpTolerance = icpTolerance
         self.bplyExportEnabled = bplyExportEnabled
+        self.decoupledRenderingEnabled = decoupledRenderingEnabled
     }
 
     public static let `default` = ScanningConfiguration()

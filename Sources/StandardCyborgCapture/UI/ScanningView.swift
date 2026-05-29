@@ -78,6 +78,10 @@ public struct ScanningView<Overlay: View, PreviewControls: View>: View {
                 .ignoresSafeArea()
 
             overlay(session)
+
+            #if DEBUG
+            FPSLabel(counter: session.fpsCounter)
+            #endif
         }
         .ignoresSafeArea()
         .onAppear {
@@ -123,6 +127,32 @@ public struct ScanSelection: Identifiable {
 
     public init(scan: Scan) {
         self.scan = scan
+    }
+}
+
+// MARK: - FPSLabel
+
+/// Debug-only overlay showing the live render frame rate, top-leading.
+/// Observes the session's isolated ``FPSCounter`` so only this label re-renders
+/// on FPS changes, and never intercepts touches meant for the consumer overlay.
+private struct FPSLabel: View {
+    @ObservedObject var counter: FPSCounter
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text("\(counter.fps) FPS")
+                    .font(.system(.caption, design: .monospaced))
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(.black.opacity(0.6), in: Capsule())
+                    .foregroundStyle(.green)
+                Spacer()
+            }
+            Spacer()
+        }
+        .padding()
+        .allowsHitTesting(false)
     }
 }
 

@@ -227,7 +227,7 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
                                                name: .AVCaptureSessionRuntimeError, object: _captureSession)
         NotificationCenter.default.addObserver(self, selector: #selector(didEnterBackground),
                                                name: UIApplication.didEnterBackgroundNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForground),
+        NotificationCenter.default.addObserver(self, selector: #selector(willEnterForeground),
                                                name: UIApplication.willEnterForegroundNotification, object: nil)
         NotificationCenter.default.addObserver(self, selector: #selector(sessionWasInterrupted),
                                                name: .AVCaptureSessionWasInterrupted,
@@ -246,9 +246,24 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
             let reason = AVCaptureSession.InterruptionReason(rawValue: reasonIntegerValue) {
             print("Capture session was interrupted with reason \(reason)")
         }
+
+        // Close the assimilation gate synchronously (lock-guarded, safe off-queue) so no
+        // in-flight synchronized frame can reach ICP across the interruption boundary, then
+        // suspend the session on the serial session queue. Do NOT touch the resume-intent flag
+        // (_sessionQueue_isSessionRunning) or any reconstruction state — pause-and-resume policy.
+        self._renderingEnabled = false
+        _sessionQueue.async {
+            self._sessionQueue_pauseForInterruption()
+        }
     }
 
     @objc private func sessionInterruptionEnded(notification: NSNotification) {
+        // Resume on the session queue iff we still intend to be running. The gate is re-opened
+        // inside the helper only after startRunning() confirms isRunning. Do not set
+        // _renderingEnabled here.
+        _sessionQueue.async {
+            self._sessionQueue_resumeIfWasRunning()
+        }
     }
 
     @objc private func sessionRuntimeError(notification: NSNotification) {
@@ -279,12 +294,25 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
     }
 
     @objc private func didEnterBackground(notification: NSNotification) {
-        // Free up resources
+        // Close the assimilation gate synchronously (lock-guarded; safe on the notification
+        // thread) so frames stop reaching ICP immediately — before the async stop runs. Then
+        // suspend the session on the serial session queue. The resume-intent flag is left
+        // untouched so foreground can restart exactly what was running, and no reconstruction
+        // state is reset (pause-and-resume policy).
         self._renderingEnabled = false
+        _sessionQueue.async {
+            self._sessionQueue_pauseForInterruption()
+        }
     }
 
-    @objc private func willEnterForground(notification: NSNotification) {
-        self._renderingEnabled = true
+    @objc private func willEnterForeground(notification: NSNotification) {
+        // Do NOT re-enable rendering synchronously here — that was the original bug: it re-opened
+        // ICP assimilation before the session was restarted, feeding the solver garbage frames.
+        // Restart on the session queue iff we were running; the helper re-opens the gate only
+        // after startRunning() confirms isRunning.
+        _sessionQueue.async {
+            self._sessionQueue_resumeIfWasRunning()
+        }
     }
 
     // MARK: - AVCaptureDataOutputSynchronizerDelegate
@@ -405,6 +433,48 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
         return .success
     }
 
+    // MARK: - Lifecycle pause / resume (serial session queue only)
+
+    /// Suspends the running capture session for a background / interruption event.
+    ///
+    /// **Must be called only from inside a `_sessionQueue.async` block.** The assimilation
+    /// gate (`_renderingEnabled`) is expected to already be closed synchronously by the caller.
+    ///
+    /// Idempotent: the `isRunning` guard makes a duplicate call (e.g. both
+    /// `didEnterBackground` and `sessionWasInterrupted` firing) a no-op. Crucially, this does
+    /// NOT write `_sessionQueue_isSessionRunning` — that flag records the *intent* to be running
+    /// and must survive the background cycle so `_sessionQueue_resumeIfWasRunning()` can restart
+    /// the session on foreground.
+    private func _sessionQueue_pauseForInterruption() {
+        if _captureSession.isRunning {
+            _captureSession.stopRunning()
+        }
+    }
+
+    /// Restarts the capture session after a foreground / interruption-ended event, iff the
+    /// session was running before it was suspended.
+    ///
+    /// **Must be called only from inside a `_sessionQueue.async` block.**
+    ///
+    /// Guards on the resume-intent flag `_sessionQueue_isSessionRunning`, so an app-initiated
+    /// `stopSession()` (which clears the flag) is never resurrected. Idempotent via the
+    /// `!isRunning` guard. The assimilation gate is re-opened only after `startRunning()` is
+    /// confirmed by `isRunning`, so the first frames after a device re-acquire are gated until
+    /// the session is genuinely delivering — and the existing drop/unpaired guards in
+    /// `dataOutputSynchronizer` reject any non-synchronized frames in that window.
+    private func _sessionQueue_resumeIfWasRunning() {
+        guard _sessionQueue_isSessionRunning else { return }
+        if !_captureSession.isRunning {
+            _captureSession.startRunning()
+            // Re-snapshot intent only from a startRunning() we just issued — never from a
+            // background-driven stop, which would erase the resume intent.
+            _sessionQueue_isSessionRunning = _captureSession.isRunning
+        }
+        if _captureSession.isRunning {
+            _renderingEnabled = true
+        }
+    }
+
     private func _focus(with focusMode: AVCaptureDevice.FocusMode,
                         exposureMode: AVCaptureDevice.ExposureMode,
                         at devicePoint: CGPoint,
@@ -436,6 +506,14 @@ public final class CameraManager: NSObject, AVCaptureDataOutputSynchronizerDeleg
 }
 
 extension CameraManager: CameraManagerProtocol {}
+
+// MARK: - Test Info
+// @test-file: (none — no Swift test target for StandardCyborgCapture; AVCaptureSession is unmockable)
+// @test-coverage: Lifecycle pause/resume verified by build + design reasoning (AR §10). The pure
+//   resume predicate is _sessionQueue_resumeIfWasRunning's guard on _sessionQueue_isSessionRunning;
+//   it is inseparable from AVCaptureSession.isRunning, so it cannot be unit-tested without a device
+//   or a new test seam that would breach the single-file scope. See developer-0.md § Decisions d4.
+// @doc-refs: .context/architecture-0.md#resume-correctness, .context/teamlead-0.md#acceptance-checkpoints
 
 fileprivate extension AVCaptureSession.Preset {
     init(maxWidth: Int) {
