@@ -11,6 +11,8 @@ import Combine
 import CoreMotion
 import MediaPlayer
 import Metal
+import os
+import QuartzCore
 import StandardCyborgFusion
 import StandardCyborgCaptureObjC
 import UIKit
@@ -31,6 +33,46 @@ public final class DistanceGuidance: ObservableObject {
     fileprivate func update(_ newValue: String?) {
         guard message != newValue else { return }
         message = newValue
+    }
+}
+
+/// Isolated container for the live render frame rate.
+///
+/// Like ``DistanceGuidance``, it lives outside ``ScanningSession``'s `@Published`
+/// set so the ~30 fps `tick()` stream only re-renders views that explicitly
+/// observe it. The published value is recomputed at most ~2×/sec.
+@MainActor
+public final class FPSCounter: ObservableObject {
+    @Published public private(set) var fps: Int = 0
+
+    private struct Window {
+        var frameCount = 0
+        var start: CFTimeInterval = 0
+    }
+
+    private let state = OSAllocatedUnfairLock(initialState: Window())
+
+    public init() {}
+
+    /// Records one completed render. Called off the main thread from the
+    /// renderer's GPU-completion handler. In release builds this is a no-op.
+    nonisolated func tick() {
+        #if DEBUG
+        let now = CACurrentMediaTime()
+        let newFPS: Int? = state.withLock { window in
+            if window.start == 0 { window.start = now }
+            window.frameCount += 1
+            let elapsed = now - window.start
+            guard elapsed >= 0.5 else { return nil }
+            let fps = Int((Double(window.frameCount) / elapsed).rounded())
+            window.frameCount = 0
+            window.start = now
+            return fps
+        }
+        if let newFPS {
+            DispatchQueue.main.async { self.fps = newFPS }
+        }
+        #endif
     }
 }
 
@@ -59,6 +101,11 @@ public final class ScanningSession: NSObject,
     /// Per-frame distance guidance, isolated from the session's `@Published`
     /// set so it doesn't invalidate unrelated SwiftUI subscribers.
     public let distanceGuidance = DistanceGuidance()
+
+    /// Live render frame rate, isolated from the session's `@Published` set.
+    /// Updated from the renderer's GPU-completion handler; only meaningful in
+    /// DEBUG builds (see ``FPSCounter/tick()``).
+    public let fpsCounter = FPSCounter()
 
     /// Back-compat read accessor. New code should observe ``distanceGuidance``.
     public var distanceMessage: String? { distanceGuidance.message }
@@ -135,6 +182,7 @@ public final class ScanningSession: NSObject,
         _meshTexturingRef = meshTexturing
         _useFullResSnapshot = lifecycle.configuration.useFullResolutionDepthFrames
         _stopScanOnReconFailSnapshot = lifecycle.configuration.stopScanOnReconstructionFailure
+        _decoupledRenderingSnapshot = lifecycle.configuration.decoupledRenderingEnabled
 
         lifecycleCancellable = lifecycle.$state
             .sink { [weak self] newState in
@@ -305,7 +353,9 @@ public final class ScanningSession: NSObject,
         let useFullRes = _useFullResSnapshot
         let layer = _metalLayerSnapshot
         let flips = _flipsSnapshot
+        let decoupled = _decoupledRenderingSnapshot
 
+        // 1. Reconstruction build — synchronous on the camera queue, unchanged.
         let pointCloud: SCPointCloud
         if isScanning {
             pointCloud = _reconstructionManagerRef.buildPointCloud()
@@ -317,18 +367,8 @@ public final class ScanningSession: NSObject,
             )
         }
 
-        if let layer {
-            _scanningViewRendererRef.draw(
-                colorBuffer: colorBuffer,
-                depthBuffer: depthBuffer,
-                pointCloud: pointCloud,
-                depthCameraCalibrationData: depthCalibrationData,
-                viewMatrix: isScanning ? viewMatrix : matrix_identity_float4x4,
-                into: layer,
-                flipsInputHorizontally: flips
-            )
-        }
-
+        // 2. Accumulate — synchronous on the camera queue, unchanged. MUST run
+        //    BEFORE the draw dispatch so reconstruction consumes the buffers first.
         if isScanning {
             _reconstructionManagerRef.accumulate(depthBuffer: depthBuffer,
                                                  colorBuffer: colorBuffer,
@@ -341,6 +381,56 @@ public final class ScanningSession: NSObject,
         } else {
             _updateDistanceGuidanceNonisolated(from: depthBuffer)
         }
+
+        // 3. Draw — moved to the end. Single dispatch site, only ever on
+        //    _renderQueue, behind the decoupled-rendering flag. Closures capture
+        //    renderer / layer / lock / buffers — never self.
+        guard let layer else { return }
+        let renderer = _scanningViewRendererRef!
+        let drawViewMatrix = isScanning ? viewMatrix : matrix_identity_float4x4
+
+        if decoupled {
+            // Flag ON: latest-frame-wins / drop-if-busy. Atomically test-and-set on
+            // the camera queue; only enqueue a render if none is in flight.
+            let didAcquire = _renderInFlightLock.withLock { inFlight -> Bool in
+                if inFlight { return false }   // a render is busy → drop this frame's draw
+                inFlight = true                // claim the single render slot
+                return true
+            }
+            guard didAcquire else { return }   // recon/accumulate already ran above
+            _renderQueue.async {
+                renderer.draw(
+                    colorBuffer: colorBuffer,
+                    depthBuffer: depthBuffer,
+                    pointCloud: pointCloud,
+                    depthCameraCalibrationData: depthCalibrationData,
+                    viewMatrix: drawViewMatrix,
+                    into: layer,
+                    flipsInputHorizontally: flips,
+                    onRenderComplete: { [lock = self._renderInFlightLock, fps = self.fpsCounter] in
+                        lock.withLock { $0 = false }   // release the slot
+                        fps.tick()
+                    }
+                )
+            }
+        } else {
+            // Flag OFF: synchronous blocking draw — restores the original behavior
+            // where the camera queue waits on the GPU. The draw still runs on
+            // _renderQueue (single dispatch site preserved); .sync blocks the camera
+            // queue exactly as the old inline call did. The in-flight gate is unused
+            // here — sync serialization is implicit.
+            _renderQueue.sync {
+                renderer.draw(
+                    colorBuffer: colorBuffer,
+                    depthBuffer: depthBuffer,
+                    pointCloud: pointCloud,
+                    depthCameraCalibrationData: depthCalibrationData,
+                    viewMatrix: drawViewMatrix,
+                    into: layer,
+                    flipsInputHorizontally: flips
+                )
+            }
+        }
     }
 
     // Nonisolated snapshots
@@ -352,6 +442,27 @@ public final class ScanningSession: NSObject,
     nonisolated(unsafe) private var _reconstructionManagerRef: SCReconstructionManager!
     nonisolated(unsafe) private var _scanningViewRendererRef: ScanningViewRenderer!
     nonisolated(unsafe) private var _accumulatorRef: BPLYDepthDataAccumulator?
+
+    // Configuration-immutable for the session lifetime (no mid-scan toggling), so a
+    // plain snapshot read in `cameraDidOutput` is sufficient — no lock needed.
+    nonisolated(unsafe) private var _decoupledRenderingSnapshot: Bool = true
+
+    // Dedicated serial queue for live-preview rendering. Decouples the GPU-blocking
+    // draw (nextDrawable + inflight-semaphore waits) from the camera data-output
+    // queue so transient GPU back-pressure never stalls camera intake.
+    // .userInteractive because the preview is the user's primary real-time feedback
+    // during a scan. autoreleaseFrequency .workItem mirrors CameraManager's data
+    // output queue so each render's autoreleased Metal/CV objects drain promptly.
+    private let _renderQueue = DispatchQueue(
+        label: "com.standardcyborg.capture.ScanningSession.renderQueue",
+        qos: .userInteractive,
+        attributes: [],
+        autoreleaseFrequency: .workItem
+    )
+
+    // drop-if-busy gate. true == a render is in flight on _renderQueue (or its GPU
+    // work has not yet completed). Mirrors CameraManager._renderingEnabledLock.
+    private let _renderInFlightLock = OSAllocatedUnfairLock(initialState: false)
 
     private func _syncSnapshots(for state: ScanningState) {
         _scanningSnapshot = state.isScanning
